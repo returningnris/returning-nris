@@ -155,54 +155,94 @@ function PlannerWidget() {
     return (
       <div style={{
         background: 'var(--white)', border: '1px solid var(--border)',
-        borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.06)',
+        borderRadius: '24px', overflow: 'hidden',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.06)',
       }}>
-        {/* SAMPLE RESULT CARD */}
-        <div style={{ background: '#0F0D08', padding: '1.5rem 2rem', borderBottom: '0.5px solid rgba(255,255,255,0.07)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* SAMPLE RESULT HEADER */}
+        <div style={{ background: '#1A1208', padding: '1.5rem 2rem' }}>
+          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Sample Readiness Report</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', alignItems: 'start', marginBottom: '1rem' }}>
             <div>
-              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Sample snapshot</div>
-              <div style={{ color: '#fff', fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem' }}>Hyderabad · Family with kids · Moving in ~1 year</div>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem', color: '#fff', marginBottom: '4px' }}>
+                You are on track, but key gaps need attention.
+              </div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>
+                Address financial planning and career stability before moving.
+              </div>
             </div>
-            <div style={{ background: 'rgba(19,136,8,0.2)', color: '#4ABA48', fontSize: '11px', fontWeight: 600, padding: '4px 12px', borderRadius: '100px', border: '0.5px solid rgba(19,136,8,0.4)' }}>Plan ready</div>
+            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '14px', padding: '0.75rem 1.25rem', textAlign: 'center' }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.5rem', color: '#FF9933', lineHeight: 1 }}>72</div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '6px' }}>out of 100</div>
+              <div style={{ background: '#FFF3E6', color: '#FF9933', fontSize: '10px', fontWeight: 600, padding: '3px 10px', borderRadius: '100px' }}>Moderately Ready</div>
+            </div>
+          </div>
+          {/* Score bars */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.75rem' }}>
+            {[
+              { label: 'Financial', score: 22, max: 35, color: '#FF9933' },
+              { label: 'Life', score: 18, max: 28, color: '#7C5CBF' },
+              { label: 'Career', score: 18, max: 20, color: '#138808' },
+              { label: 'Planning', score: 14, max: 20, color: '#000080' },
+            ].map(s => (
+              <div key={s.label}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>{s.label}</span>
+                  <span style={{ fontSize: '10px', fontWeight: 600, color: s.color }}>{s.score}/{s.max}</span>
+                </div>
+                <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '100px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: s.color, borderRadius: '100px', width: Math.round((s.score / s.max) * 100) + '%' }} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', borderBottom: '1px solid var(--border)' }}>
-          {[
-            { label: 'Tax saving', val: '₹18–28L', color: '#FF9933' },
-            { label: 'Monthly cost', val: '₹1.8L/mo', color: 'var(--ink)' },
-            { label: 'City match', val: '94%', color: '#138808' },
-            { label: 'Readiness', val: '80/100', color: 'var(--ink)' },
-          ].map((s, i) => (
-            <div key={s.label} style={{ padding: '1rem 1.25rem', borderRight: i < 3 ? '1px solid var(--border)' : 'none' }}>
-              <div style={{ fontSize: '10px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{s.label}</div>
-              <div style={{ fontSize: '1.3rem', fontWeight: 500, color: s.color }}>{s.val}</div>
-            </div>
-          ))}
+
+        {/* FINANCIAL SNAPSHOT */}
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '0.5px solid var(--border)' }}>
+          <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '0.75rem' }}>Financial Snapshot</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px' }}>
+            {[
+              { label: 'Savings', val: '~$150K', color: 'var(--ink)' },
+              { label: 'India cost', val: '₹1.8L/mo', color: 'var(--ink)' },
+              { label: 'Runway', val: '14 months', color: '#FF9933' },
+              { label: 'RNOR saving', val: '₹18–28L', color: '#FF9933' },
+            ].map(s => (
+              <div key={s.label} style={{ background: 'var(--india-white)', borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '3px' }}>{s.label}</div>
+                <div style={{ fontSize: '13px', fontWeight: 500, color: s.color }}>{s.val}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {[
-            { bg: '#FFF3E6', color: '#CC7A00', icon: '!', text: 'Good runway — begin NRE/NRO account transition within 60 days.' },
-            { bg: '#E8F5E8', color: '#138808', icon: '✓', text: 'Hyderabad cost: ₹1.8L/mo — 25% lower than Bangalore.' },
-            { bg: '#E8E8FF', color: '#000080', icon: 'i', text: 'IB & IGCSE schools available — apply 12–18 months early.' },
-          ].map(r => (
-            <div key={r.text} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', color: 'var(--ink-muted)', lineHeight: 1.55 }}>
-              <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: r.bg, color: r.color, fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{r.icon}</div>
-              <span>{r.text}</span>
-            </div>
-          ))}
+
+        {/* TOP RISKS */}
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '0.5px solid var(--border)' }}>
+          <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '0.75rem' }}>Top Risks</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              { level: 'HIGH', color: '#E24B4A', bg: '#FCEBEB', text: 'RNOR tax window at risk — could cost ₹18–28L' },
+              { level: 'MEDIUM', color: '#FF9933', bg: '#FFF3E6', text: 'No job secured in India yet' },
+              { level: 'LOW', color: '#000080', bg: '#E8E8FF', text: 'School admissions research not started' },
+            ].map((r, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: r.bg, borderRadius: '10px', padding: '8px 12px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 700, color: '#fff', background: r.color, padding: '2px 7px', borderRadius: '100px' }}>{r.level}</span>
+                <span style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>{r.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* CTA */}
         <div style={{ padding: '1.25rem 1.5rem', background: 'var(--india-white)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)', marginBottom: '2px' }}>This is a sample. Yours takes 6 questions.</div>
-            <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Personalised to your timeline, family, and city — free, no signup.</div>
+            <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)', marginBottom: '2px' }}>This is a sample. Get yours in 12 questions.</div>
+            <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Personalised to your savings, family, city, and timeline — free.</div>
           </div>
-          <button
-            onClick={() => setShowPlanner(true)}
-            style={{ background: '#FF9933', color: '#fff', border: 'none', borderRadius: '100px', padding: '0.85rem 2rem', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}
+          <Link href="/planner"
+            style={{ background: '#FF9933', color: '#fff', borderRadius: '100px', padding: '0.85rem 2rem', fontSize: '0.9rem', fontWeight: 500, fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
           >
             Get my personalised plan →
-          </button>
+          </Link>
         </div>
       </div>
     )

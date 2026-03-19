@@ -32,7 +32,7 @@ export default function Home() {
           </p>
 
    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
-                        <Link href="/benefits#planner" className="btn-primary">
+                        <Link href="/planner" className="btn-primary">
               Get Your Free Plan →
             </Link>
           </div>
@@ -114,7 +114,7 @@ export default function Home() {
           </div>
 
           <div style={{ textAlign: 'center' }}>
-             <Link href="/benefits#planner" className="btn-primary">
+             <Link href="/planner" className="btn-primary">
               Avoid these mistakes → Get your plan
             </Link>
           </div>

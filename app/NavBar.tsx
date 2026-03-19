@@ -6,9 +6,10 @@ import { usePathname } from 'next/navigation'
 export default function NavBar() {
   const pathname = usePathname()
 
- const links: { href: string; label: string }[] = [
+   const links: { href: string; label: string }[] = [
     { href: '/', label: 'Home' },
     { href: '/benefits', label: 'Products' },
+    { href: '/planner', label: 'Readiness Check' },
     { href: '/community', label: 'Community' },
     { href: '/our-story', label: 'Our Story' },
     { href: '/contact', label: 'Contact' },
