@@ -41,8 +41,17 @@ export default function NavBar() {
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: '60px', gap: '2rem' }}>
 
           {/* LOGO */}
-          <Link href="/" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem', color: '#fff', textDecoration: 'none', flexShrink: 0, letterSpacing: '-0.02em' }}>
-            Returning<span style={{ color: '#FF9933' }}>NRIs</span>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none', flexShrink: 0 }}>
+            <svg width="26" height="30" viewBox="0 0 52 56" fill="none">
+              <rect x="0" y="0" width="52" height="18" rx="5" fill="#FF9933"/>
+              <rect x="0" y="18" width="52" height="20" fill="#F4F0E8"/>
+              <rect x="0" y="38" width="52" height="18" rx="5" fill="#138808"/>
+              <circle cx="26" cy="28" r="8" fill="none" stroke="#000080" strokeWidth="1.5"/>
+              <circle cx="26" cy="28" r="2" fill="#000080"/>
+            </svg>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem', color: '#fff' }}>
+              Returning<span style={{ color: '#FF9933' }}>NRIs</span>
+            </span>
           </Link>
 
           {/* DESKTOP NAV */}
