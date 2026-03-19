@@ -49,10 +49,10 @@ export default function OurStory() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {[
-                    { label: 'From', value: 'Bay Area, California' },
+                    { label: 'From', value: 'Dallas, Texas' },
                     { label: 'Moving to', value: 'Hyderabad' },
                     { label: 'Industries', value: 'Tech & Product' },
-                    { label: 'Launch', value: '31st March 2026' },
+                    
                   ].map(item => (
                     <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                       <span style={{ color: 'var(--ink-soft)' }}>{item.label}</span>
