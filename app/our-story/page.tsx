@@ -70,7 +70,7 @@ export default function OurStory() {
                 <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Our story</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: 1.75, fontFamily: "'DM Serif Display', serif" }}>
-                    In 2008, we moved to the US for work. One opportunity led to another, two kids arrived, and 16 years passed faster than we expected.
+                    In 2008, we moved to the US for Study. One opportunity led to another, two kids arrived, and 16 years passed faster than we expected.
                   </p>
                   <p style={{ fontSize: '14px', color: 'var(--ink-muted)', lineHeight: 1.75 }}>
                     In 2023, we decided to move back permanently. We thought it would take a few months to plan. It took over a year — and we nearly made several expensive mistakes along the way.
