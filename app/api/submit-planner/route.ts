@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
                 { label: 'Financial', score: result.score.financial, max: 35, color: '#FF9933' },
                 { label: 'Life Complexity', score: result.score.lifeComplexity, max: 28, color: '#7C5CBF' },
                 { label: 'Career', score: result.score.career, max: 20, color: '#138808' },
-                { label: 'Planning', score: result.score.planning, max: 20, color: '#000080' },
+                { label: 'Planning', score: result.score.planning, max: 20, color: '#6B8CFF' },
               ].map(s => `
                 <div style="margin-bottom:10px;">
                   <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
