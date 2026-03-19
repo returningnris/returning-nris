@@ -126,7 +126,7 @@ export default function Home() {
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <div className="section-label">What&apos;s Inside</div>
-            <h2 className="section-title">Six tools. One decision made easy.</h2>
+            <h2 className="section-title">Eight tools. One decision made easy.</h2>
             <p className="section-sub" style={{ margin: '0 auto' }}>
               Every feature exists because a real NRI needed it and couldn&apos;t find it anywhere else.
             </p>
@@ -156,7 +156,7 @@ export default function Home() {
             ))}
           </div>
           <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-            <Link href="/benefits" className="btn-ghost">See all tools →</Link>
+            <Link href="/Tools" className="btn-ghost">See all tools →</Link>
           </div>
         </div>
       </section>

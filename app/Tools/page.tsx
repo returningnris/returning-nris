@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 
 const CITY_DATA: Record<string, {
@@ -119,17 +119,7 @@ function PlannerWidget() {
   const [S, setS] = useState<PlannerState>({ country: '', income: '', intent: '', timeline: '', family: '', city: '' })
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
- const [showPlanner, setShowPlanner] = useState(false)
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hash === '#planner') {
-      setShowPlanner(true)
-      setTimeout(() => {
-        const el = document.getElementById('planner-section')
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 100)
-    }
-  }, [])
+  const [showPlanner, setShowPlanner] = useState(false)
 
   const KEYS: (keyof PlannerState)[] = ['country', 'income', 'intent', 'timeline', 'family', 'city']
   const answered = KEYS.filter(k => !!S[k]).length
@@ -155,94 +145,54 @@ function PlannerWidget() {
     return (
       <div style={{
         background: 'var(--white)', border: '1px solid var(--border)',
-        borderRadius: '24px', overflow: 'hidden',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.06)',
+        borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.06)',
       }}>
-        {/* SAMPLE RESULT HEADER */}
-        <div style={{ background: '#1A1208', padding: '1.5rem 2rem' }}>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Sample Readiness Report</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', alignItems: 'start', marginBottom: '1rem' }}>
+        {/* SAMPLE RESULT CARD */}
+        <div style={{ background: '#0F0D08', padding: '1.5rem 2rem', borderBottom: '0.5px solid rgba(255,255,255,0.07)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem', color: '#fff', marginBottom: '4px' }}>
-                You are on track, but key gaps need attention.
-              </div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>
-                Address financial planning and career stability before moving.
-              </div>
+              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Sample snapshot</div>
+              <div style={{ color: '#fff', fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem' }}>Hyderabad · Family with kids · Moving in ~1 year</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '14px', padding: '0.75rem 1.25rem', textAlign: 'center' }}>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.5rem', color: '#FF9933', lineHeight: 1 }}>72</div>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '6px' }}>out of 100</div>
-              <div style={{ background: '#FFF3E6', color: '#FF9933', fontSize: '10px', fontWeight: 600, padding: '3px 10px', borderRadius: '100px' }}>Moderately Ready</div>
+            <div style={{ background: 'rgba(19,136,8,0.2)', color: '#4ABA48', fontSize: '11px', fontWeight: 600, padding: '4px 12px', borderRadius: '100px', border: '0.5px solid rgba(19,136,8,0.4)' }}>Plan ready</div>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', borderBottom: '1px solid var(--border)' }}>
+          {[
+            { label: 'Tax saving', val: '₹18–28L', color: '#FF9933' },
+            { label: 'Monthly cost', val: '₹1.8L/mo', color: 'var(--ink)' },
+            { label: 'City match', val: '94%', color: '#138808' },
+            { label: 'Readiness', val: '80/100', color: 'var(--ink)' },
+          ].map((s, i) => (
+            <div key={s.label} style={{ padding: '1rem 1.25rem', borderRight: i < 3 ? '1px solid var(--border)' : 'none' }}>
+              <div style={{ fontSize: '10px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{s.label}</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 500, color: s.color }}>{s.val}</div>
             </div>
-          </div>
-          {/* Score bars */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.75rem' }}>
-            {[
-              { label: 'Financial', score: 22, max: 35, color: '#FF9933' },
-              { label: 'Life', score: 18, max: 28, color: '#7C5CBF' },
-              { label: 'Career', score: 18, max: 20, color: '#138808' },
-              { label: 'Planning', score: 14, max: 20, color: '#000080' },
-            ].map(s => (
-              <div key={s.label}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>{s.label}</span>
-                  <span style={{ fontSize: '10px', fontWeight: 600, color: s.color }}>{s.score}/{s.max}</span>
-                </div>
-                <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '100px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', background: s.color, borderRadius: '100px', width: Math.round((s.score / s.max) * 100) + '%' }} />
-                </div>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
-
-        {/* FINANCIAL SNAPSHOT */}
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '0.5px solid var(--border)' }}>
-          <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '0.75rem' }}>Financial Snapshot</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px' }}>
-            {[
-              { label: 'Savings', val: '~$150K', color: 'var(--ink)' },
-              { label: 'India cost', val: '₹1.8L/mo', color: 'var(--ink)' },
-              { label: 'Runway', val: '14 months', color: '#FF9933' },
-              { label: 'RNOR saving', val: '₹18–28L', color: '#FF9933' },
-            ].map(s => (
-              <div key={s.label} style={{ background: 'var(--india-white)', borderRadius: '10px', padding: '8px 10px' }}>
-                <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '3px' }}>{s.label}</div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: s.color }}>{s.val}</div>
-              </div>
-            ))}
-          </div>
+        <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {[
+            { bg: '#FFF3E6', color: '#CC7A00', icon: '!', text: 'Good runway — begin NRE/NRO account transition within 60 days.' },
+            { bg: '#E8F5E8', color: '#138808', icon: '✓', text: 'Hyderabad cost: ₹1.8L/mo — 25% lower than Bangalore.' },
+            { bg: '#E8E8FF', color: '#000080', icon: 'i', text: 'IB & IGCSE schools available — apply 12–18 months early.' },
+          ].map(r => (
+            <div key={r.text} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', color: 'var(--ink-muted)', lineHeight: 1.55 }}>
+              <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: r.bg, color: r.color, fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{r.icon}</div>
+              <span>{r.text}</span>
+            </div>
+          ))}
         </div>
-
-        {/* TOP RISKS */}
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '0.5px solid var(--border)' }}>
-          <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '0.75rem' }}>Top Risks</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {[
-              { level: 'HIGH', color: '#E24B4A', bg: '#FCEBEB', text: 'RNOR tax window at risk — could cost ₹18–28L' },
-              { level: 'MEDIUM', color: '#FF9933', bg: '#FFF3E6', text: 'No job secured in India yet' },
-              { level: 'LOW', color: '#000080', bg: '#E8E8FF', text: 'School admissions research not started' },
-            ].map((r, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: r.bg, borderRadius: '10px', padding: '8px 12px' }}>
-                <span style={{ fontSize: '9px', fontWeight: 700, color: '#fff', background: r.color, padding: '2px 7px', borderRadius: '100px' }}>{r.level}</span>
-                <span style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>{r.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA */}
         <div style={{ padding: '1.25rem 1.5rem', background: 'var(--india-white)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)', marginBottom: '2px' }}>This is a sample. Get yours in 12 questions.</div>
-            <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Personalised to your savings, family, city, and timeline — free.</div>
+            <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)', marginBottom: '2px' }}>This is a sample. Yours takes 6 questions.</div>
+            <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Personalised to your timeline, family, and city — free, no signup.</div>
           </div>
-          <Link href="/planner"
-            style={{ background: '#FF9933', color: '#fff', borderRadius: '100px', padding: '0.85rem 2rem', fontSize: '0.9rem', fontWeight: 500, fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+          <button
+            onClick={() => setShowPlanner(true)}
+            style={{ background: '#FF9933', color: '#fff', border: 'none', borderRadius: '100px', padding: '0.85rem 2rem', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}
           >
             Get my personalised plan →
-          </Link>
+          </button>
         </div>
       </div>
     )
@@ -470,210 +420,67 @@ function PlannerWidget() {
   )
 }
 
-export default function Benefits() {
+export default function Tools() {
   return (
     <>
       {/* HEADER */}
       <section style={{ background: 'var(--india-white)', padding: '5rem 2rem 4rem', textAlign: 'center' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-         
-          <h1 className="section-title">Products built for every decision you need to make</h1>
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          
+          <h1 className="section-title">Tools built for every decision you need to make</h1>
           <p className="section-sub" style={{ margin: '0 auto' }}>
-            Every product exists because a real NRI needed it and couldn&apos;t find it anywhere else.
+            Every feature exists because a real NRI needed it and couldn&apos;t find it anywhere else.
+            Starting with the decisions that cost the most when you get them wrong.
           </p>
         </div>
       </section>
 
-      {/* PERSONALISED RETURN PLAN */}
-     <section id="planner-section" style={{ background: '#1A1208', padding: '5rem 2rem' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '3rem' }}>
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,153,51,0.15)', border: '0.5px solid rgba(255,153,51,0.3)', borderRadius: '100px', padding: '5px 14px', marginBottom: '1rem' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF9933' }} />
-                <span style={{ fontSize: '11px', fontWeight: 500, color: '#FF9933', letterSpacing: '0.08em' }}>Available right now — no signup needed</span>
-              </div>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.8rem,3.5vw,2.5rem)', letterSpacing: '-0.03em', lineHeight: 1.15, color: '#fff', marginBottom: '0.75rem' }}>
-                Personalised Return Plan
-              </h2>
-              <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.5)', fontWeight: 300, lineHeight: 1.75, maxWidth: '480px' }}>
-                Six questions. Instant results. A plan built around your timeline, your city, your family — not a generic checklist.
-              </p>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingTop: '0.5rem' }}>
-              {['RNOR tax window & estimated savings', 'City match & real monthly cost estimate', "School options for your kids' grade levels", 'Readiness score & where you stand vs others', 'Personalised action items to unlock next'].map(item => (
-                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
-                  <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#E8F5E8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700, color: '#138808', flexShrink: 0 }}>✓</div>
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-          <PlannerWidget />
-        </div>
-      </section>
 
-      {/* PRODUCTS PREVIEW */}
+
+      {/* WHAT'S INSIDE */}
       <section style={{ padding: '5rem 2rem', background: 'var(--white)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div className="section-label">Products Preview</div>
-            <h2 className="section-title">See what you&apos;re walking into</h2>
-            <p className="section-sub" style={{ margin: '0 auto' }}>A preview of the tools launching on 31st March 2026.</p>
+            <div className="section-label">Free tools — live now</div>
+            
+            
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            {/* City comparison card */}
-            <div style={{ borderRadius: '20px', border: '0.5px solid var(--border)', background: 'var(--white)', overflow: 'hidden' }}>
-              <div style={{ padding: '1.25rem', height: '220px', overflow: 'hidden', position: 'relative', background: 'linear-gradient(160deg,#FFF8F0 0%,#FFF3E6 100%)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ink-soft)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>City Match + Cost of Living</span>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF9933' }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
+            {[
+              { href: '/planner', icon: '🗺️', color: '#FF9933', bg: '#FFF3E6', title: 'Return Readiness Check', desc: 'Answer 12 questions and get your personalised readiness score, top risks, financial snapshot, and a 3-phase action plan.', outcome: 'Know exactly where you stand' },
+              { href: '/rnor', icon: '📊', color: '#138808', bg: '#E8F5E8', title: 'RNOR Tax Optimizer', desc: 'Calculate your exact tax-free window, RSU vesting strategy, 401(k) plan, and every form you need to file with deadlines.', outcome: 'Save ₹18–60L in year 1' },
+              { href: '/city', icon: '🏙️', color: '#7C5CBF', bg: '#F0EEFF', title: 'City Match + Cost of Living', desc: 'Score 5 cities across jobs, schools, lifestyle, air quality, and NRI community — personalised to your family and income.', outcome: 'Pick the right city with data' },
+              { href: '/schools', icon: '🎓', color: '#000080', bg: '#E8E8FF', title: 'Schools Comparison Tool', desc: '17 real schools across 5 cities with actual fees, boards, mid-year entry policy, US curriculum bridge programs, and contact details.', outcome: "Secure your child's school early" },
+              { href: '/housing', icon: '🏠', color: '#D4695A', bg: '#FCEBEB', title: 'Rental & Housing Finder', desc: 'NRI-curated neighbourhoods with rent ranges, safety ratings, school proximity, serviced apartment options, and agent tips.', outcome: 'Have a home before you arrive' },
+              { href: '/healthcare', icon: '🏥', color: '#1D9E75', bg: '#E8F5F0', title: 'Healthcare & Insurance Guide', desc: 'Top hospitals by city (JCI accredited), 6 insurance plans with premiums, and how to bridge the gap between US and India coverage.', outcome: 'Never be without coverage' },
+              { href: '/citylife', icon: '☕', color: '#FF9933', bg: '#FFF3E6', title: 'City Life Guide', desc: 'Where to eat, buy international groceries, work out, co-work, and find your NRI community — curated by returnees, for returnees.', outcome: 'Feel at home from day one' },
+              { href: '/jobs', icon: '💼', color: '#138808', bg: '#E8F5E8', title: 'Job & Career Guide', desc: 'India salary benchmarks vs US, 15 companies hiring NRI returnees, remote work negotiation script, and a 90-day job search plan.', outcome: 'Land the right role' },
+            ].map((tool) => (
+              <Link
+                key={tool.href}
+                href={tool.href}
+                style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '20px', padding: '1.5rem', transition: 'all 0.2s', cursor: 'pointer' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = tool.color; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.08)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
+              >
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: tool.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>{tool.icon}</div>
+                <h3 style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--ink)', fontFamily: 'DM Sans, sans-serif', margin: 0 }}>{tool.title}</h3>
+                <p style={{ fontSize: '0.875rem', color: 'var(--ink-muted)', lineHeight: 1.65, flex: 1, margin: 0 }}>{tool.desc}</p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '0.5px solid var(--border)' }}>
+                  <span style={{ fontSize: '12px', color: tool.color, fontWeight: 500 }}>✓ {tool.outcome}</span>
+                  <span style={{ fontSize: '13px', color: tool.color, fontWeight: 500 }}>→</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '8px' }}>
-                  {[{ city: 'Hyderabad', match: '94%', active: true }, { city: 'Bangalore', match: '88%', active: false }, { city: 'Pune', match: '89%', active: false }].map(c => (
-                    <div key={c.city} style={{ background: c.active ? 'rgba(255,153,51,0.15)' : 'rgba(255,255,255,0.7)', border: `0.5px solid ${c.active ? 'rgba(255,153,51,0.3)' : 'rgba(0,0,0,0.08)'}`, borderRadius: '10px', padding: '7px 9px' }}>
-                      <div style={{ fontSize: '9px', color: 'var(--ink-muted)' }}>{c.city}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 500, color: c.active ? '#CC7A00' : 'var(--ink-muted)' }}>{c.match}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.75)', borderRadius: '10px', padding: '8px 10px', border: '0.5px solid rgba(0,0,0,0.07)' }}>
-                  {[{ label: 'Cost', width: '72%', color: '#FF9933', val: '₹1.8L' }, { label: 'Schools', width: '90%', color: '#138808', val: '9/10' }, { label: 'Jobs', width: '85%', color: '#000080', val: 'High' }, { label: 'AQI', width: '45%', color: '#138808', val: '~95' }].map(row => (
-                    <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '10px', color: 'var(--ink-soft)', width: '44px', flexShrink: 0 }}>{row.label}</span>
-                      <div style={{ flex: 1, height: '8px', background: 'rgba(0,0,0,0.07)', borderRadius: '100px', overflow: 'hidden' }}>
-                        <div style={{ width: row.width, height: '100%', background: row.color, borderRadius: '100px' }} />
-                      </div>
-                      <span style={{ fontSize: '10px', fontWeight: 500, color: row.color, width: '28px', textAlign: 'right' }}>{row.val}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ padding: '1.25rem 1.5rem' }}>
-                <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)', marginBottom: '4px' }}>City comparison dashboard</div>
-                <div style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: 1.55 }}>Compare 14 Indian cities across cost, schools, commute, AQI, and NRI community — ranked for your profile.</div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: '10px', fontSize: '11px', fontWeight: 500, padding: '3px 10px', borderRadius: '100px', background: '#FFF3E6', color: '#854F0B' }}>City match</span>
-              </div>
-            </div>
-
-            {/* RNOR tax card */}
-            <div style={{ borderRadius: '20px', border: '0.5px solid var(--border)', background: 'var(--white)', overflow: 'hidden' }}>
-              <div style={{ padding: '1.25rem', height: '220px', overflow: 'hidden', position: 'relative', background: 'linear-gradient(160deg,#F0F8F0 0%,#E4F4E4 100%)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ink-soft)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>RNOR tax optimizer</span>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#138808' }} />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px', marginBottom: '7px' }}>
-                  {[{ label: 'RNOR Window', val: '2.5 yrs', sub: 'starts Jun 2026', green: false }, { label: 'Tax Saving', val: '₹26L', sub: 'est. year 1', green: true }, { label: 'Foreign Income', val: '$180K', sub: 'tax-free in India', green: false }, { label: '401(k) status', val: 'Hold', sub: "don't withdraw", green: false }].map(s => (
-                    <div key={s.label} style={{ background: s.green ? 'rgba(19,136,8,0.1)' : 'rgba(255,255,255,0.8)', border: `0.5px solid ${s.green ? 'rgba(19,136,8,0.2)' : 'rgba(0,0,0,0.08)'}`, borderRadius: '10px', padding: '9px 10px' }}>
-                      <div style={{ fontSize: '9px', color: s.green ? '#3B6D11' : 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '3px' }}>{s.label}</div>
-                      <div style={{ fontSize: '15px', fontWeight: 500, color: '#138808' }}>{s.val}</div>
-                      <div style={{ fontSize: '9px', color: s.green ? '#3B6D11' : 'var(--ink-soft)', marginTop: '2px' }}>{s.sub}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ padding: '1.25rem 1.5rem' }}>
-                <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)', marginBottom: '4px' }}>RNOR tax optimizer</div>
-                <div style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: 1.55 }}>Calculates your exact tax-free window, what to do with RSUs and 401(k), and which forms to file.</div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: '10px', fontSize: '11px', fontWeight: 500, padding: '3px 10px', borderRadius: '100px', background: '#E8F5E8', color: '#27500A' }}>Tax planning</span>
-              </div>
-            </div>
-
-            {/* Timeline card */}
-            <div style={{ borderRadius: '20px', border: '0.5px solid var(--border)', background: 'var(--white)', overflow: 'hidden' }}>
-              <div style={{ padding: '1.25rem', height: '220px', overflow: 'hidden', position: 'relative', background: 'linear-gradient(160deg,#F0F0FF 0%,#E8E8FF 100%)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ink-soft)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Personalised Return Plan</span>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#000080' }} />
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.75)', borderRadius: '10px', padding: '8px 10px', border: '0.5px solid rgba(0,0,128,0.1)', marginBottom: '7px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div><div style={{ fontSize: '9px', color: '#0C447C', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>Move date</div><div style={{ fontSize: '14px', fontWeight: 500, color: '#000080' }}>Apr 2026</div></div>
-                  <div style={{ textAlign: 'right' }}><div style={{ fontSize: '9px', color: 'var(--ink-soft)', marginBottom: '2px' }}>Steps done</div><div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)' }}>4 / 18</div></div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  {[{ done: true, text: 'Open NRE savings account', tag: 'Done' }, { done: true, text: 'File US exit tax return', tag: 'Done' }, { done: false, text: 'Transfer PF / EPF balance', tag: '45 days', active: true }, { done: false, text: 'School admissions — Oakridge HYD', tag: 'Upcoming' }].map((t, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                      <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: t.done ? '#E8F5E8' : t.active ? '#FFF3E6' : 'var(--india-white)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700, color: t.done ? '#138808' : t.active ? '#FF9933' : 'var(--ink-soft)', flexShrink: 0 }}>
-                        {t.done ? '✓' : t.active ? '→' : '○'}
-                      </div>
-                      <span style={{ fontSize: '10px', color: t.active ? 'var(--ink)' : 'var(--ink-soft)', textDecoration: t.done ? 'line-through' : 'none', flex: 1, fontWeight: t.active ? 500 : 400 }}>{t.text}</span>
-                      <span style={{ fontSize: '9px', fontWeight: 500, padding: '2px 7px', borderRadius: '100px', background: t.done ? '#E8F5E8' : t.active ? '#FFF3E6' : 'var(--india-white)', color: t.done ? '#27500A' : t.active ? '#854F0B' : 'var(--ink-soft)', flexShrink: 0 }}>{t.tag}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ padding: '1.25rem 1.5rem' }}>
-                <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)', marginBottom: '4px' }}>Return timeline planner</div>
-                <div style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: 1.55 }}>Your personalised step-by-step checklist — sorted by deadline so nothing falls through the cracks.</div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: '10px', fontSize: '11px', fontWeight: 500, padding: '3px 10px', borderRadius: '100px', background: '#E8E8FF', color: '#0C447C' }}>Plan confidence</span>
-              </div>
-            </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* TOOLS GRID */}
-      <section style={{ padding: '5rem 2rem', background: 'var(--india-white)' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '1rem' }}>
-            <div className="section-label" style={{ marginBottom: '1.5rem' }}>Available at launch</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-              {[
-                { icon: '🗺️', title: 'Personalised Return Plan', desc: 'Answer 6 questions. Get your RNOR window, city match, cost estimate, risk factors, and a 3-step action plan instantly. No consultant needed.', outcome: 'Know exactly what to do next' },
-                { icon: '📊', title: 'RNOR Tax Optimizer', desc: 'Calculate your exact tax-free window. What to do with RSUs and 401(k). Which forms to file before and after landing.', outcome: 'Save ₹18–40L in year 1' },
-                { icon: '🏙️', title: 'City Match + Cost of Living', desc: 'Compare 14 Indian cities across cost, schools, commute, AQI, and NRI community — adjusted for your income level.', outcome: 'Pick the right city with data' },
-                { icon: '🎓', title: 'Schools Comparison Tool', desc: 'Compare IB, IGCSE, CBSE schools by fees, admissions timeline, and mid-year entry policy across your target city.', outcome: "Secure your child's school early" },
-              ].map((tool) => (
-                <div key={tool.title} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <div style={{ fontSize: '2rem' }}>{tool.icon}</div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 500, color: 'var(--ink)', fontFamily: 'DM Sans, sans-serif' }}>{tool.title}</h3>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--ink-muted)', lineHeight: 1.65, flex: 1 }}>{tool.desc}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '0.75rem', borderTop: '0.5px solid var(--border)' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--green)', fontWeight: 600 }}>✓ Outcome:</span>
-                    <span style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>{tool.outcome}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          <div style={{ marginTop: '4rem' }}>
-            <div className="section-label" style={{ marginBottom: '1.5rem' }}>Coming soon</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-              {[
-                { icon: '💼', title: 'Job & Career Transition', desc: 'Salary benchmarks by city and role, remote-from-India options, and how to position US experience to Indian interviewers.', outcome: 'Land the right role before you land' },
-                { icon: '🏠', title: 'Rental & Housing Finder', desc: 'Curated neighbourhoods for returning NRIs. Realistic rent ranges, proximity to schools, and agent contacts who understand NRI needs.', outcome: 'Have a home before you arrive' },
-                { icon: '🏥', title: 'Healthcare & Insurance Guide', desc: 'Compare health insurance options, which hospitals match international standards, and how to handle the coverage gap.', outcome: 'Never be without coverage' },
-                { icon: '📍', title: 'City Life Guide', desc: "Where to eat, shop, and spend weekends in your city. Everything you'll Google in your first 3 months — answered.", outcome: 'Feel at home from day one' },
-              ].map((tool) => (
-                <div key={tool.title} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', opacity: 0.75 }}>
-                  <div style={{ fontSize: '2rem' }}>{tool.icon}</div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 500, color: 'var(--ink)', fontFamily: 'DM Sans, sans-serif' }}>{tool.title}</h3>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--ink-muted)', lineHeight: 1.65, flex: 1 }}>{tool.desc}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '0.75rem', borderTop: '0.5px solid var(--border)' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--ink-soft)', fontWeight: 600 }}>⏳ Coming soon</span>
-                    <span style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>{tool.outcome}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* CTA */}
-      <section style={{ background: 'var(--india-white)', padding: '4rem 2rem', textAlign: 'center' }}>
-        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', marginBottom: '1rem', color: 'var(--ink)' }}>
-            Get early access to all tools — free
-          </h2>
-          <p style={{ color: 'var(--ink-muted)', marginBottom: '2rem', fontSize: '0.95rem' }}>
-            First 200 founding members get lifetime free access. 35 spots remaining.
-          </p>
-          <Link href="/contact" className="btn-primary">Join the waitlist →</Link>
-        </div>
-      </section>
+
     </>
   )
 }

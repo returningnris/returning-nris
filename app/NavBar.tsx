@@ -27,7 +27,7 @@ export default function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mobileProductsOpen, setMobileProductsOpen] = useState(false)
 
-  const isToolActive = TOOLS.some(t => pathname === t.href)
+  const isToolActive = TOOLS.some(t => pathname === t.href) || pathname === '/Tools'
 
   return (
     <>
@@ -62,26 +62,26 @@ export default function NavBar() {
               Home
             </Link>
 
-            {/* PRODUCTS DROPDOWN */}
+            {/* TOOLS DROPDOWN */}
             <div
               style={{ position: 'relative' }}
               onMouseEnter={() => setDropdownOpen(true)}
               onMouseLeave={() => setDropdownOpen(false)}
             >
-              {/* Products trigger — not a link */}
-              <div style={{
+              {/* Tools trigger — clickable link + hover dropdown */}
+              <Link href="/Tools" style={{
                 fontSize: '13px', fontWeight: 500,
                 color: isToolActive ? '#fff' : 'rgba(255,255,255,0.5)',
                 padding: '6px 12px', borderRadius: '8px',
                 background: isToolActive ? 'rgba(255,255,255,0.06)' : 'transparent',
-                cursor: 'default', display: 'flex', alignItems: 'center', gap: '5px',
-                userSelect: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px',
+                textDecoration: 'none', transition: 'all 0.15s',
               }}>
-                Products
+                Tools
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', opacity: 0.5 }}>
                   <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              </div>
+              </Link>
 
               {/* DROPDOWN */}
               {dropdownOpen && (
@@ -179,12 +179,12 @@ export default function NavBar() {
           <div style={{ background: '#1A1208', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '1rem 1.5rem 1.5rem' }}>
             <Link href="/" onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === '/' ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>Home</Link>
 
-            {/* Mobile Products toggle */}
+            {/* Mobile Tools toggle */}
             <button
               onClick={() => setMobileProductsOpen(o => !o)}
               style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}
             >
-              <span style={{ fontSize: '14px', fontWeight: 500, color: isToolActive ? '#FF9933' : 'rgba(255,255,255,0.7)' }}>Products</span>
+              <span style={{ fontSize: '14px', fontWeight: 500, color: isToolActive ? '#FF9933' : 'rgba(255,255,255,0.7)' }}>Tools</span>
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{mobileProductsOpen ? '▲' : '▼'}</span>
             </button>
             {mobileProductsOpen && (
