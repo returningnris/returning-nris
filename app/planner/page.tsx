@@ -222,7 +222,7 @@ export default function Planner() {
             </div>
             <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '1.25rem 1.5rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1rem' }}>
-                {[{ label: 'Financial', score: r.score.financial, max: 35, color: '#FF9933' }, { label: 'Life Complexity', score: r.score.lifeComplexity, max: 28, color: '#7C5CBF' }, { label: 'Career', score: r.score.career, max: 20, color: '#138808' }, { label: 'Planning', score: r.score.planning, max: 20, color: '#000080' }].map(s => (
+                {[{ label: 'Financial', score: r.score.financial, max: 35, color: '#FF9933' }, { label: 'Life Complexity', score: r.score.lifeComplexity, max: 28, color: '#7C5CBF' }, { label: 'Career', score: r.score.career, max: 20, color: '#138808' }, { label: 'Planning', score: r.score.planning, max: 20, color: '#6B8CFF' }].map(s => (
                   <div key={s.label}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>{s.label}</span><span style={{ fontSize: '11px', fontWeight: 600, color: s.color }}>{s.score}/{s.max}</span></div>
                     <div style={{ height: '5px', background: 'rgba(255,255,255,0.1)', borderRadius: '100px', overflow: 'hidden' }}><div style={{ height: '100%', background: s.color, borderRadius: '100px', width: Math.round((s.score / s.max) * 100) + '%' }} /></div>

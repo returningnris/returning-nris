@@ -196,9 +196,12 @@ export async function POST(req: NextRequest) {
           Claim your founding spot — free →
         </a>
         <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:24px;">
-          © 2026 ReturningNRIs · Built with 🇮🇳 by Bharath & Swathi<br/>
-          You received this because you completed the Return Readiness Assessment at returningnris.com
-        </div>
+  © 2026 ReturningNRIs · Built with 🇮🇳 by Bharath & Swathi<br/>
+  You received this because you completed the Return Readiness Assessment at returningnris.com<br/><br/>
+  <a href="mailto:hello@returningnris.com?subject=Unsubscribe&body=Please unsubscribe me from ReturningNRIs emails. Email: ${userDetails.email}" style="color:rgba(255,255,255,0.3);text-decoration:underline;">
+    Unsubscribe
+  </a>
+</div>
       </td></tr>
 
     </table>
