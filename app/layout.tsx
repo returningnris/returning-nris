@@ -62,7 +62,7 @@ function Footer() {
       </div>
 
       <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
-        © 2026 ReturningNRIs · Built with 🇮🇳 by Bharath &amp; Swathi
+        © 2026 ReturningNRIs
       </p>
     </footer>
   )
