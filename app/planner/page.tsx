@@ -15,7 +15,7 @@ type UserDetails = { firstName: string; lastName: string; age: string; gender: s
 export type ScoreBreakdown = { financial: number; lifeComplexity: number; career: number; planning: number; total: number }
 type RiskItem = { level: 'high' | 'medium' | 'low'; title: string; detail: string; action: string }
 export type FinancialSnapshot = { monthlyCost: string; runway: string; runwayMonths: number; rnorSaving: string; savingsLabel: string }
-export type Rec = { verdict: string; icon: string; color: string; bg: string; border: string; actions: string[]; timeframe: string }
+export type Rec = { verdict: string; icon: string; color: string; bg: string; border: string; actions: string[]; timeframe: string; biggestImpact: string; emotionalInsight: string }
 type Result = { score: ScoreBreakdown; status: string; statusColor: string; statusBg: string; headline: string; subheadline: string; risks: RiskItem[]; financial: FinancialSnapshot; cityName: string; recommendation: Rec }
 
 // ─── THEME TOKENS ─────────────────────────────────────────────────────────────
@@ -76,7 +76,22 @@ const SECTION_COLORS: Record<string, string> = {
   'Timeline': T.saffron, 'Tax Planning': '#7C5CBF',
 }
 
-// ─── SCORING ─────────────────────────────────────────────────────────────────
+// ─── OPTION POINTS (shown in simulator dropdowns) ─────────────────────────────
+// Shows each option's point contribution so users understand what improves their score
+
+export const OPTION_POINTS: Partial<Record<keyof Answers, Record<string, number>>> = {
+  savings: { '200000+': 20, '100000': 15, '50000': 10, 'under50': 5 },
+  yearsAbroad: { '10+': 10, '7': 10, '5': 7, '3': 5, 'under3': 2 },
+  country: { 'USA': 5, 'UK': 5, 'UAE': 4, 'Canada': 3, 'Other': 3 },
+  hasJob: { 'remote_us': 20, 'own_business': 17, 'india_job': 15, 'searching': 8, 'no': 4 },
+  hasKids: { 'no': 22, 'yes': 8 },
+  kidsAge: { 'under5': 6, '5to12': 4, 'teen': 2, 'adult': 6 },
+  housing: { 'owned': 3, 'arranged': 2, 'searching': 0, 'no': 0 },
+  city: { 'Hyderabad': 6, 'Bangalore': 6, 'Pune': 6, 'Chennai': 6, 'Mumbai': 6, 'Other': 6, 'undecided': 2 },
+  timeline: { 'within6': 6, '6to12': 5, '1to2': 4, 'exploring': 2 },
+  knowsRNOR: { 'yes_filed': 8, 'yes_aware': 5, 'partial': 3, 'no': 1 },
+}
+
 
 export function calcRunwayMonths(savings: string, city: string): number {
   const monthly = CITY_BASE[city] || 185000
@@ -124,9 +139,57 @@ export function computeRecommendation(A: Answers, score: number): Rec {
   if (A.hasJob === 'no' || A.hasJob === 'searching') gaps.push('no confirmed income')
   if (A.savings === 'under50') gaps.push('low savings')
   if (A.hasKids === 'yes' && A.kidsAge === 'teen') gaps.push('teen school transition')
-  if (score >= 80 && gaps.length === 0) return { verdict: 'Move as planned — you are financially and logistically ready.', icon: '✅', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)', timeframe: 'Proceed on your current timeline', actions: ['File Form 12A within 30 days of arriving — locks in your RNOR status', A.knowsRNOR !== 'yes_filed' ? 'Book NRI CA consultation to finalise your RNOR tax strategy' : 'Confirm NRE account transfers are scheduled', 'Lock in school admissions and housing before you land'] }
-  if (gaps.length <= 1 || score >= 60) return { verdict: gaps.length > 0 ? `Move with preparation — close ${gaps.length} gap${gaps.length > 1 ? 's' : ''} before committing.` : 'Almost ready — a few things to sort first.', icon: '⚠️', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder, timeframe: 'Target move in 6–12 months after addressing gaps', actions: [A.hasJob === 'no' || A.hasJob === 'searching' ? 'Secure income before moving — job offer or remote arrangement confirmed in writing' : 'Confirm your employment arrangement in writing before giving notice', A.housing === 'no' ? 'Arrange housing remotely — book a serviced apartment as a bridge' : 'Confirm housing start date aligns with your move date', A.knowsRNOR !== 'yes_filed' ? 'Book NRI CA consultation to protect your RNOR tax window before you leave' : 'Open NRE account and begin systematic savings transfers now'] }
-  return { verdict: `Delay your move by 6–12 months — ${gaps.length} critical gap${gaps.length !== 1 ? 's' : ''} need closing first.`, icon: '⏸️', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)', timeframe: 'Delay 6–12 months — strengthen your position first', actions: [A.savings === 'under50' ? 'Build savings to $75K–100K minimum — this is non-negotiable' : 'Protect savings — avoid large pre-move expenses', A.hasJob === 'no' ? 'Do not move without confirmed income — #1 reason NRIs return within 2 years' : 'Convert job search to a confirmed offer before leaving', 'Use the simulator below to find your fastest path to readiness'] }
+
+  // Biggest impact area — the single most important thing to fix
+  let biggestImpact = ''
+  if (A.hasJob === 'no') biggestImpact = '🚨 Biggest impact: Get income confirmed before you move. No job = no safety net. This single change adds 12+ points to your score.'
+  else if (A.hasJob === 'searching') biggestImpact = '🎯 Biggest impact: Convert your job search to a confirmed offer. Being "actively searching" is not the same as being ready. Close this before booking a flight.'
+  else if (A.savings === 'under50') biggestImpact = '💰 Biggest impact: Build your savings buffer to at least $75K. Under $50K gives you less than 12 months of runway — not enough margin for a smooth career transition.'
+  else if (A.hasKids === 'yes' && A.kidsAge === 'teen') biggestImpact = '🏫 Biggest impact: Plan your child\'s school transition first. Moving teenagers mid-schooling is the single most common reason NRI families reverse their move within a year.'
+  else if (A.city === 'undecided') biggestImpact = '📍 Biggest impact: Choose your target city. Without a city, you cannot apply to schools, search for housing, or focus your job hunt. Everything else is blocked until this is decided.'
+  else if (A.housing === 'no') biggestImpact = '🏠 Biggest impact: Sort housing before you land. The first 90 days are the hardest — arriving without a home adds enormous stress on top of an already complex transition.'
+  else if (A.knowsRNOR === 'no') biggestImpact = '📊 Biggest impact: Understand RNOR tax status. A 30-minute CA consultation could save you ₹18–40L in year 1. This costs nothing to fix.'
+  else if (A.hasJob === 'remote_us' || A.hasJob === 'own_business') biggestImpact = '✅ Biggest strength: Your income situation is your strongest asset. A US salary or independent income in India gives you 3–4x purchasing power and removes your biggest risk.'
+  else biggestImpact = '✅ Your foundation is solid. Focus on the action steps below to execute your move cleanly.'
+
+  // Emotional insight — direct, honest, empathetic
+  let emotionalInsight = ''
+  if (A.hasJob === 'no' && A.savings === 'under50') {
+    emotionalInsight = 'Moving now would be a financially dangerous decision. Without income or savings buffer, you\'d be living month-to-month within 90 days. A 6-month delay to fix both will make the difference between a confident move and a forced return.'
+  } else if (A.hasJob === 'no') {
+    emotionalInsight = 'Your enthusiasm to move is real — but moving without confirmed income is the most common NRI mistake. Every week you delay to secure a job is a week of security you\'re buying for your family. This is worth the wait.'
+  } else if (A.hasJob === 'searching') {
+    emotionalInsight = 'You\'re close — but "actively searching" still means uncertainty. Don\'t let excitement about the move push you to leave before the job is locked. One confirmed offer changes everything about how your first year in India feels.'
+  } else if (A.savings === 'under50') {
+    emotionalInsight = 'Financial stress is the silent killer of NRI return stories. Under $50K in savings, a delayed job start or unexpected expense can spiral fast. Give yourself breathing room — even 6 more months of saving buys you peace of mind you can\'t put a price on.'
+  } else if (A.hasKids === 'yes' && A.kidsAge === 'teen') {
+    emotionalInsight = 'Your teenager\'s adjustment will shape how your entire family feels about this move. A rushed transition — mid-term, wrong school, wrong board — creates resentment that takes years to heal. Time this right and you\'ll have their buy-in forever.'
+  } else if (score >= 80) {
+    emotionalInsight = 'You\'ve done the hard work of preparation. Most NRIs who struggle after moving skipped exactly the steps you\'ve completed. Trust your preparation, commit to your timeline, and go.'
+  } else if (score >= 60) {
+    emotionalInsight = 'You\'re genuinely close to being ready. The gaps you have are closeable in months, not years. Don\'t rush past them — each one you close makes your transition meaningfully smoother. You\'re building toward a move you\'ll look back on with confidence.'
+  } else {
+    emotionalInsight = 'The desire to move is real and valid — but moving before you\'re ready doesn\'t speed things up, it just makes the landing harder. The NRIs who have the smoothest transitions are the ones who waited until the fundamentals were in place. Use this time well.'
+  }
+
+  if (score >= 80 && gaps.length === 0) return {
+    verdict: 'Move as planned — you are financially and logistically ready.',
+    icon: '✅', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
+    timeframe: 'Proceed on your current timeline', biggestImpact, emotionalInsight,
+    actions: ['File Form 12A within 30 days of arriving — locks in your RNOR status', A.knowsRNOR !== 'yes_filed' ? 'Book NRI CA consultation to finalise your RNOR tax strategy' : 'Confirm NRE account transfers are scheduled', 'Lock in school admissions and housing before you land'],
+  }
+  if (gaps.length <= 1 || score >= 60) return {
+    verdict: gaps.length > 0 ? `Move with preparation — close ${gaps.length} gap${gaps.length > 1 ? 's' : ''} before committing.` : 'Almost ready — a few things to sort first.',
+    icon: '⚠️', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
+    timeframe: 'Target move in 6–12 months after addressing gaps', biggestImpact, emotionalInsight,
+    actions: [A.hasJob === 'no' || A.hasJob === 'searching' ? 'Secure income before moving — job offer or remote arrangement confirmed in writing' : 'Confirm your employment arrangement in writing before giving notice', A.housing === 'no' ? 'Arrange housing remotely — book a serviced apartment as a bridge' : 'Confirm housing start date aligns with your move date', A.knowsRNOR !== 'yes_filed' ? 'Book NRI CA consultation to protect your RNOR tax window before you leave' : 'Open NRE account and begin systematic savings transfers now'],
+  }
+  return {
+    verdict: `Delay your move by 6–12 months — ${gaps.length} critical gap${gaps.length !== 1 ? 's' : ''} need closing first.`,
+    icon: '⏸️', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
+    timeframe: 'Delay 6–12 months — strengthen your position first', biggestImpact, emotionalInsight,
+    actions: [A.savings === 'under50' ? 'Build savings to $75K–100K minimum — this is non-negotiable' : 'Protect savings — avoid large pre-move expenses', A.hasJob === 'no' ? 'Do not move without confirmed income — #1 reason NRIs return within 2 years' : 'Convert job search to a confirmed offer before leaving', 'Use the simulator below to find your fastest path to readiness'],
+  }
 }
 
 export function computeResult(A: Answers): Result {
@@ -167,6 +230,70 @@ function QSelect({ value, onChange, opts, placeholder = 'Select an answer…' }:
       <svg style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="12" height="12" viewBox="0 0 12 12" fill="none">
         <path d="M2 4l4 4 4-4" stroke={hasValue ? T.saffron : T.soft} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
+    </div>
+  )
+}
+
+// ─── SIMULATOR SELECT — shows points per option ───────────────────────────────
+
+function SimQSelect({ value, onChange, opts, questionKey }: {
+  value: string; onChange: (v: string) => void
+  opts: { k: string; label: string }[]; questionKey: keyof Answers
+}) {
+  const pts = OPTION_POINTS[questionKey]
+  const currentPts = pts ? pts[value] : undefined
+  const maxPts = pts ? Math.max(...Object.values(pts)) : undefined
+
+  return (
+    <div>
+      <div style={{ position: 'relative' }}>
+        <select
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          style={{
+            width: '100%', padding: '10px 36px 10px 14px',
+            background: value ? T.saffronLight : T.white,
+            border: `1.5px solid ${value ? T.saffron : T.border}`,
+            borderRadius: '10px',
+            color: value ? T.ink : T.soft,
+            fontFamily: 'DM Sans, sans-serif', fontSize: '13px',
+            outline: 'none', appearance: 'none' as const, cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+        >
+          <option value="" disabled style={{ color: T.soft }}>Select an answer…</option>
+          {opts.map(o => {
+            const p = pts?.[o.k]
+            return (
+              <option key={o.k} value={o.k} style={{ color: T.ink, background: '#fff' }}>
+                {o.label}{p !== undefined ? `  (+${p} pts)` : ''}
+              </option>
+            )
+          })}
+        </select>
+        <svg style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke={value ? T.saffron : T.soft} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+      {/* Point pill below dropdown */}
+      {value && pts && currentPts !== undefined && maxPts !== undefined && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
+          <div style={{ height: '4px', flex: 1, background: '#EDE9E0', borderRadius: '100px', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: '100px',
+              background: currentPts === maxPts ? T.green : currentPts >= maxPts * 0.7 ? T.saffron : currentPts >= maxPts * 0.4 ? '#CC7A00' : '#C0392B',
+              width: Math.round((currentPts / maxPts) * 100) + '%',
+              transition: 'width 0.3s ease',
+            }} />
+          </div>
+          <span style={{
+            fontSize: '10px', fontWeight: 700, flexShrink: 0,
+            color: currentPts === maxPts ? T.green : currentPts >= maxPts * 0.7 ? T.saffron : currentPts >= maxPts * 0.4 ? '#CC7A00' : '#C0392B',
+          }}>
+            {currentPts}/{maxPts} pts
+          </span>
+        </div>
+      )}
     </div>
   )
 }
@@ -266,10 +393,11 @@ function SimulatorSection({ original, userEmail, userName }: { original: Answers
                           <span style={{ fontSize: '10px', fontWeight: 600, color: T.saffron, background: T.saffronLight, border: `0.5px solid ${T.saffronBorder}`, padding: '1px 7px', borderRadius: '100px', flexShrink: 0, marginLeft: '8px' }}>changed</span>
                         )}
                       </div>
-                      <QSelect
+                      <SimQSelect
                         value={simAnswers[q.key] || ''}
                         onChange={v => setSimAnswer(q.key, v)}
                         opts={q.opts}
+                        questionKey={q.key}
                       />
                     </div>
                   )
@@ -292,13 +420,21 @@ function SimulatorSection({ original, userEmail, userName }: { original: Answers
                     <div style={{ fontSize: '11px', color: simRec.color, opacity: 0.75 }}>→ {simRec.timeframe}</div>
                   </div>
                 </div>
-                <div style={{ borderTop: `0.5px solid ${simRec.border}`, paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <div style={{ borderTop: `0.5px solid ${simRec.border}`, paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '10px' }}>
                   {simRec.actions.map((a, i) => (
                     <div key={i} style={{ display: 'flex', gap: '7px', alignItems: 'flex-start' }}>
                       <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: simRec.color, color: '#fff', fontSize: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{i + 1}</div>
                       <div style={{ fontSize: '11px', color: simRec.color, opacity: 0.85, lineHeight: 1.5 }}>{a}</div>
                     </div>
                   ))}
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.6)', borderRadius: '8px', padding: '8px 10px', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 700, color: simRec.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>Biggest Impact</div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: simRec.color, lineHeight: 1.5 }}>{simRec.biggestImpact}</div>
+                </div>
+                <div style={{ background: 'rgba(0,0,0,0.03)', borderRadius: '8px', padding: '8px 10px' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 700, color: simRec.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>Honest Perspective</div>
+                  <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '11px', color: simRec.color, lineHeight: 1.6, fontStyle: 'italic' }}>"{simRec.emotionalInsight}"</div>
                 </div>
               </div>
 
@@ -548,22 +684,37 @@ export default function Planner() {
           </div>
 
           {/* Recommendation */}
-          <div style={{ background: r.recommendation.bg, border: `1.5px solid ${r.recommendation.border}`, borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '0.75rem' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Final Recommendation</div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '0.875rem' }}>
-              <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{r.recommendation.icon}</span>
-              <div>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem', color: r.recommendation.color, lineHeight: 1.4, marginBottom: '3px' }}>{r.recommendation.verdict}</div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: r.recommendation.color, opacity: 0.7 }}>→ {r.recommendation.timeframe}</div>
+          <div style={{ background: r.recommendation.bg, border: `1.5px solid ${r.recommendation.border}`, borderRadius: '16px', overflow: 'hidden', marginBottom: '0.75rem' }}>
+            {/* Verdict */}
+            <div style={{ padding: '1.25rem 1.5rem' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Final Recommendation</div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '0.875rem' }}>
+                <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{r.recommendation.icon}</span>
+                <div>
+                  <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.15rem', color: r.recommendation.color, lineHeight: 1.4, marginBottom: '3px' }}>{r.recommendation.verdict}</div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: r.recommendation.color, opacity: 0.7 }}>→ {r.recommendation.timeframe}</div>
+                </div>
+              </div>
+              <div style={{ borderTop: `0.5px solid ${r.recommendation.border}`, paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {r.recommendation.actions.map((a, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <div style={{ width: '17px', height: '17px', borderRadius: '50%', background: r.recommendation.color, color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{i + 1}</div>
+                    <div style={{ fontSize: '12px', color: r.recommendation.color, lineHeight: 1.55, opacity: 0.85 }}>{a}</div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div style={{ borderTop: `0.5px solid ${r.recommendation.border}`, paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {r.recommendation.actions.map((a, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <div style={{ width: '17px', height: '17px', borderRadius: '50%', background: r.recommendation.color, color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{i + 1}</div>
-                  <div style={{ fontSize: '12px', color: r.recommendation.color, lineHeight: 1.55, opacity: 0.85 }}>{a}</div>
-                </div>
-              ))}
+
+            {/* Biggest Impact Area */}
+            <div style={{ borderTop: `1px solid ${r.recommendation.border}`, padding: '1rem 1.5rem', background: 'rgba(255,255,255,0.6)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '5px' }}>Biggest Impact Area</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: r.recommendation.color, lineHeight: 1.55 }}>{r.recommendation.biggestImpact}</div>
+            </div>
+
+            {/* Emotional Insight */}
+            <div style={{ borderTop: `1px solid ${r.recommendation.border}`, padding: '1rem 1.5rem', background: 'rgba(0,0,0,0.02)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '5px' }}>Honest Perspective</div>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '0.975rem', color: r.recommendation.color, lineHeight: 1.7, fontStyle: 'italic' }}>"{r.recommendation.emotionalInsight}"</div>
             </div>
           </div>
 
