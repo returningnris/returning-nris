@@ -15,7 +15,12 @@ type UserDetails = { firstName: string; lastName: string; age: string; gender: s
 export type ScoreBreakdown = { financial: number; lifeComplexity: number; career: number; planning: number; total: number }
 type RiskItem = { level: 'high' | 'medium' | 'low'; title: string; detail: string; action: string }
 export type FinancialSnapshot = { monthlyCost: string; runway: string; runwayMonths: number; rnorSaving: string; savingsLabel: string }
-export type Rec = { verdict: string; icon: string; color: string; bg: string; border: string; actions: string[]; timeframe: string; biggestImpact: string; emotionalInsight: string }
+export type Rec = {
+  icon: string; color: string; bg: string; border: string
+  verdict: string        // bold one-liner
+  directTalk: string     // honest, personal, flowing paragraph - no labels
+  actions: string[]      // 2-3 crisp "do this" lines - no numbers
+}
 type Result = { score: ScoreBreakdown; status: string; statusColor: string; statusBg: string; headline: string; subheadline: string; risks: RiskItem[]; financial: FinancialSnapshot; cityName: string; recommendation: Rec }
 
 // ─── THEME TOKENS ─────────────────────────────────────────────────────────────
@@ -135,60 +140,108 @@ export function computeFinancial(A: Answers): FinancialSnapshot {
 }
 
 export function computeRecommendation(A: Answers, score: number): Rec {
-  const gaps: string[] = []
-  if (A.hasJob === 'no' || A.hasJob === 'searching') gaps.push('no confirmed income')
-  if (A.savings === 'under50') gaps.push('low savings')
-  if (A.hasKids === 'yes' && A.kidsAge === 'teen') gaps.push('teen school transition')
+  const noIncome = A.hasJob === 'no'
+  const searching = A.hasJob === 'searching'
+  const lowSavings = A.savings === 'under50'
+  const remote = A.hasJob === 'remote_us'
+  const ownBiz = A.hasJob === 'own_business'
+  const indiaJob = A.hasJob === 'india_job'
+  const teensAtHome = A.hasKids === 'yes' && A.kidsAge === 'teen'
+  const noHousing = A.housing === 'no'
+  const noCity = A.city === 'undecided'
+  const rnorBlind = A.knowsRNOR === 'no'
+  const cityName = A.city !== 'undecided' ? A.city : 'your target city'
 
-  // Biggest impact area — the single most important thing to fix
-  let biggestImpact = ''
-  if (A.hasJob === 'no') biggestImpact = '🚨 Biggest impact: Get income confirmed before you move. No job = no safety net. This single change adds 12+ points to your score.'
-  else if (A.hasJob === 'searching') biggestImpact = '🎯 Biggest impact: Convert your job search to a confirmed offer. Being "actively searching" is not the same as being ready. Close this before booking a flight.'
-  else if (A.savings === 'under50') biggestImpact = '💰 Biggest impact: Build your savings buffer to at least $75K. Under $50K gives you less than 12 months of runway — not enough margin for a smooth career transition.'
-  else if (A.hasKids === 'yes' && A.kidsAge === 'teen') biggestImpact = '🏫 Biggest impact: Plan your child\'s school transition first. Moving teenagers mid-schooling is the single most common reason NRI families reverse their move within a year.'
-  else if (A.city === 'undecided') biggestImpact = '📍 Biggest impact: Choose your target city. Without a city, you cannot apply to schools, search for housing, or focus your job hunt. Everything else is blocked until this is decided.'
-  else if (A.housing === 'no') biggestImpact = '🏠 Biggest impact: Sort housing before you land. The first 90 days are the hardest — arriving without a home adds enormous stress on top of an already complex transition.'
-  else if (A.knowsRNOR === 'no') biggestImpact = '📊 Biggest impact: Understand RNOR tax status. A 30-minute CA consultation could save you ₹18–40L in year 1. This costs nothing to fix.'
-  else if (A.hasJob === 'remote_us' || A.hasJob === 'own_business') biggestImpact = '✅ Biggest strength: Your income situation is your strongest asset. A US salary or independent income in India gives you 3–4x purchasing power and removes your biggest risk.'
-  else biggestImpact = '✅ Your foundation is solid. Focus on the action steps below to execute your move cleanly.'
-
-  // Emotional insight — direct, honest, empathetic
-  let emotionalInsight = ''
-  if (A.hasJob === 'no' && A.savings === 'under50') {
-    emotionalInsight = 'Moving now would be a financially dangerous decision. Without income or savings buffer, you\'d be living month-to-month within 90 days. A 6-month delay to fix both will make the difference between a confident move and a forced return.'
-  } else if (A.hasJob === 'no') {
-    emotionalInsight = 'Your enthusiasm to move is real — but moving without confirmed income is the most common NRI mistake. Every week you delay to secure a job is a week of security you\'re buying for your family. This is worth the wait.'
-  } else if (A.hasJob === 'searching') {
-    emotionalInsight = 'You\'re close — but "actively searching" still means uncertainty. Don\'t let excitement about the move push you to leave before the job is locked. One confirmed offer changes everything about how your first year in India feels.'
-  } else if (A.savings === 'under50') {
-    emotionalInsight = 'Financial stress is the silent killer of NRI return stories. Under $50K in savings, a delayed job start or unexpected expense can spiral fast. Give yourself breathing room — even 6 more months of saving buys you peace of mind you can\'t put a price on.'
-  } else if (A.hasKids === 'yes' && A.kidsAge === 'teen') {
-    emotionalInsight = 'Your teenager\'s adjustment will shape how your entire family feels about this move. A rushed transition — mid-term, wrong school, wrong board — creates resentment that takes years to heal. Time this right and you\'ll have their buy-in forever.'
-  } else if (score >= 80) {
-    emotionalInsight = 'You\'ve done the hard work of preparation. Most NRIs who struggle after moving skipped exactly the steps you\'ve completed. Trust your preparation, commit to your timeline, and go.'
-  } else if (score >= 60) {
-    emotionalInsight = 'You\'re genuinely close to being ready. The gaps you have are closeable in months, not years. Don\'t rush past them — each one you close makes your transition meaningfully smoother. You\'re building toward a move you\'ll look back on with confidence.'
-  } else {
-    emotionalInsight = 'The desire to move is real and valid — but moving before you\'re ready doesn\'t speed things up, it just makes the landing harder. The NRIs who have the smoothest transitions are the ones who waited until the fundamentals were in place. Use this time well.'
+  // ── READY ──────────────────────────────────────────────────────────────────
+  if (score >= 80 && !noIncome && !searching && !lowSavings) {
+    const incomeStr = remote ? 'keeping your US salary' : ownBiz ? 'running your own business' : 'a confirmed job in India'
+    return {
+      icon: '✅', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
+      verdict: 'You are ready. Move as planned.',
+      directTalk: `With ${incomeStr}, ${A.savings === '200000+' ? 'strong savings' : 'solid savings'}, and ${cityName} decided — you've resolved the three things that derail most NRI returns before they start. The families who struggle are the ones who moved with one of these still open. You haven't. Don't second-guess the timing. Trust the preparation and go.`,
+      actions: [
+        rnorBlind ? 'Book a CA consultation before you leave — RNOR filing on Day 1 in India saves ₹18–40L and cannot be backdated' : 'File Form 12A on your first day in India — this cannot be backdated, don\'t miss the window',
+        noHousing ? 'Arrange housing before landing — even a 2-month serviced apartment removes the biggest first-week stressor' : A.hasKids === 'yes' ? 'School applications in India fill 12–18 months ahead — confirm your child\'s place is locked' : 'Transfer funds to your NRE account before you change tax residency',
+      ],
+    }
   }
 
-  if (score >= 80 && gaps.length === 0) return {
-    verdict: 'Move as planned — you are financially and logistically ready.',
-    icon: '✅', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
-    timeframe: 'Proceed on your current timeline', biggestImpact, emotionalInsight,
-    actions: ['File Form 12A within 30 days of arriving — locks in your RNOR status', A.knowsRNOR !== 'yes_filed' ? 'Book NRI CA consultation to finalise your RNOR tax strategy' : 'Confirm NRE account transfers are scheduled', 'Lock in school admissions and housing before you land'],
-  }
-  if (gaps.length <= 1 || score >= 60) return {
-    verdict: gaps.length > 0 ? `Move with preparation — close ${gaps.length} gap${gaps.length > 1 ? 's' : ''} before committing.` : 'Almost ready — a few things to sort first.',
+  // ── ALMOST — one gap ───────────────────────────────────────────────────────
+  if (searching && !lowSavings) return {
     icon: '⚠️', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
-    timeframe: 'Target move in 6–12 months after addressing gaps', biggestImpact, emotionalInsight,
-    actions: [A.hasJob === 'no' || A.hasJob === 'searching' ? 'Secure income before moving — job offer or remote arrangement confirmed in writing' : 'Confirm your employment arrangement in writing before giving notice', A.housing === 'no' ? 'Arrange housing remotely — book a serviced apartment as a bridge' : 'Confirm housing start date aligns with your move date', A.knowsRNOR !== 'yes_filed' ? 'Book NRI CA consultation to protect your RNOR tax window before you leave' : 'Open NRE account and begin systematic savings transfers now'],
+    verdict: 'Almost there — get the income confirmed before you book the flight.',
+    directTalk: `Your finances are solid and your planning is further along than most. The gap that matters: you don't have confirmed income yet. "Actively searching" feels close — it isn't. NRIs who move while still searching consistently find the India job hunt takes 3–6 months longer than expected, and financial pressure sets in before they're settled. One offer letter changes everything about how your first year feels. Close this first.`,
+    actions: [
+      'Set a hard rule: no departure date until income is confirmed in writing — job offer or remote arrangement',
+      noHousing ? 'Keep researching housing and schools now so you can move within weeks of the offer coming through' : 'Everything else is ready — this is the only thing standing between you and a confident move',
+    ],
   }
-  return {
-    verdict: `Delay your move by 6–12 months — ${gaps.length} critical gap${gaps.length !== 1 ? 's' : ''} need closing first.`,
+
+  if (noIncome && !lowSavings) return {
     icon: '⏸️', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
-    timeframe: 'Delay 6–12 months — strengthen your position first', biggestImpact, emotionalInsight,
-    actions: [A.savings === 'under50' ? 'Build savings to $75K–100K minimum — this is non-negotiable' : 'Protect savings — avoid large pre-move expenses', A.hasJob === 'no' ? 'Do not move without confirmed income — #1 reason NRIs return within 2 years' : 'Convert job search to a confirmed offer before leaving', 'Use the simulator below to find your fastest path to readiness'],
+    verdict: 'One thing is blocking you: confirm income before you move.',
+    directTalk: `Your savings give you runway — that's real and it matters. But moving without any confirmed income source is the single most common reason NRIs return within 2 years. It's not pessimism — it's math. Job hunts from India take longer than expected. Every week you spend securing income now is a week of peace you're buying for your entire first year back. This is worth the wait.`,
+    actions: [
+      'Explore a remote work arrangement with your current employer — fastest path to certainty with zero job-hunt risk',
+      'If switching to an India role, start the process now and target a start date 30 days after you arrive — don\'t arrive unemployed',
+      noHousing ? 'Use the extra time to arrange housing remotely — arrive ready to settle, not to plan' : 'Housing is sorted — focus everything on income until it\'s confirmed',
+    ],
+  }
+
+  if (!noIncome && !searching && lowSavings) return {
+    icon: '⏸️', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
+    verdict: 'Build your savings buffer before you move — you\'re closer than you think.',
+    directTalk: `${remote ? 'Keeping your US job is your biggest asset.' : indiaJob ? 'A confirmed India job is the hard part — you\'ve done it.' : 'Income is sorted — that\'s the hard part.'} But under $50K in liquid savings is thinner than it sounds for a permanent move. School deposits, housing advances, health insurance gaps, and a longer-than-expected adjustment period add up fast. $75K–100K isn't a luxury — it's what separates a smooth landing from a stressful one. You're likely months away from getting there, not years.`,
+    actions: [
+      'Set a target: $75K minimum, $100K ideal — and calculate how many months of saving gets you there',
+      'Delay the move by exactly that many months — no more, no less. Use the time productively.',
+      teensAtHome ? 'Use this window to sort school applications — good schools in India fill 12–18 months ahead' : noHousing ? 'Use this window to arrange housing remotely — arrive ready to settle immediately' : 'Housing and planning are solid — purely a savings timing question now',
+    ],
+  }
+
+  if (noIncome && lowSavings) return {
+    icon: '⏸️', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
+    verdict: 'Do not move yet. Fix income and savings first — both, not one.',
+    directTalk: `Moving without confirmed income AND under $50K in savings is the most common way NRI return stories end badly. Within 90 days you'd be living month-to-month, making career decisions from financial pressure rather than choice. That's not the start you've been planning for years. A 6–9 month delay fixes both — arrive from a position of strength rather than desperation, and the entire first year feels different.`,
+    actions: [
+      'Income first: explore remote work with your current employer or start an India job search targeting a start date 30+ days after your move',
+      'Savings second: target $75K minimum — calculate your timeline and be honest about it',
+      'Use the simulator on this page to see exactly what your score looks like once both are fixed',
+    ],
+  }
+
+  if (teensAtHome) return {
+    icon: '⚠️', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
+    verdict: 'Time the move around your teenager\'s school calendar — this is the critical variable.',
+    directTalk: `Your income and finances are in reasonable shape. The factor that will shape how your whole family feels about this move is your teenager\'s school transition. Moving mid-academic year to the wrong school or wrong board creates resentment that takes years to heal — and is the #1 reason NRI families reverse their move. Get this right and you'll have their buy-in forever. Rush it and no amount of good planning elsewhere will compensate.`,
+    actions: [
+      'Research IGCSE and IB schools in ' + cityName + ' — these accept mid-year international transfers and bridge US curricula best',
+      'Time your move to coincide with a term or academic year start — build your departure date backward from the school calendar',
+      noHousing ? 'Sort housing in the same neighbourhood as the school — this removes one more variable from an already complex transition' : 'Confirm housing is near the shortlisted schools — commute matters for a settling-in teenager',
+    ],
+  }
+
+  if (noCity) return {
+    icon: '⚠️', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
+    verdict: 'Choose your city — everything else is blocked until you do.',
+    directTalk: `Income sorted, savings solid — you're genuinely ahead of most people at this stage. The one thing preventing real progress: without a city decision, you cannot shortlist schools, search for housing, or build your local network. It's not a small gap. Pick two cities, do a 5-day scouting trip, and decide. You don't need perfection — you need a direction. Everything accelerates once you have one.`,
+    actions: [
+      'Use the City Match tool — Hyderabad and Pune consistently score best for NRI families balancing cost, schools, and career opportunity',
+      indiaJob ? 'Your India job offer likely anchors your city — confirm this with your employer before the scouting trip' : 'Remote work gives you full city flexibility — choose based on family priorities, not job proximity',
+      'Commit to a city within 60 days. The cost of deciding "wrong" is far lower than the cost of deciding nothing.',
+    ],
+  }
+
+  // default moderate
+  return {
+    icon: '⚠️', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
+    verdict: 'Good progress — close the remaining gaps before committing to a date.',
+    directTalk: `You're further along than most people who complete this assessment. What's left is execution, not strategy. The gaps are real but none of them are hard — we're talking weeks of focused action. Close them deliberately before you set a firm departure date, and you'll have a transition you'll look back on with confidence.`,
+    actions: [
+      noHousing ? 'Arrange housing remotely — a serviced apartment for 60 days gives you time to find a permanent rental after arriving' : 'Confirm housing start date aligns with your arrival',
+      rnorBlind ? 'One CA call before you leave saves ₹18–40L — highest-ROI 30 minutes on this list' : 'RNOR strategy is in place — execute Form 12A on Day 1 without exception',
+      A.hasKids === 'yes' && A.kidsAge !== 'adult' ? 'Submit school applications now — most good schools in India have 12–18 month waiting lists' : 'Transfer funds to your NRE account before you change residency status',
+    ],
   }
 }
 
@@ -411,30 +464,20 @@ function SimulatorSection({ original, userEmail, userName }: { original: Answers
             <div style={{ border: `1.5px solid ${simRec.border}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '0.75rem' }}>
 
               {/* Updated recommendation */}
-              <div style={{ background: simRec.bg, padding: '1rem 1.25rem' }}>
+              <div style={{ background: simRec.bg, padding: '1.125rem 1.25rem' }}>
                 <div style={{ fontSize: '10px', fontWeight: 600, color: simRec.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>Updated Recommendation</div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>{simRec.icon}</span>
-                  <div>
-                    <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '0.95rem', color: simRec.color, lineHeight: 1.4, marginBottom: '2px' }}>{simRec.verdict}</div>
-                    <div style={{ fontSize: '11px', color: simRec.color, opacity: 0.75 }}>→ {simRec.timeframe}</div>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: '1.25rem', flexShrink: 0, lineHeight: 1 }}>{simRec.icon}</span>
+                  <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '0.95rem', color: simRec.color, lineHeight: 1.4 }}>{simRec.verdict}</div>
                 </div>
-                <div style={{ borderTop: `0.5px solid ${simRec.border}`, paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '10px' }}>
+                <p style={{ fontSize: '12px', color: simRec.color, lineHeight: 1.7, margin: '0 0 0.875rem 0', opacity: 0.88 }}>{simRec.directTalk}</p>
+                <div style={{ borderTop: `0.5px solid ${simRec.border}`, paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {simRec.actions.map((a, i) => (
-                    <div key={i} style={{ display: 'flex', gap: '7px', alignItems: 'flex-start' }}>
-                      <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: simRec.color, color: '#fff', fontSize: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{i + 1}</div>
-                      <div style={{ fontSize: '11px', color: simRec.color, opacity: 0.85, lineHeight: 1.5 }}>{a}</div>
+                    <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                      <span style={{ color: simRec.color, fontSize: '11px', lineHeight: '18px', flexShrink: 0, fontWeight: 700 }}>→</span>
+                      <span style={{ fontSize: '11px', color: simRec.color, opacity: 0.85, lineHeight: 1.55 }}>{a}</span>
                     </div>
                   ))}
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.6)', borderRadius: '8px', padding: '8px 10px', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 700, color: simRec.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>Biggest Impact</div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: simRec.color, lineHeight: 1.5 }}>{simRec.biggestImpact}</div>
-                </div>
-                <div style={{ background: 'rgba(0,0,0,0.03)', borderRadius: '8px', padding: '8px 10px' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 700, color: simRec.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>Honest Perspective</div>
-                  <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '11px', color: simRec.color, lineHeight: 1.6, fontStyle: 'italic' }}>"{simRec.emotionalInsight}"</div>
                 </div>
               </div>
 
@@ -686,35 +729,23 @@ export default function Planner() {
           {/* Recommendation */}
           <div style={{ background: r.recommendation.bg, border: `1.5px solid ${r.recommendation.border}`, borderRadius: '16px', overflow: 'hidden', marginBottom: '0.75rem' }}>
             {/* Verdict */}
-            <div style={{ padding: '1.25rem 1.5rem' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Final Recommendation</div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '0.875rem' }}>
-                <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{r.recommendation.icon}</span>
-                <div>
-                  <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.15rem', color: r.recommendation.color, lineHeight: 1.4, marginBottom: '3px' }}>{r.recommendation.verdict}</div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: r.recommendation.color, opacity: 0.7 }}>→ {r.recommendation.timeframe}</div>
-                </div>
+            <div style={{ padding: '1.5rem' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Our Recommendation</div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '1rem' }}>
+                <span style={{ fontSize: '1.75rem', flexShrink: 0, lineHeight: 1 }}>{r.recommendation.icon}</span>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.2rem', color: r.recommendation.color, lineHeight: 1.35, fontWeight: 400 }}>{r.recommendation.verdict}</div>
               </div>
-              <div style={{ borderTop: `0.5px solid ${r.recommendation.border}`, paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {/* Direct talk — the meat */}
+              <p style={{ fontSize: '14px', color: r.recommendation.color, lineHeight: 1.75, margin: '0 0 1.25rem 0', opacity: 0.9 }}>{r.recommendation.directTalk}</p>
+              {/* Actions — clean, no numbers */}
+              <div style={{ borderTop: `1px solid ${r.recommendation.border}`, paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {r.recommendation.actions.map((a, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                    <div style={{ width: '17px', height: '17px', borderRadius: '50%', background: r.recommendation.color, color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{i + 1}</div>
-                    <div style={{ fontSize: '12px', color: r.recommendation.color, lineHeight: 1.55, opacity: 0.85 }}>{a}</div>
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <span style={{ color: r.recommendation.color, fontSize: '12px', lineHeight: '20px', flexShrink: 0, fontWeight: 700 }}>→</span>
+                    <span style={{ fontSize: '13px', color: r.recommendation.color, lineHeight: 1.6, opacity: 0.88 }}>{a}</span>
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Biggest Impact Area */}
-            <div style={{ borderTop: `1px solid ${r.recommendation.border}`, padding: '1rem 1.5rem', background: 'rgba(255,255,255,0.6)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '5px' }}>Biggest Impact Area</div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: r.recommendation.color, lineHeight: 1.55 }}>{r.recommendation.biggestImpact}</div>
-            </div>
-
-            {/* Emotional Insight */}
-            <div style={{ borderTop: `1px solid ${r.recommendation.border}`, padding: '1rem 1.5rem', background: 'rgba(0,0,0,0.02)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '5px' }}>Honest Perspective</div>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '0.975rem', color: r.recommendation.color, lineHeight: 1.7, fontStyle: 'italic' }}>"{r.recommendation.emotionalInsight}"</div>
             </div>
           </div>
 
