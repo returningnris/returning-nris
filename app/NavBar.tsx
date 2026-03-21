@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { ARTICLES as GUIDES } from '../lib/articles-data'
 
 const TOOLS = [
   { href: '/rnor', label: 'RNOR Calculator', icon: '📊', sub: 'Optimise your tax window' },
@@ -14,9 +15,6 @@ const TOOLS = [
   { href: '/jobs', label: 'Career Guide', icon: '💼', sub: 'Jobs & salary benchmarks' },
 ]
 
-export const GUIDES = [
-  { href: '/resources/should-i-return-to-india-from-usa', label: 'Should I return to India from the USA?', icon: '🤔', sub: '2026 decision guide for NRIs', category: 'Decision Making', readMins: 8 },
-]
 
 const TOP_LINKS = [
   { href: '/planner', label: 'Readiness Check' },

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Metadata } from 'next'
-import { GUIDES } from '../NavBar'
+import { ARTICLES as GUIDES } from '../../lib/articles-data'
 
 export const metadata: Metadata = {
   title: 'NRI Return Articles — ReturningNRIs',
