@@ -24,4 +24,20 @@ export const ARTICLES: Article[] = [
     category: 'Decision Making',
     readMins: 8,
   },
+  {
+    href: '/resources/nri-returning-to-india-checklist',
+    label: 'NRI Returning to India Checklist',
+    icon: '✅',
+    sub: '14-step complete guide across 4 phases',
+    category: 'Planning',
+    readMins: 12,
+  },
+  {
+    href: '/resources/rnor-status-nri-returning-to-india',
+    label: 'RNOR Status Explained for Returning NRIs',
+    icon: '📊',
+    sub: 'How to save ₹18–60L on your return',
+    category: 'Tax Planning',
+    readMins: 10,
+  },
 ]
