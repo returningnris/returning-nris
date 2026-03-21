@@ -63,10 +63,8 @@ export default function ResourceGuideIndex() {
           {/* Guide cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
             {GUIDES.map(guide => (
-              <Link key={guide.href} href={guide.href} style={{ textDecoration: 'none', display: 'block', background: '#fff', border: '1px solid #E5E1DA', borderRadius: '18px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.1)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)' }}
-              >
+              <Link key={guide.href} href={guide.href} style={{ textDecoration: 'none', display: 'block', background: '#fff', border: '1px solid #E5E1DA', borderRadius: '18px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }} className="guide-card"
+>
                 <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#FFF3E6', border: '1px solid rgba(255,153,51,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', marginBottom: '1rem' }}>
                   {guide.icon}
                 </div>
@@ -114,6 +112,10 @@ export default function ResourceGuideIndex() {
           </Link>
         </div>
       </section>
+      <style>{`
+        .guide-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .guide-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important; }
+      `}</style>
     </>
   )
 }
