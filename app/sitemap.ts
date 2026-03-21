@@ -1,0 +1,18 @@
+import { MetadataRoute } from 'next'
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    { url: 'https://www.returningnris.com', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/planner', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/rnor', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/city', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/schools', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/housing', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/healthcare', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/citylife', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/jobs', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/our-story', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/community', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/contact', lastModified: new Date() },
+  ]
+}
