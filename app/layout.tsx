@@ -55,8 +55,8 @@ function Footer() {
       </Link>
 
       <div style={{ display: 'flex', gap: '1.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <Link href="/benefits" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>Benefits</Link>
-        <Link href="/our-story" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>Our Story</Link>
+      
+        
         <a href="mailto:hello@returningnris.com" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>
           hello@returningnris.com
         </a>

@@ -33,7 +33,7 @@ export default function Home() {
 
    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
                         <Link href="/planner" className="btn-primary">
-              Start Free Readiness Check →
+              Check Your Readiness →
             </Link>
           </div>
 
@@ -113,7 +113,7 @@ export default function Home() {
 
           <div style={{ textAlign: 'center' }}>
              <Link href="/planner" className="btn-primary">
-              Avoid these mistakes → Start Free Readiness Check
+              Avoid these mistakes → Check Your Readiness →
             </Link>
           </div>
         </div>

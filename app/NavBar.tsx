@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ARTICLES as GUIDES } from '../lib/articles-data'
+import AuthButton from '../components/AuthButton'
 
 const TOOLS = [
   { href: '/rnor', label: 'RNOR Calculator', icon: '📊', sub: 'Optimise your tax window' },
@@ -146,6 +147,11 @@ export default function NavBar() {
             <Link href="/our-story" style={{ fontSize: '13px', fontWeight: 500, color: pathname === '/our-story' ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === '/our-story' ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
               Our Story
             </Link>
+
+            {/* AUTH BUTTON */}
+            <div style={{ marginLeft: '1rem' }}>
+              <AuthButton />
+            </div>
           </div>
 
           {/* MOBILE HAMBURGER */}
@@ -200,6 +206,11 @@ export default function NavBar() {
             <Link href="/our-story" onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === '/our-story' ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
               Our Story
             </Link>
+
+            {/* AUTH BUTTON IN MOBILE */}
+            <div style={{ paddingTop: '12px', paddingBottom: '4px' }}>
+              <AuthButton />
+            </div>
           </div>
         )}
       </nav>
