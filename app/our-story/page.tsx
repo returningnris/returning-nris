@@ -70,7 +70,7 @@ export default function OurStory() {
                 <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Our story</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: 1.75, fontFamily: "'DM Serif Display', serif" }}>
-                    In 2008, we moved to the US for Study. One opportunity led to another, two kids arrived, and 16 years passed faster than we expected.
+                    In 2008, we moved to the US for work. One opportunity led to another, two kids arrived, and 16 years passed faster than we expected.
                   </p>
                   <p style={{ fontSize: '14px', color: 'var(--ink-muted)', lineHeight: 1.75 }}>
                     In 2023, we decided to move back permanently. We thought it would take a few months to plan. It took over a year — and we nearly made several expensive mistakes along the way.
@@ -139,7 +139,7 @@ export default function OurStory() {
               { icon: '🎯', title: 'Built by NRIs', desc: 'Not consultants, not advisors. We are the exact customer we are building for. Every tool we ship, we use ourselves.' },
               { icon: '📊', title: 'Data over opinions', desc: 'Real school fees. Real rent ranges. Real tax windows. Everything quantified and personalised to your specific situation.' },
               { icon: '🤝', title: 'Community-driven', desc: 'The best intelligence comes from NRIs who have already done this. We aggregate that knowledge and make it accessible.' },
-              { icon: '🆓', title: 'Free for founding members', desc: 'The first 200 members get lifetime free access. We believe this information should be accessible, not locked behind a paywall.' },
+              { icon: '🆓', title: 'Free to use', desc: 'All tools — readiness check, RNOR calculator, city match, school finder — are free. We believe this information should be accessible.' },
             ].map(item => (
               <div key={item.title} style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '1.5rem' }}>
                 <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{item.icon}</div>
@@ -158,14 +158,60 @@ export default function OurStory() {
             Same boat? Let&apos;s figure this out together.
           </h2>
           <p style={{ color: 'var(--ink-muted)', marginBottom: '2rem', fontSize: '0.95rem', lineHeight: 1.7 }}>
-            Join 165 NRIs already using ReturningNRIs to plan their move. First 200 founding members get lifetime free access.
+            Start with the readiness check — get your personalised score, top risks, and a clear recommendation in 2 minutes.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/contact" className="btn-primary">Join the waitlist →</Link>
-            <Link href="/planner" style={{ display: 'inline-flex', alignItems: 'center', padding: '0.75rem 1.5rem', borderRadius: '100px', border: '1px solid var(--border)', color: 'var(--ink)', fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none', fontFamily: 'DM Sans, sans-serif' }}>
-              Take the readiness check
+            <Link href="/planner" className="btn-primary">Take the readiness check →</Link>
+            <Link href="/journey" style={{ display: 'inline-flex', alignItems: 'center', padding: '0.75rem 1.5rem', borderRadius: '100px', border: '1px solid var(--border)', color: 'var(--ink)', fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none', fontFamily: 'DM Sans, sans-serif' }}>
+              Start my journey →
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* FEEDBACK PANEL */}
+      <section style={{ background: 'var(--white)', padding: '3rem 2rem' }}>
+        <div style={{
+          maxWidth: '1000px',
+          margin: '0 auto',
+          background: 'var(--india-white)',
+          border: '1px solid var(--border)',
+          borderRadius: '20px',
+          padding: '2rem 2.5rem',
+          display: 'grid',
+          gridTemplateColumns: '1fr auto',
+          gap: '2rem',
+          alignItems: 'center',
+        }}>
+          <div>
+            <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.2rem', color: 'var(--ink)', marginBottom: '0.4rem' }}>
+              Have a suggestion or feedback?
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--ink-muted)', lineHeight: 1.6, margin: 0 }}>
+              We read every message. If you have a specific situation, a tool idea, or just want to say hi — reach out directly.
+              This is a founder-built product and your input shapes what gets built next.
+            </p>
+          </div>
+          <a
+            href="mailto:hello@returningnris.com?subject=Feedback for ReturningNRIs"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: 'var(--white)',
+              border: '1px solid rgba(255,153,51,0.3)',
+              color: '#CC7A00',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              padding: '0.65rem 1.25rem',
+              borderRadius: '100px',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 1px 8px rgba(255,153,51,0.1)',
+            }}
+          >
+            ✉ hello@returningnris.com
+          </a>
         </div>
       </section>
     </>

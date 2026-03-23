@@ -18,7 +18,7 @@ export default function Home() {
           }}>
             <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF9933' }}/>
             <span style={{ fontSize: '11px', fontWeight: 500, color: '#FF9933', letterSpacing: '0.08em' }}>
-              Used by 165 NRIs · Free forever for first 200
+              All tools, Free Forever 
             </span>
           </div>
 
@@ -33,13 +33,11 @@ export default function Home() {
 
    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
                         <Link href="/planner" className="btn-primary">
-              Get Your Free Plan →
+              Start Free Readiness Check →
             </Link>
           </div>
 
-          <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: '0.75rem' }}>
-            ⚡ Only 35 founding spots left · No credit card · Takes 10 minutes
-          </p>
+          
         </div>
 
         {/* STAT CARDS */}
@@ -78,7 +76,7 @@ export default function Home() {
             color: 'var(--ink-muted)',
           }}>{c}</span>
         ))}
-        <span style={{ fontSize: '0.8rem', color: 'var(--ink-soft)' }}>165 people on the waitlist</span>
+    
       </div>
 
       {/* MISTAKES SECTION */}
@@ -115,7 +113,7 @@ export default function Home() {
 
           <div style={{ textAlign: 'center' }}>
              <Link href="/planner" className="btn-primary">
-              Avoid these mistakes → Get your plan
+              Avoid these mistakes → Start Free Readiness Check
             </Link>
           </div>
         </div>
@@ -161,25 +159,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA BANNER */}
-      <section style={{ background: 'var(--saffron)', padding: '4rem 2rem', textAlign: 'center' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <h2 style={{ color: '#1A1208', fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', marginBottom: '1rem' }}>
-            Only 35 founding spots left
-          </h2>
-          <p style={{ color: 'rgba(26,18,8,0.7)', marginBottom: '2rem', fontSize: '1rem' }}>
-            Free lifetime access for the first 200 members. After that, it&apos;s a paid subscription. This offer never comes back.
-          </p>
-          <Link href="/contact" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-            background: '#1A1208', color: '#fff', borderRadius: '100px',
-            padding: '0.9rem 2.25rem', fontSize: '1rem', fontWeight: 500,
-            textDecoration: 'none',
-          }}>
-            Claim my founding spot — free →
-          </Link>
-        </div>
-      </section>
     </>
   )
 }

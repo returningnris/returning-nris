@@ -4,6 +4,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: 'https://www.returningnris.com', lastModified: new Date() },
     { url: 'https://www.returningnris.com/planner', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/journey', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources/should-i-return-to-india-from-usa', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources/nri-returning-to-india-checklist', lastModified: new Date() },
@@ -17,6 +18,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://www.returningnris.com/jobs', lastModified: new Date() },
     { url: 'https://www.returningnris.com/our-story', lastModified: new Date() },
     { url: 'https://www.returningnris.com/community', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/contact', lastModified: new Date() },
+   
   ]
 }

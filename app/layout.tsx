@@ -46,10 +46,7 @@ function Footer() {
       </Link>
 
       <div style={{ display: 'flex', gap: '1.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <Link href="/benefits" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>Products</Link>
-        <Link href="/community" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>Community</Link>
-        <Link href="/our-story" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>Our Story</Link>
-        <Link href="/contact" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>Contact</Link>
+        
         <a href="mailto:hello@returningnris.com" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>
           hello@returningnris.com
         </a>
@@ -62,7 +59,7 @@ function Footer() {
       </div>
 
       <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
-        © 2026 ReturningNRIs
+        © 2026 ReturningNRIs · Built with 🇮🇳 by Bharath &amp; Swathi
       </p>
     </footer>
   )

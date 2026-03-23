@@ -184,10 +184,10 @@ export async function POST(req: NextRequest) {
       <tr><td style="background:#1A1208;padding:28px 36px;border-radius:0 0 16px 16px;">
         <div style="font-family:Georgia,serif;font-size:19px;color:#ffffff;margin-bottom:6px;">Ready to plan your return properly?</div>
         <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:20px;line-height:1.6;">
-          Join NRIs already planning their return. First 200 founding members get lifetime free access to all tools.
+          Join NRIs already planning their return. Use all our free tools — RNOR calculator, city match, school finder, readiness check — to plan your move with confidence.
         </div>
-        <a href="https://www.returningnris.com/contact" style="display:inline-block;background:#FF9933;color:#1A1208;font-size:14px;font-weight:600;padding:12px 24px;border-radius:100px;text-decoration:none;">
-          Claim your founding spot — free →
+        <a href="https://www.returningnris.com/journey" style="display:inline-block;background:#FF9933;color:#1A1208;font-size:14px;font-weight:600;padding:12px 24px;border-radius:100px;text-decoration:none;">
+          Start your Back2India Journey →
         </a>
         <div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:20px;line-height:1.6;">
           © 2026 ReturningNRIs · Built with 🇮🇳 by Bharath &amp; Swathi<br/>

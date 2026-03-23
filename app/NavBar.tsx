@@ -15,12 +15,9 @@ const TOOLS = [
   { href: '/jobs', label: 'Career Guide', icon: '💼', sub: 'Jobs & salary benchmarks' },
 ]
 
-
 const TOP_LINKS = [
   { href: '/planner', label: 'Readiness Check' },
-  { href: '/community', label: 'Community' },
-  { href: '/our-story', label: 'Our Story' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/journey', label: 'Back2India Journey' },
 ]
 
 export default function NavBar() {
@@ -31,7 +28,7 @@ export default function NavBar() {
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false)
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false)
 
-  const isToolActive = TOOLS.some(t => pathname === t.href) || pathname === '/tools'
+  const isToolActive = TOOLS.some(t => pathname === t.href) || pathname === '/Tools'
   const isResourcesActive = GUIDES.some(g => pathname === g.href) || pathname === '/resources' || pathname.startsWith('/resources/')
 
   return (
@@ -65,6 +62,13 @@ export default function NavBar() {
             <Link href="/" style={{ fontSize: '13px', fontWeight: 500, color: pathname === '/' ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === '/' ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
               Home
             </Link>
+
+            {/* TOP LINKS — Readiness Check, Back2India Journey, Our Story */}
+            {TOP_LINKS.map(link => (
+              <Link key={link.href} href={link.href} style={{ fontSize: '13px', fontWeight: 500, color: pathname === link.href ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === link.href ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
+                {link.label}
+              </Link>
+            ))}
 
             {/* TOOLS DROPDOWN */}
             <div style={{ position: 'relative' }} onMouseEnter={() => setToolsOpen(true)} onMouseLeave={() => setToolsOpen(false)}>
@@ -100,13 +104,6 @@ export default function NavBar() {
                 </div>
               )}
             </div>
-
-            {/* OTHER TOP LINKS */}
-            {TOP_LINKS.map(link => (
-              <Link key={link.href} href={link.href} style={{ fontSize: '13px', fontWeight: 500, color: pathname === link.href ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === link.href ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
-                {link.label}
-              </Link>
-            ))}
 
             {/* RESOURCE GUIDE DROPDOWN */}
             <div style={{ position: 'relative' }} onMouseEnter={() => setResourcesOpen(true)} onMouseLeave={() => setResourcesOpen(false)}>
@@ -144,12 +141,12 @@ export default function NavBar() {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* CTA */}
-          <Link href="/contact" className="nav-cta" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '7px 18px', fontSize: '13px', fontWeight: 600, textDecoration: 'none', flexShrink: 0, display: 'none' }}>
-            Join Waitlist →
-          </Link>
+            {/* OUR STORY — last nav item */}
+            <Link href="/our-story" style={{ fontSize: '13px', fontWeight: 500, color: pathname === '/our-story' ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === '/our-story' ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
+              Our Story
+            </Link>
+          </div>
 
           {/* MOBILE HAMBURGER */}
           <button onClick={() => setMobileOpen(o => !o)} className="nav-hamburger" style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', display: 'flex', flexDirection: 'column', gap: '4px', marginLeft: 'auto' }}>
@@ -163,6 +160,12 @@ export default function NavBar() {
         {mobileOpen && (
           <div style={{ background: '#1A1208', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '1rem 1.5rem 1.5rem' }}>
             <Link href="/" onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === '/' ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>Home</Link>
+
+            {TOP_LINKS.map(link => (
+              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === link.href ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+                {link.label}
+              </Link>
+            ))}
 
             <button onClick={() => setMobileToolsOpen(o => !o)} style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
               <span style={{ fontSize: '14px', fontWeight: 500, color: isToolActive ? '#FF9933' : 'rgba(255,255,255,0.7)' }}>Tools</span>
@@ -179,12 +182,6 @@ export default function NavBar() {
               </div>
             )}
 
-            {TOP_LINKS.map(link => (
-              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === link.href ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
-                {link.label}
-              </Link>
-            ))}
-
             <button onClick={() => setMobileResourcesOpen(o => !o)} style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
               <span style={{ fontSize: '14px', fontWeight: 500, color: isResourcesActive ? '#FF9933' : 'rgba(255,255,255,0.7)' }}>Resource Guide</span>
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{mobileResourcesOpen ? '▲' : '▼'}</span>
@@ -200,15 +197,15 @@ export default function NavBar() {
               </div>
             )}
 
-            <Link href="/contact" onClick={() => setMobileOpen(false)} style={{ display: 'block', marginTop: '1rem', background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '10px 20px', fontSize: '14px', fontWeight: 600, textDecoration: 'none', textAlign: 'center' }}>
-              Join Waitlist →
+            <Link href="/our-story" onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === '/our-story' ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+              Our Story
             </Link>
           </div>
         )}
       </nav>
 
       <style>{`
-        @media (min-width: 768px) { .nav-cta { display: flex !important; } .nav-hamburger { display: none !important; } }
+        @media (min-width: 768px) { .nav-hamburger { display: none !important; } }
         @media (max-width: 767px) { .nav-hamburger { display: flex !important; } }
       `}</style>
     </>

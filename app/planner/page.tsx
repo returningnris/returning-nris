@@ -749,11 +749,11 @@ export default function Planner() {
             </div>
           </div>
 
-          {/* Waitlist CTA */}
-          <Link href="/contact" style={{ background: T.saffron, borderRadius: '14px', padding: '1.125rem 1.5rem', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(255,153,51,0.35)' }}>
+          {/* CTA */}
+          <Link href="/journey" style={{ background: T.saffron, borderRadius: '14px', padding: '1.125rem 1.5rem', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(255,153,51,0.35)' }}>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff', marginBottom: '2px' }}>Join the waitlist — free lifetime access</div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>First 200 founding members · all tools included</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff', marginBottom: '2px' }}>Start your Back2India Journey</div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Step-by-step relocation system · tracks your full move</div>
             </div>
             <span style={{ color: '#fff', fontSize: '1.25rem' }}>→</span>
           </Link>
