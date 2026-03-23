@@ -248,7 +248,7 @@ function UpdateSimulator({
         body: JSON.stringify({
           userDetails: {
             firstName: user.firstName,
-            lastName: user.lastName || '',
+            lastName: (user as any).lastName || '',
             age: '',
             gender: '',
             email: emailInput
@@ -757,7 +757,7 @@ export default function Planner() {
         body: JSON.stringify({ 
           userDetails: {
             firstName: user.firstName,
-            lastName: user.lastName || '',
+            lastName: (user as any).lastName || '',
             age: '',
             gender: '',
             email: user.email,
