@@ -14,6 +14,14 @@ export const metadata: Metadata = {
     siteName: 'ReturningNRIs',
     locale: 'en_IN',
     type: 'website',
+    images: [
+      {
+        url: 'https://www.returningnris.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ReturningNRIs — Free tools for NRIs moving back to India',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
@@ -21,6 +29,7 @@ export const metadata: Metadata = {
     creator: '@returningnris',
     title: 'Free NRI Return Plan — Tax, City & School Guide',
     description: 'Stop losing ₹20–40L to mistakes NRIs make before they move back. Personalised plan in 10 minutes — free.',
+    images: ['https://www.returningnris.com/og-image.png'],
   },
 }
 
@@ -46,7 +55,8 @@ function Footer() {
       </Link>
 
       <div style={{ display: 'flex', gap: '1.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        
+        <Link href="/benefits" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>Benefits</Link>
+        <Link href="/our-story" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>Our Story</Link>
         <a href="mailto:hello@returningnris.com" style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', textDecoration: 'none' }}>
           hello@returningnris.com
         </a>
@@ -59,7 +69,7 @@ function Footer() {
       </div>
 
       <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
-        © 2026 ReturningNRIs · Built with 🇮🇳 by Bharath &amp; Swathi
+        © 2026 ReturningNRIs
       </p>
     </footer>
   )
