@@ -52,7 +52,7 @@ export default function NavBar() {
               <circle cx="26" cy="28" r="2" fill="#000080"/>
             </svg>
             <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem', color: '#fff' }}>
-              Returning<span style={{ color: '#FF9933' }}>NRIs</span>
+              <span style={{ color: '#FF9933' }}>Returning</span><span style={{ color: '#138808' }}>NRIs</span>
             </span>
           </Link>
 

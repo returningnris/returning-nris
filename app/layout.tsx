@@ -51,7 +51,7 @@ function Footer() {
         color: 'var(--ink)',
         textDecoration: 'none',
       }}>
-        Returning<span style={{ color: 'var(--saffron)' }}>NRIs</span>
+        <span style={{ color: 'var(--saffron)' }}>Returning</span><span style={{ color: 'var(--green)' }}>NRIs</span>
       </Link>
 
       <div style={{ display: 'flex', gap: '1.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
