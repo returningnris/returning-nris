@@ -617,8 +617,8 @@ type JourneyState = {
   answers: Partial<Answers>
   completedTasks: Set<string>
   completedCustomTaskIds: Set<string>
+  excludedAutoTasks: Set<string>
   manualMilestones: Set<string>
-  taskNotes: Record<string, string>
   customTasks: CustomTask[]
   currentPhase: number
   lastMilestone: string | null
@@ -630,14 +630,13 @@ type Action =
   | { type: 'SET_MOVE_DATE'; value: string }
   | { type: 'START_JOURNEY' }
   | { type: 'EDIT_PROFILE' }
-  | { type: 'TOGGLE_TASK'; id: string }
+  | { type: 'TOGGLE_TASK'; id: string; auto: boolean }
   | { type: 'TOGGLE_CUSTOM_TASK'; id: string }
   | { type: 'TOGGLE_MILESTONE'; id: string }
   | { type: 'COMPLETE_PHASE'; phase: number }
   | { type: 'UNCOMPLETE_PHASE'; phase: number }
   | { type: 'SET_PHASE'; phase: number }
   | { type: 'SET_NAME'; name: string }
-  | { type: 'SET_TASK_NOTE'; id: string; note: string }
   | { type: 'ADD_CUSTOM_TASK'; phase: number; title: string; desc: string }
   | { type: 'LOAD_SAVED'; payload: Partial<JourneyState> }
   | { type: 'RESET' }
@@ -661,8 +660,6 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
     }
     case 'SET_NAME':
       return { ...state, firstName: action.name }
-    case 'SET_TASK_NOTE':
-      return { ...state, taskNotes: { ...state.taskNotes, [action.id]: action.note } }
     case 'ADD_CUSTOM_TASK':
       return {
         ...state,
@@ -684,8 +681,8 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
         answers: action.payload.answers ?? state.answers,
         completedTasks: action.payload.completedTasks ?? state.completedTasks,
         completedCustomTaskIds: action.payload.completedCustomTaskIds ?? state.completedCustomTaskIds,
+        excludedAutoTasks: action.payload.excludedAutoTasks ?? state.excludedAutoTasks,
         manualMilestones: action.payload.manualMilestones ?? state.manualMilestones,
-        taskNotes: action.payload.taskNotes ?? state.taskNotes,
         customTasks: action.payload.customTasks ?? state.customTasks,
         currentPhase: action.payload.currentPhase ?? state.currentPhase,
         firstName: action.payload.firstName ?? state.firstName,
@@ -721,7 +718,13 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
     }
     case 'TOGGLE_TASK': {
       const newTasks = new Set(state.completedTasks)
+      const excludedAutoTasks = new Set(state.excludedAutoTasks)
       let lastMilestone = state.lastMilestone
+      if (action.auto) {
+        if (excludedAutoTasks.has(action.id)) excludedAutoTasks.delete(action.id)
+        else excludedAutoTasks.add(action.id)
+        return { ...state, excludedAutoTasks }
+      }
       if (newTasks.has(action.id)) {
         newTasks.delete(action.id)
         lastMilestone = null
@@ -730,7 +733,7 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
         const t = TASKS.find((x) => x.id === action.id)
         if (t?.milestoneId && t.isScoreImpact) lastMilestone = t.milestoneId
       }
-      return { ...state, completedTasks: newTasks, lastMilestone }
+      return { ...state, completedTasks: newTasks, lastMilestone, excludedAutoTasks }
     }
     case 'TOGGLE_CUSTOM_TASK': {
       const newTasks = new Set(state.completedCustomTaskIds)
@@ -751,8 +754,8 @@ const initialState: JourneyState = {
   answers: {},
   completedTasks: new Set(),
   completedCustomTaskIds: new Set(),
+  excludedAutoTasks: new Set(),
   manualMilestones: new Set(),
-  taskNotes: {},
   customTasks: [],
   currentPhase: 0,
   lastMilestone: null,
@@ -884,7 +887,37 @@ function formatMoveDate(moveDate?: string) {
 
 function getPhaseWindowLabel(phase: number, moveDate?: string) {
   if (!moveDate || moveDate === 'exploring') return PHASE_WINDOWS[phase]
-  return `${PHASE_WINDOWS[phase]} • anchored to ${formatMoveDate(moveDate)}`
+  return `${PHASE_WINDOWS[phase]} - anchored to ${formatMoveDate(moveDate)}`
+}
+
+function addMonths(date: Date, months: number) {
+  return new Date(date.getFullYear(), date.getMonth() + months, 1)
+}
+
+function getActiveTimelinePhase(moveDate?: string) {
+  if (!moveDate || moveDate === 'exploring') return 0
+  const [year, month] = moveDate.split('-').map(Number)
+  const move = new Date(year, month - 1, 1)
+  const now = new Date()
+  const current = new Date(now.getFullYear(), now.getMonth(), 1)
+  const phase1Start = addMonths(move, -12)
+  const phase2Start = addMonths(move, -3)
+  const phase3Start = move
+  const phase4Start = addMonths(move, 3)
+  const phase5Start = addMonths(move, 12)
+
+  if (current < phase1Start) return 0
+  if (current < phase2Start) return 1
+  if (current < phase3Start) return 2
+  if (current < phase4Start) return 3
+  if (current < phase5Start) return 4
+  return 4
+}
+
+function getPhaseTimeStatus(phase: number, activePhase: number) {
+  if (phase < activePhase) return 'past'
+  if (phase === activePhase) return 'current'
+  return 'future'
 }
 
 function SurfaceCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
@@ -1406,9 +1439,11 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
 
   const effectiveCompletedTasks = useMemo(() => {
     const merged = new Set(state.completedTasks)
-    autoCompletedTasks.forEach((id) => merged.add(id))
+    autoCompletedTasks.forEach((id) => {
+      if (!state.excludedAutoTasks.has(id)) merged.add(id)
+    })
     return merged
-  }, [autoCompletedTasks, state.completedTasks])
+  }, [autoCompletedTasks, state.completedTasks, state.excludedAutoTasks])
 
   const customTasksByPhase = useMemo(() => {
     const map = new Map<number, CustomTask[]>()
@@ -1425,7 +1460,8 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
   const highImpact = MILESTONES.find((m) => !msCompleted.has(m.id))
   const postMove = getPostMoveRecommendation(A)
   const visiblePhases = alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]
-  const currentPhaseIndex = visiblePhases.includes(state.currentPhase) ? state.currentPhase : visiblePhases[0]
+  const activeTimelinePhase = getActiveTimelinePhase(A.moveDate)
+  const currentPhaseIndex = visiblePhases.includes(state.currentPhase) ? state.currentPhase : Math.max(visiblePhases[0], activeTimelinePhase)
   const currentPhaseLabel = PHASES[currentPhaseIndex]
   const currentPhaseTasks = TASKS.filter((task) => task.phase === currentPhaseIndex)
   const nextTask =
@@ -1470,8 +1506,8 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
   }, [currentPhaseIndex, effectiveCompletedTasks, lastSeen, state.completedCustomTaskIds])
 
   useEffect(() => {
-    if (alreadyMoved && state.currentPhase < 2) {
-      dispatch({ type: 'SET_PHASE', phase: 2 })
+    if (alreadyMoved && state.currentPhase < 3) {
+      dispatch({ type: 'SET_PHASE', phase: 3 })
     }
   }, [alreadyMoved, dispatch, state.currentPhase])
 
@@ -1833,6 +1869,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                 {(alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]).map((phase) => {
                   const stats = phaseTaskStats(phase, effectiveCompletedTasks, state.customTasks, state.completedCustomTaskIds)
                   const active = state.currentPhase === phase
+                  const phaseStatus = getPhaseTimeStatus(phase, activeTimelinePhase)
                   return (
                     <button
                       type="button"
@@ -1843,7 +1880,8 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                         padding: '0.95rem',
                         borderRadius: 18,
                         border: `1.5px solid ${active ? T.saffron : T.border}`,
-                        background: active ? T.saffronSoft : T.white,
+                        background: active ? T.saffronSoft : phaseStatus === 'future' ? 'rgba(29,22,15,0.03)' : T.white,
+                        opacity: phaseStatus === 'future' && !active ? 0.68 : 1,
                       }}
                     >
                       <div style={{ fontSize: 12, fontWeight: 700, color: active ? T.bronze : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
@@ -1870,27 +1908,19 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
               const totalTasks = tasks.length + customTasks.length
               const allDone = done === totalTasks && totalTasks > 0
               const isActive = i === state.currentPhase
-              const firstPhase = alreadyMoved ? 3 : 0
-              const prevTasks = i > firstPhase ? TASKS.filter((task) => task.phase === i - 1) : []
-              const prevCustomTasks = i > firstPhase ? customTasksByPhase.get(i - 1) || [] : []
-              const isLocked = !(
-                i === firstPhase ||
-                (prevTasks.every((task) => effectiveCompletedTasks.has(task.id)) &&
-                  prevCustomTasks.every((task) => state.completedCustomTaskIds.has(task.id)))
-              )
+              const phaseStatus = getPhaseTimeStatus(i, activeTimelinePhase)
 
               return (
                 <SurfaceCard
                   key={phase}
                   style={{
                     overflow: 'hidden',
-                    opacity: isLocked ? 0.58 : 1,
+                    opacity: phaseStatus === 'future' && !isActive ? 0.72 : 1,
                     borderColor: allDone ? 'rgba(23,117,58,0.18)' : T.border,
                   }}
                 >
                   <button
                     type="button"
-                    disabled={isLocked}
                     onClick={() => dispatch({ type: 'SET_PHASE', phase: i })}
                     style={{
                       width: '100%',
@@ -1910,7 +1940,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                         {getPhaseWindowLabel(i, A.moveDate)}
                       </div>
                       <div style={{ fontSize: 18, fontWeight: 800 }}>{phase}</div>
-                      {isLocked ? <div style={{ fontSize: 13, color: isActive ? 'rgba(255,255,255,0.65)' : T.soft, marginTop: 6 }}>Complete the previous phase to unlock this one.</div> : null}
+                      {phaseStatus === 'future' ? <div style={{ fontSize: 13, color: isActive ? 'rgba(255,255,255,0.65)' : T.soft, marginTop: 6 }}>Future phase preview available now.</div> : null}
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
@@ -1921,7 +1951,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                     </div>
                   </button>
 
-                  {isActive && !isLocked ? (
+                  {isActive ? (
                     <div style={{ padding: '0.4rem 0' }}>
                       {tasks.map((task, index) => {
                         const isDone = effectiveCompletedTasks.has(task.id)
@@ -1940,8 +1970,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                           >
                             <button
                               type="button"
-                              disabled={isAuto}
-                              onClick={() => dispatch({ type: 'TOGGLE_TASK', id: task.id })}
+                              onClick={() => dispatch({ type: 'TOGGLE_TASK', id: task.id, auto: isAuto && !state.completedTasks.has(task.id) })}
                               style={{
                                 width: 22,
                                 height: 22,
@@ -1965,29 +1994,10 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                                 </div>
                                 {task.priority === 'critical' ? <Pill tone="saffron">Critical</Pill> : null}
                                 {!alreadyMoved && task.isScoreImpact ? <Pill tone="navy">Score impact</Pill> : null}
-                                {isAuto ? <Pill tone="green">Auto</Pill> : null}
+                                {isAuto ? <Pill tone="green">{state.excludedAutoTasks.has(task.id) ? 'Auto removed' : 'Auto'}</Pill> : null}
                                 <Pill tone="navy">{PHASE_WINDOWS[i]}</Pill>
                               </div>
                               <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div>
-                              <textarea
-                                value={state.taskNotes[task.id] || ''}
-                                onChange={(e) => dispatch({ type: 'SET_TASK_NOTE', id: task.id, note: e.target.value })}
-                                placeholder="Add notes, links, deadlines, contacts, or custom details for this step"
-                                style={{
-                                  width: '100%',
-                                  minHeight: 78,
-                                  marginTop: 10,
-                                  padding: '0.8rem 0.9rem',
-                                  borderRadius: 14,
-                                  border: `1px solid ${T.border}`,
-                                  background: T.white,
-                                  color: T.ink,
-                                  fontSize: 13,
-                                  lineHeight: 1.6,
-                                  resize: 'vertical',
-                                  fontFamily: 'DM Sans, sans-serif',
-                                }}
-                              />
                             </div>
                           </div>
                         )
@@ -2027,25 +2037,6 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                                 <Pill tone="navy">Custom task</Pill>
                               </div>
                               {task.desc ? <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div> : null}
-                              <textarea
-                                value={state.taskNotes[task.id] || ''}
-                                onChange={(e) => dispatch({ type: 'SET_TASK_NOTE', id: task.id, note: e.target.value })}
-                                placeholder="Add notes for this custom task"
-                                style={{
-                                  width: '100%',
-                                  minHeight: 78,
-                                  marginTop: 10,
-                                  padding: '0.8rem 0.9rem',
-                                  borderRadius: 14,
-                                  border: `1px solid ${T.border}`,
-                                  background: T.white,
-                                  color: T.ink,
-                                  fontSize: 13,
-                                  lineHeight: 1.6,
-                                  resize: 'vertical',
-                                  fontFamily: 'DM Sans, sans-serif',
-                                }}
-                              />
                             </div>
                           </div>
                         )
@@ -2199,16 +2190,16 @@ export default function JourneyPage() {
             const parsed = JSON.parse(raw) as {
               completedTaskIds?: string[]
               completedCustomTaskIds?: string[]
+              excludedAutoTaskIds?: string[]
               manualMilestoneIds?: string[]
-              taskNotes?: Record<string, string>
               customTasks?: CustomTask[]
               currentPhase?: number
             }
             persisted = {
               completedTasks: new Set(parsed.completedTaskIds || []),
               completedCustomTaskIds: new Set(parsed.completedCustomTaskIds || []),
+              excludedAutoTasks: new Set(parsed.excludedAutoTaskIds || []),
               manualMilestones: new Set(parsed.manualMilestoneIds || []),
-              taskNotes: parsed.taskNotes || {},
               customTasks: parsed.customTasks || [],
               currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : hasSavedReadiness ? 0 : 0,
             }
@@ -2251,8 +2242,8 @@ export default function JourneyPage() {
         JSON.stringify({
             completedTaskIds: [...state.completedTasks],
             completedCustomTaskIds: [...state.completedCustomTaskIds],
+            excludedAutoTaskIds: [...state.excludedAutoTasks],
             manualMilestoneIds: [...state.manualMilestones],
-            taskNotes: state.taskNotes,
             customTasks: state.customTasks,
             currentPhase: state.currentPhase,
           })
@@ -2260,7 +2251,7 @@ export default function JourneyPage() {
     } catch {
       return
     }
-  }, [state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.manualMilestones, state.taskNotes, user?.id])
+  }, [state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.excludedAutoTasks, state.manualMilestones, user?.id])
 
   if (shouldBlock || loadingSavedJourney) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
