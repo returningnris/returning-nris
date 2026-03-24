@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '../../../../lib/supabase-admin'
+import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -88,6 +88,7 @@ export async function POST(request: Request) {
     const password = typeof body.password === 'string' ? body.password : ''
     const origin = new URL(request.url).origin
     const next = typeof body.next === 'string' && body.next.startsWith('/') ? body.next : '/'
+    const supabaseAdmin = getSupabaseAdmin()
 
     if (!name || !email || !password) {
       return NextResponse.json({ success: false, error: 'Missing required signup fields' }, { status: 400 })
