@@ -1454,7 +1454,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
     <div style={{ minHeight: '100vh', background: T.hero }}>
       <style>{`
         .dashboard-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 0.9rem; align-items: start; }
+        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.8fr); gap: 0.9rem; align-items: start; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; }
         .overview-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; }
         .milestone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; }
@@ -1471,27 +1471,24 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
         <div className="hero-grid" style={{ marginBottom: '1rem' }}>
           <SurfaceCard style={{ overflow: 'hidden' }}>
             <div style={{ padding: '1.15rem 1.2rem', background: T.dark }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, minHeight: 42 }}>
-                <div style={{ flexShrink: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 14 }}>
+                <div>
                   <Pill tone="saffron">Back2India dashboard</Pill>
+                  <h1 style={{ fontSize: 'clamp(1.7rem, 4vw, 3rem)', lineHeight: 0.98, color: T.white, marginTop: 12, marginBottom: 8 }}>
+                    {state.firstName ? `${state.firstName}'s journey` : 'Your journey'}
+                  </h1>
+                  <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, maxWidth: 620 }}>
+                    {alreadyMoved
+                      ? 'The move has happened. The journey now focuses on settling in, sequencing the first year well, and reducing post-move friction.'
+                      : 'Your retained relocation flow from decision through arrival and the first year back in India.'}
+                  </p>
                 </div>
-              </div>
 
-              <div style={{ marginBottom: 14 }}>
-                <h1 style={{ fontSize: 'clamp(1.7rem, 4vw, 3rem)', lineHeight: 0.98, color: T.white, marginTop: 0, marginBottom: 8 }}>
-                  {state.firstName ? `${state.firstName}'s journey` : 'Your journey'}
-                </h1>
-                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, maxWidth: 620 }}>
-                  {alreadyMoved
-                    ? 'The move has happened. The journey now focuses on settling in, sequencing the first year well, and reducing post-move friction.'
-                    : 'Your retained relocation flow from decision through arrival and the first year back in India.'}
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 14 }}>
-                <LabeledMetric label="Journey" value={`${pct}%`} tone="saffron" />
-                <LabeledMetric label="Phase" value={`${journeyPhaseIndex + 1}`} tone="navy" />
-                <LabeledMetric label="Milestones" value={`${completedMsCount}/${MILESTONES.length}`} tone="green" />
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  <LabeledMetric label="Journey" value={`${pct}%`} tone="saffron" />
+                  <LabeledMetric label="Phase" value={`${journeyPhaseIndex + 1}`} tone="navy" />
+                  <LabeledMetric label="Milestones" value={`${completedMsCount}/${MILESTONES.length}`} tone="green" />
+                </div>
               </div>
 
               <div className="stats-grid">
