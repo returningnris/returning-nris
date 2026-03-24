@@ -1471,20 +1471,21 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
         <div className="hero-grid" style={{ marginBottom: '1rem' }}>
           <SurfaceCard style={{ overflow: 'hidden' }}>
             <div style={{ padding: '1.15rem 1.2rem', background: T.dark }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'flex-start', marginBottom: 14 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <h1 style={{ fontSize: 'clamp(1.7rem, 4vw, 3rem)', lineHeight: 0.98, color: T.white, marginTop: 12, marginBottom: 8 }}>
-                    {state.firstName ? `${state.firstName}'s journey` : 'Your journey'}
-                  </h1>
-                  <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, maxWidth: 620 }}>
-                    {alreadyMoved
-                      ? 'The move has happened. The journey now focuses on settling in, sequencing the first year well, and reducing post-move friction.'
-                      : 'Your retained relocation flow from decision through arrival and the first year back in India.'}
-                  </p>
-                </div>
-                <div style={{ flexShrink: 0, paddingTop: 2 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, minHeight: 42 }}>
+                <div style={{ flexShrink: 0 }}>
                   <Pill tone="saffron">Back2India dashboard</Pill>
                 </div>
+              </div>
+
+              <div style={{ marginBottom: 14 }}>
+                <h1 style={{ fontSize: 'clamp(1.7rem, 4vw, 3rem)', lineHeight: 0.98, color: T.white, marginTop: 0, marginBottom: 8 }}>
+                  {state.firstName ? `${state.firstName}'s journey` : 'Your journey'}
+                </h1>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, maxWidth: 620 }}>
+                  {alreadyMoved
+                    ? 'The move has happened. The journey now focuses on settling in, sequencing the first year well, and reducing post-move friction.'
+                    : 'Your retained relocation flow from decision through arrival and the first year back in India.'}
+                </p>
               </div>
 
               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 14 }}>
