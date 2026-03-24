@@ -1454,7 +1454,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
     <div style={{ minHeight: '100vh', background: T.hero }}>
       <style>{`
         .dashboard-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.8fr); gap: 0.9rem; align-items: start; }
+        .hero-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; align-items: start; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; }
         .overview-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; }
         .milestone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; }
