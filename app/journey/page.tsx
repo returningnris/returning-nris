@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useMemo, useReducer, useState } from 'react'
+import { useAuth } from '../../components/useAuth'
 import { useProtectedRoute } from '../../components/useProtectedRoute'
+import { supabase } from '../../lib/supabase'
 
 type Answers = {
   country: string
@@ -428,6 +429,7 @@ type Action =
   | { type: 'UNCOMPLETE_PHASE'; phase: number }
   | { type: 'SET_PHASE'; phase: number }
   | { type: 'SET_NAME'; name: string }
+  | { type: 'LOAD_SAVED'; payload: Partial<JourneyState> }
   | { type: 'RESET' }
 
 function journeyReducer(state: JourneyState, action: Action): JourneyState {
@@ -449,6 +451,16 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
     }
     case 'SET_NAME':
       return { ...state, firstName: action.name }
+    case 'LOAD_SAVED':
+      return {
+        ...state,
+        ...action.payload,
+        answers: action.payload.answers ?? state.answers,
+        completedTasks: action.payload.completedTasks ?? state.completedTasks,
+        manualMilestones: action.payload.manualMilestones ?? state.manualMilestones,
+        currentPhase: action.payload.currentPhase ?? state.currentPhase,
+        firstName: action.payload.firstName ?? state.firstName,
+      }
     case 'START_JOURNEY':
       return { ...state, step: 'journey' }
     case 'SET_PHASE':
@@ -507,54 +519,6 @@ const initialState: JourneyState = {
 
 function journeyPct(completedTasks: Set<string>) {
   return Math.round((completedTasks.size / TASKS.length) * 100)
-}
-
-function getStatusMeta(total: number) {
-  if (total >= 80) return { label: 'Ready to return', color: T.green, bg: T.greenSoft }
-  if (total >= 55) return { label: 'Moderately ready', color: T.bronze, bg: T.saffronSoft }
-  return { label: 'Not ready yet', color: T.rose, bg: T.roseSoft }
-}
-
-function getVerdict(answers: Partial<Answers>, score: number) {
-  const a = answers as Answers
-  if (score >= 80 && !['no', 'searching'].includes(a.hasJob || '') && a.savings !== 'under50') {
-    return {
-      tone: 'Green light',
-      text: 'You are in a strong position to move as planned, with the major financial and logistics risks already under control.',
-      color: T.green,
-      bg: T.greenSoft,
-    }
-  }
-  if (a.hasJob === 'no' && a.savings === 'under50') {
-    return {
-      tone: 'Pause and rebuild',
-      text: 'Income and savings are both weak right now. That combination makes the first months after moving much more stressful than they need to be.',
-      color: T.rose,
-      bg: T.roseSoft,
-    }
-  }
-  if (a.hasJob === 'no' || a.hasJob === 'searching') {
-    return {
-      tone: 'Income first',
-      text: 'The move can work, but confirming income before fixing a departure date will remove the biggest source of pressure.',
-      color: T.bronze,
-      bg: T.saffronSoft,
-    }
-  }
-  if (a.savings === 'under50') {
-    return {
-      tone: 'Buffer matters',
-      text: 'Your plan will be much safer with a larger runway. Build more cash cushion before locking the move date.',
-      color: T.bronze,
-      bg: T.saffronSoft,
-    }
-  }
-  return {
-    tone: 'Close the remaining gaps',
-    text: 'You have momentum. A few missing pieces still stand between curiosity and a confident move plan.',
-    color: T.bronze,
-    bg: T.saffronSoft,
-  }
 }
 
 function getPostMoveRecommendation(A: Answers) {
@@ -972,7 +936,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
   const alreadyMovedAnswered = !alreadyMovedRequired || !!state.answers.alreadyMoved
   const totalRequired = visibleQuestions.length + 1 + (alreadyMovedRequired ? 1 : 0)
   const totalAnswered = answered + (moveDateAnswered ? 1 : 0) + (alreadyMovedAnswered && alreadyMovedRequired ? 1 : 0)
-  const allDone = totalAnswered === totalRequired && !!state.firstName.trim()
+  const allDone = totalAnswered === totalRequired
   const progress = Math.round((totalAnswered / totalRequired) * 100)
   const projectedAnswers = state.answers as Answers
 
@@ -1030,7 +994,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
                       Profile
                     </div>
                     <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.65 }}>
-                      {state.firstName ? `Planning for ${state.firstName}.` : 'Add your first name so the dashboard feels personal.'}
+                      {state.firstName ? `Planning for ${state.firstName}.` : 'Your account profile will be used to personalize the journey.'}
                     </div>
                   </SurfaceCard>
 
@@ -1039,23 +1003,20 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
                       What this unlocks
                     </div>
                     <div style={{ display: 'grid', gap: 8, fontSize: 14, color: T.muted }}>
-                      <div>Readiness score tied to your move context</div>
-                      <div>Milestones that surface the biggest levers</div>
-                      <div>Task phases from planning through first year</div>
+                      <div>A premium move-back workflow built from your saved readiness answers</div>
+                      <div>Phased guidance from planning through year one in India</div>
+                      <div>Progress tracking, next-best action, and timeline tasks</div>
                     </div>
                   </SurfaceCard>
 
                   <SurfaceCard style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                      Early signal
-                    </div>
-                    <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2rem', color: projectedScore !== null ? T.green : T.ink, lineHeight: 1, marginBottom: 4 }}>
-                      {projectedScore !== null ? `${projectedScore}/100` : '--'}
+                      Saved profile
                     </div>
                     <div style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>
                       {projectedScore !== null
-                        ? 'Enough information is in place to estimate readiness.'
-                        : 'Complete the setup to generate the personalized dashboard.'}
+                        ? 'Your saved readiness answers are complete enough to initialize the journey immediately.'
+                        : 'If you have not completed the readiness check yet, answer the remaining items here once.'}
                     </div>
                   </SurfaceCard>
                 </div>
@@ -1072,30 +1033,8 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
                     Build your journey profile
                   </h2>
                   <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, maxWidth: 760 }}>
-                    The goal is not to collect everything. It is to gather enough signal to show you where the move is strong, where it is fragile, and what to do next.
+                    This setup is only used when saved readiness data is missing or incomplete. Once your answers are in place, the journey becomes your ongoing relocation command center.
                   </p>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                    Your first name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="What should we call you?"
-                    value={state.firstName}
-                    onChange={(e) => dispatch({ type: 'SET_NAME', name: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '1rem 1rem',
-                      borderRadius: 18,
-                      border: `1.5px solid ${state.firstName ? T.saffron : T.border}`,
-                      background: state.firstName ? T.saffronSoft : T.white,
-                      color: T.ink,
-                      fontSize: 15,
-                      outline: 'none',
-                    }}
-                  />
                 </div>
               </div>
             </SurfaceCard>
@@ -1123,12 +1062,12 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
                     Next step
                   </div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: allDone ? T.white : T.ink, marginBottom: 4 }}>
-                    {allDone ? 'Your dashboard is ready.' : `${totalRequired - totalAnswered + (state.firstName.trim() ? 0 : 1)} inputs still missing.`}
+                    {allDone ? 'Your dashboard is ready.' : `${totalRequired - totalAnswered} inputs still missing.`}
                   </div>
                   <div style={{ fontSize: 14, color: allDone ? 'rgba(255,255,255,0.7)' : T.muted, lineHeight: 1.7 }}>
                     {allDone
-                      ? 'Start the journey dashboard to see readiness, milestones, and phased tasks.'
-                      : 'Finish the setup so we can calculate the score and personalize the journey.'}
+                      ? 'Open the journey dashboard to start using the live relocation flow.'
+                      : 'Finish the missing answers once, then the journey can initialize from this data going forward.'}
                   </div>
                 </div>
 
@@ -1159,10 +1098,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
 }
 
 function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: React.Dispatch<Action> }) {
-  const [tab, setTab] = useState<'overview' | 'tasks'>('overview')
-  const [changedBanner, setChangedBanner] = useState<{ ms: Milestone; prevScore: number; newScore: number } | null>(null)
-  const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const prevScoreRef = useRef<number | null>(null)
+  const [tab, setTab] = useState<'tasks' | 'guidance'>('tasks')
 
   const A = state.answers as Answers
   const alreadyMoved = A.alreadyMoved === 'yes'
@@ -1210,26 +1146,52 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
     return merged
   }, [autoCompletedTasks, state.completedTasks])
 
-  const scoreBreakdown = useMemo(() => {
-    const base = computeScore(A)
-    let bonus = 0
-    MILESTONES.forEach((m) => {
-      const inScore = m.completedWhen(A)
-      const manualOrTask =
-        state.manualMilestones.has(m.id) ||
-        TASKS.filter((t) => t.milestoneId === m.id && t.isScoreImpact).some((t) => state.completedTasks.has(t.id))
-      if (!inScore && manualOrTask) bonus += m.scoreImpact
-    })
-    return { ...base, total: Math.min(100, base.total + bonus) }
-  }, [A, state.completedTasks, state.manualMilestones])
-
-  const score = scoreBreakdown.total
-  const statusMeta = getStatusMeta(score)
-  const verdict = getVerdict(state.answers, score)
   const pct = journeyPct(effectiveCompletedTasks)
   const completedMsCount = msCompleted.size
   const highImpact = MILESTONES.find((m) => !msCompleted.has(m.id))
   const postMove = getPostMoveRecommendation(A)
+  const visiblePhases = alreadyMoved ? [2, 3] : [0, 1, 2, 3]
+  const currentPhaseIndex = visiblePhases.includes(state.currentPhase) ? state.currentPhase : visiblePhases[0]
+  const currentPhaseLabel = PHASES[currentPhaseIndex]
+  const currentPhaseTasks = TASKS.filter((task) => task.phase === currentPhaseIndex)
+  const nextTask =
+    currentPhaseTasks.find((task) => !effectiveCompletedTasks.has(task.id) && task.priority === 'critical') ||
+    currentPhaseTasks.find((task) => !effectiveCompletedTasks.has(task.id)) ||
+    TASKS.filter((task) => visiblePhases.includes(task.phase)).find((task) => !effectiveCompletedTasks.has(task.id)) ||
+    null
+
+  const guidanceItems = alreadyMoved
+    ? postMove.actions
+    : highImpact
+      ? [
+          `Close the "${highImpact.label}" milestone first because it unlocks the most leverage in your relocation plan.`,
+          nextTask ? `Then complete "${nextTask.title}" to keep your phase moving without creating downstream friction.` : 'Stay consistent with the remaining phase tasks so the move keeps compounding smoothly.',
+          A.moveDate && A.moveDate !== 'exploring'
+            ? `Keep your move timing anchored to ${formatMoveDate(A.moveDate)} and avoid dragging critical decisions later than they need to go.`
+            : 'Set a realistic move window once income, city, and housing direction are stable.',
+        ]
+      : ['You have already closed the major move-back levers. Focus on staying consistent through the remaining phases.']
+
+  const lastSeen = useMemo(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const raw = window.localStorage.getItem(`journey:last-seen:${state.firstName || 'user'}`)
+      return raw ? (JSON.parse(raw) as { at?: string; completedTaskIds?: string[]; phase?: number }) : null
+    } catch {
+      return null
+    }
+  }, [state.firstName])
+
+  const changesSinceLastVisit = useMemo(() => {
+    const previousTasks = new Set(lastSeen?.completedTaskIds || [])
+    const completedNow = [...effectiveCompletedTasks].filter((id) => !previousTasks.has(id))
+    const phaseAdvanced = typeof lastSeen?.phase === 'number' && currentPhaseIndex > lastSeen.phase
+    return {
+      completedNow,
+      phaseAdvanced,
+      lastSeenAt: lastSeen?.at || '',
+    }
+  }, [currentPhaseIndex, effectiveCompletedTasks, lastSeen])
 
   useEffect(() => {
     if (alreadyMoved && state.currentPhase < 2) {
@@ -1238,16 +1200,24 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
   }, [alreadyMoved, dispatch, state.currentPhase])
 
   useEffect(() => {
-    if (state.lastMilestone) {
-      const milestone = MILESTONES.find((m) => m.id === state.lastMilestone)
-      if (milestone && prevScoreRef.current !== null) {
-        setChangedBanner({ ms: milestone, prevScore: prevScoreRef.current, newScore: score })
-        if (bannerTimer.current) clearTimeout(bannerTimer.current)
-        bannerTimer.current = setTimeout(() => setChangedBanner(null), 4000)
+    if (typeof window === 'undefined') return
+    const persist = () => {
+      try {
+        window.localStorage.setItem(
+          `journey:last-seen:${state.firstName || 'user'}`,
+          JSON.stringify({
+            at: new Date().toISOString(),
+            completedTaskIds: [...effectiveCompletedTasks],
+            phase: currentPhaseIndex,
+          })
+        )
+      } catch {
+        return
       }
     }
-    prevScoreRef.current = score
-  }, [score, state.lastMilestone])
+    window.addEventListener('pagehide', persist)
+    return () => window.removeEventListener('pagehide', persist)
+  }, [currentPhaseIndex, effectiveCompletedTasks, state.firstName])
 
   return (
     <div style={{ minHeight: '100vh', background: T.hero }}>
@@ -1278,24 +1248,24 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                   </h1>
                   <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, maxWidth: 700 }}>
                     {alreadyMoved
-                      ? 'The move has happened. This dashboard now shifts from planning to settling in and protecting the first year.'
-                      : 'A personal control panel for moving back: readiness, biggest gaps, and what to do in each phase.'}
+                      ? 'The move has happened. The journey now focuses on settling in, sequencing the first year well, and reducing post-move friction.'
+                      : 'Your retained relocation flow from decision through arrival and the first year back in India.'}
                   </p>
                 </div>
 
                 <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                  {!alreadyMoved ? <LabeledMetric label="Readiness" value={`${score}/100`} tone="green" /> : null}
                   <LabeledMetric label="Journey" value={`${pct}%`} tone="saffron" />
-                  <LabeledMetric label="Milestones" value={`${completedMsCount}/${MILESTONES.length}`} tone="navy" />
+                  <LabeledMetric label="Phase" value={`${currentPhaseIndex + 1}`} tone="navy" />
+                  <LabeledMetric label="Milestones" value={`${completedMsCount}/${MILESTONES.length}`} tone="green" />
                 </div>
               </div>
 
               <div className="stats-grid">
                 {[
+                  { label: 'Current phase', value: currentPhaseLabel },
+                  { label: 'Next best action', value: nextTask ? nextTask.title : 'Maintain momentum' },
                   { label: 'Target move', value: formatMoveDate(A.moveDate) },
-                  { label: 'Country', value: A.country || 'Not set' },
                   { label: 'City', value: A.city || 'Not set' },
-                  { label: 'Runway', value: `${calcRunwayMonths(A.savings, A.city)} months` },
                 ].map((item) => (
                   <div
                     key={item.label}
@@ -1320,22 +1290,26 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                  Current focus
+                  Next best action
                 </div>
-                <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 6 }}>
-                  {alreadyMoved ? postMove.title : highImpact ? highImpact.label : 'Strong overall plan'}
-                </h2>
+                <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 6 }}>{nextTask ? nextTask.title : alreadyMoved ? postMove.title : 'Stay on the current path'}</h2>
               </div>
-              {alreadyMoved ? <Pill tone="navy">Post-move</Pill> : highImpact ? <Pill tone="saffron">Highest leverage</Pill> : <Pill tone="green">Stable</Pill>}
+              {nextTask?.priority === 'critical' ? <Pill tone="saffron">Critical now</Pill> : <Pill tone="navy">Guided flow</Pill>}
             </div>
 
             <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.75, marginBottom: 16 }}>
-              {alreadyMoved ? postMove.text : highImpact ? highImpact.description : 'You have already closed the main risk areas.'}
+              {nextTask
+                ? nextTask.desc
+                : alreadyMoved
+                  ? postMove.text
+                  : highImpact
+                    ? highImpact.description
+                    : 'You have already closed the main risk areas and can keep working through the remaining phases.'}
             </p>
 
             {!alreadyMoved && highImpact ? (
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-                <Pill tone="green">+{highImpact.scoreImpact} points</Pill>
+                <Pill tone="saffron">{currentPhaseLabel}</Pill>
                 <Pill tone="navy">{highImpact.pillar}</Pill>
               </div>
             ) : null}
@@ -1344,39 +1318,25 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
               style={{
                 padding: '1rem',
                 borderRadius: 18,
-                background: alreadyMoved ? postMove.bg : verdict.bg,
+                background: alreadyMoved ? postMove.bg : T.saffronSoft,
                 border: `1px solid ${alreadyMoved ? postMove.border : T.border}`,
               }}
             >
-              <div style={{ fontSize: 12, fontWeight: 700, color: alreadyMoved ? postMove.color : verdict.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                {alreadyMoved ? 'Recommendation' : verdict.tone}
+              <div style={{ fontSize: 12, fontWeight: 700, color: alreadyMoved ? postMove.color : T.bronze, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                {alreadyMoved ? 'Recommendation' : 'Why this matters'}
               </div>
-              <div style={{ fontSize: 14, color: alreadyMoved ? postMove.color : verdict.color, lineHeight: 1.75 }}>
-                {alreadyMoved ? postMove.actions[0] : verdict.text}
+              <div style={{ fontSize: 14, color: alreadyMoved ? postMove.color : T.bronze, lineHeight: 1.75 }}>
+                {alreadyMoved
+                  ? postMove.actions[0]
+                  : nextTask
+                    ? `This is the cleanest move to keep the relocation plan advancing without creating avoidable downstream stress.`
+                    : 'Your journey is in a stable position right now.'}
               </div>
             </div>
-
-            {!alreadyMoved ? (
-              <Link
-                href="/planner"
-                style={{
-                  display: 'inline-flex',
-                  marginTop: 16,
-                  padding: '0.82rem 1.1rem',
-                  borderRadius: 999,
-                  background: T.ink,
-                  color: T.white,
-                  fontSize: 13,
-                  fontWeight: 700,
-                }}
-              >
-                Open full readiness analysis
-              </Link>
-            ) : null}
           </SurfaceCard>
         </div>
 
-        {changedBanner ? (
+        {changesSinceLastVisit.lastSeenAt ? (
           <div
             style={{
               marginBottom: '1rem',
@@ -1392,17 +1352,21 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
             }}
           >
             <div style={{ fontSize: 14, color: T.green, lineHeight: 1.65 }}>
-              <strong>{changedBanner.ms.label}</strong> completed. Score moved from {changedBanner.prevScore} to {changedBanner.newScore}.
+              <strong>Since your last visit:</strong>{' '}
+              {changesSinceLastVisit.completedNow.length > 0
+                ? `${changesSinceLastVisit.completedNow.length} tasks are now complete`
+                : 'your plan structure is unchanged'}
+              {changesSinceLastVisit.phaseAdvanced ? ' and you have advanced to a new phase.' : '.'}
             </div>
-            <button type="button" onClick={() => setChangedBanner(null)} style={{ border: 'none', background: 'transparent', color: T.green, fontWeight: 800, fontSize: 14 }}>
-              Dismiss
-            </button>
+            <div style={{ fontSize: 12, color: T.green }}>
+              Last seen {new Date(changesSinceLastVisit.lastSeenAt).toLocaleDateString()}
+            </div>
           </div>
         ) : null}
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1rem' }}>
           {[
-            ['overview', 'Overview'],
+            ['guidance', 'Guidance'],
             ['tasks', 'Task flow'],
           ].map(([value, label]) => {
             const active = tab === value
@@ -1410,7 +1374,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
               <button
                 type="button"
                 key={value}
-                onClick={() => setTab(value as 'overview' | 'tasks')}
+                onClick={() => setTab(value as 'guidance' | 'tasks')}
                 style={{
                   padding: '0.8rem 1.05rem',
                   borderRadius: 999,
@@ -1444,64 +1408,36 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
           </button>
         </div>
 
-        {tab === 'overview' ? (
+        {tab === 'guidance' ? (
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div className="overview-grid">
               <SurfaceCard style={{ padding: '1.35rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                      Score anatomy
+                      Journey health
                     </div>
-                    <h2 style={{ fontSize: '1.35rem', color: T.ink }}>
-                      {alreadyMoved ? 'Journey progress by phase' : 'Readiness, broken into real levers'}
-                    </h2>
+                    <h2 style={{ fontSize: '1.35rem', color: T.ink }}>Progress through the relocation timeline</h2>
                   </div>
-                  <Pill tone={alreadyMoved ? 'green' : 'saffron'}>
-                    {alreadyMoved ? `${pct}% complete` : statusMeta.label}
-                  </Pill>
+                  <Pill tone="green">{pct}% complete</Pill>
                 </div>
 
-                {!alreadyMoved ? (
-                  <div style={{ display: 'grid', gap: 12 }}>
-                    {[
-                      { label: 'Financial', value: scoreBreakdown.financial, max: 40, color: T.saffron },
-                      { label: 'Life complexity', value: scoreBreakdown.lifeComplexity, max: 25, color: '#7f4fa0' },
-                      { label: 'Career', value: scoreBreakdown.career, max: 20, color: T.green },
-                      { label: 'Planning', value: scoreBreakdown.planning, max: 20, color: T.navy },
-                    ].map((item) => {
-                      const bar = Math.round((item.value / item.max) * 100)
-                      return (
-                        <div key={item.label}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
-                            <span style={{ color: T.muted }}>{item.label}</span>
-                            <strong style={{ color: item.color }}>{item.value}/{item.max}</strong>
-                          </div>
-                          <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
-                            <div style={{ width: `${bar}%`, height: '100%', background: item.color }} />
-                          </div>
+                <div style={{ display: 'grid', gap: 12 }}>
+                  {visiblePhases.map((phase) => {
+                    const stats = phaseTaskStats(phase, effectiveCompletedTasks)
+                    return (
+                      <div key={phase}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
+                          <span style={{ color: T.muted }}>{PHASES[phase]}</span>
+                          <strong style={{ color: phase === currentPhaseIndex ? T.saffron : T.green }}>{stats.done}/{stats.total}</strong>
                         </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div style={{ display: 'grid', gap: 12 }}>
-                    {[2, 3].map((phase) => {
-                      const stats = phaseTaskStats(phase, effectiveCompletedTasks)
-                      return (
-                        <div key={phase}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
-                            <span style={{ color: T.muted }}>{PHASES[phase]}</span>
-                            <strong style={{ color: T.green }}>{stats.done}/{stats.total}</strong>
-                          </div>
-                          <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
-                            <div style={{ width: `${stats.pct}%`, height: '100%', background: T.green }} />
-                          </div>
+                        <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
+                          <div style={{ width: `${stats.pct}%`, height: '100%', background: phase === currentPhaseIndex ? T.saffron : T.green }} />
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
+                      </div>
+                    )
+                  })}
+                </div>
               </SurfaceCard>
 
               <SurfaceCard style={{ padding: '1.35rem' }}>
@@ -1509,10 +1445,10 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                   Next steps
                 </div>
                 <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 12 }}>
-                  {alreadyMoved ? 'What to tighten this month' : 'What most improves this plan'}
+                  {alreadyMoved ? 'What to tighten this month' : 'What to focus on right now'}
                 </h2>
                 <div style={{ display: 'grid', gap: 10 }}>
-                  {(alreadyMoved ? postMove.actions : highImpact ? [`Complete the "${highImpact.label}" milestone.`, 'Use the task flow tab to batch the next phase instead of doing everything at once.', 'Keep the move date realistic; forcing the timeline creates avoidable stress.'] : ['Maintain momentum across the remaining task phases.']).map((item, index) => (
+                  {guidanceItems.map((item, index) => (
                     <div
                       key={index}
                       style={{
@@ -1551,9 +1487,9 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                    Milestones
+                    Relocation guidance
                   </div>
-                  <h2 style={{ fontSize: '1.35rem', color: T.ink }}>The levers that matter most</h2>
+                  <h2 style={{ fontSize: '1.35rem', color: T.ink }}>Milestones shaping the rest of the move</h2>
                 </div>
                 <Pill tone="green">{completedMsCount}/{MILESTONES.length} complete</Pill>
               </div>
@@ -1596,7 +1532,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                       <div style={{ fontSize: 13, color: T.muted, lineHeight: 1.7, marginBottom: 12 }}>{milestone.description}</div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         <Pill tone={done ? 'green' : 'navy'}>{done ? 'Complete' : 'Open'}</Pill>
-                        {!alreadyMoved ? <Pill tone="saffron">+{milestone.scoreImpact} pts</Pill> : null}
+                        <Pill tone="saffron">{milestone.pillar}</Pill>
                         {autoDetected ? <Pill tone="navy">Auto-detected</Pill> : null}
                       </div>
                     </button>
@@ -1796,9 +1732,99 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
 
 export default function JourneyPage() {
   const { shouldBlock } = useProtectedRoute()
+  const { user, loading: authLoading } = useAuth()
   const [state, dispatch] = useReducer(journeyReducer, initialState)
+  const [loadingSavedJourney, setLoadingSavedJourney] = useState(true)
 
-  if (shouldBlock) return null
+  useEffect(() => {
+    let active = true
+
+    async function loadSavedJourney() {
+      if (authLoading) return
+
+      if (!user?.id) {
+        if (!active) return
+        dispatch({ type: 'LOAD_SAVED', payload: { firstName: '', step: 'profile' } })
+        setLoadingSavedJourney(false)
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('planner_submissions')
+        .select('answers_json')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (!active) return
+
+      const savedAnswers = (data?.answers_json || {}) as Partial<Answers>
+      const hasSavedReadiness = Object.keys(savedAnswers).length > 0
+
+      let persisted: Partial<JourneyState> = {}
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = window.localStorage.getItem(`journey:state:${user.id}`)
+          if (raw) {
+            const parsed = JSON.parse(raw) as {
+              completedTaskIds?: string[]
+              manualMilestoneIds?: string[]
+              currentPhase?: number
+            }
+            persisted = {
+              completedTasks: new Set(parsed.completedTaskIds || []),
+              manualMilestones: new Set(parsed.manualMilestoneIds || []),
+              currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : hasSavedReadiness ? 0 : 0,
+            }
+          }
+        } catch {
+          persisted = {}
+        }
+      }
+
+      if (error) {
+        console.error('Error loading journey initialization:', error)
+      }
+
+      dispatch({
+        type: 'LOAD_SAVED',
+        payload: {
+          firstName: user.firstName || '',
+          answers: savedAnswers,
+          step: hasSavedReadiness ? 'journey' : 'profile',
+          completedTasks: persisted.completedTasks,
+          manualMilestones: persisted.manualMilestones,
+          currentPhase: persisted.currentPhase,
+        },
+      })
+      setLoadingSavedJourney(false)
+    }
+
+    void loadSavedJourney()
+
+    return () => {
+      active = false
+    }
+  }, [authLoading, user])
+
+  useEffect(() => {
+    if (!user?.id || typeof window === 'undefined') return
+    try {
+      window.localStorage.setItem(
+        `journey:state:${user.id}`,
+        JSON.stringify({
+          completedTaskIds: [...state.completedTasks],
+          manualMilestoneIds: [...state.manualMilestones],
+          currentPhase: state.currentPhase,
+        })
+      )
+    } catch {
+      return
+    }
+  }, [state.completedTasks, state.currentPhase, state.manualMilestones, user?.id])
+
+  if (shouldBlock || loadingSavedJourney) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
   return <JourneyDashboard state={state} dispatch={dispatch} />
 }
