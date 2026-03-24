@@ -617,7 +617,6 @@ type JourneyState = {
   answers: Partial<Answers>
   completedTasks: Set<string>
   completedCustomTaskIds: Set<string>
-  excludedAutoTasks: Set<string>
   manualMilestones: Set<string>
   customTasks: CustomTask[]
   currentPhase: number
@@ -630,11 +629,9 @@ type Action =
   | { type: 'SET_MOVE_DATE'; value: string }
   | { type: 'START_JOURNEY' }
   | { type: 'EDIT_PROFILE' }
-  | { type: 'TOGGLE_TASK'; id: string; auto: boolean }
+  | { type: 'TOGGLE_TASK'; id: string }
   | { type: 'TOGGLE_CUSTOM_TASK'; id: string }
   | { type: 'TOGGLE_MILESTONE'; id: string }
-  | { type: 'COMPLETE_PHASE'; phase: number }
-  | { type: 'UNCOMPLETE_PHASE'; phase: number }
   | { type: 'SET_PHASE'; phase: number }
   | { type: 'SET_NAME'; name: string }
   | { type: 'ADD_CUSTOM_TASK'; phase: number; title: string; desc: string }
@@ -681,7 +678,6 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
         answers: action.payload.answers ?? state.answers,
         completedTasks: action.payload.completedTasks ?? state.completedTasks,
         completedCustomTaskIds: action.payload.completedCustomTaskIds ?? state.completedCustomTaskIds,
-        excludedAutoTasks: action.payload.excludedAutoTasks ?? state.excludedAutoTasks,
         manualMilestones: action.payload.manualMilestones ?? state.manualMilestones,
         customTasks: action.payload.customTasks ?? state.customTasks,
         currentPhase: action.payload.currentPhase ?? state.currentPhase,
@@ -693,23 +689,7 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
     case 'EDIT_PROFILE':
       return { ...state, step: 'profile', editingProfile: true }
     case 'SET_PHASE':
-      return { ...state, currentPhase: state.currentPhase === action.phase ? -1 : action.phase }
-    case 'COMPLETE_PHASE': {
-      const newTasks = new Set(state.completedTasks)
-      let lastMilestone = state.lastMilestone
-      TASKS.filter((t) => t.phase === action.phase).forEach((t) => {
-        newTasks.add(t.id)
-        if (t.milestoneId && t.isScoreImpact) lastMilestone = t.milestoneId
-      })
-      const nextPhase = action.phase + 1
-      const hasNext = nextPhase < PHASES.length
-      return { ...state, completedTasks: newTasks, lastMilestone, currentPhase: hasNext ? nextPhase : -1 }
-    }
-    case 'UNCOMPLETE_PHASE': {
-      const newTasks = new Set(state.completedTasks)
-      TASKS.filter((t) => t.phase === action.phase).forEach((t) => newTasks.delete(t.id))
-      return { ...state, completedTasks: newTasks, currentPhase: action.phase }
-    }
+      return { ...state, currentPhase: action.phase }
     case 'TOGGLE_MILESTONE': {
       const manualMs = new Set(state.manualMilestones)
       if (manualMs.has(action.id)) manualMs.delete(action.id)
@@ -718,13 +698,7 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
     }
     case 'TOGGLE_TASK': {
       const newTasks = new Set(state.completedTasks)
-      const excludedAutoTasks = new Set(state.excludedAutoTasks)
       let lastMilestone = state.lastMilestone
-      if (action.auto) {
-        if (excludedAutoTasks.has(action.id)) excludedAutoTasks.delete(action.id)
-        else excludedAutoTasks.add(action.id)
-        return { ...state, excludedAutoTasks }
-      }
       if (newTasks.has(action.id)) {
         newTasks.delete(action.id)
         lastMilestone = null
@@ -733,7 +707,7 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
         const t = TASKS.find((x) => x.id === action.id)
         if (t?.milestoneId && t.isScoreImpact) lastMilestone = t.milestoneId
       }
-      return { ...state, completedTasks: newTasks, lastMilestone, excludedAutoTasks }
+      return { ...state, completedTasks: newTasks, lastMilestone }
     }
     case 'TOGGLE_CUSTOM_TASK': {
       const newTasks = new Set(state.completedCustomTaskIds)
@@ -754,7 +728,6 @@ const initialState: JourneyState = {
   answers: {},
   completedTasks: new Set(),
   completedCustomTaskIds: new Set(),
-  excludedAutoTasks: new Set(),
   manualMilestones: new Set(),
   customTasks: [],
   currentPhase: 0,
@@ -883,11 +856,6 @@ function formatMoveDate(moveDate?: string) {
   if (!moveDate || moveDate === 'exploring') return 'Exploring timeline'
   const [year, month] = moveDate.split('-')
   return `${MONTHS_FULL[Number(month) - 1]} ${year}`
-}
-
-function getPhaseWindowLabel(phase: number, moveDate?: string) {
-  if (!moveDate || moveDate === 'exploring') return PHASE_WINDOWS[phase]
-  return `${PHASE_WINDOWS[phase]} - anchored to ${formatMoveDate(moveDate)}`
 }
 
 function addMonths(date: Date, months: number) {
@@ -1413,37 +1381,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
     [A, state.completedTasks, state.manualMilestones]
   )
 
-  const autoCompletedTasks = useMemo(() => {
-    const auto = new Set<string>()
-    TASKS.forEach((t) => {
-      if (!t.milestoneId) return
-      const milestone = MILESTONES.find((m) => m.id === t.milestoneId)
-      if (milestone && milestone.completedWhen(A)) auto.add(t.id)
-    })
-    if (['owned', 'arranged'].includes(A.housing)) auto.add('t12')
-    if (['yes_filed', 'yes_aware'].includes(A.knowsRNOR)) auto.add('t03')
-    if (A.city && A.city !== 'undecided') {
-      auto.add('t06')
-      auto.add('t02')
-    }
-    if (['remote_us', 'own_business', 'india_job'].includes(A.hasJob)) {
-      auto.add('t04')
-      auto.add('t08')
-    }
-    if (A.hasKids === 'no') {
-      auto.add('t07')
-      auto.add('t09')
-    }
-    return auto
-  }, [A])
-
-  const effectiveCompletedTasks = useMemo(() => {
-    const merged = new Set(state.completedTasks)
-    autoCompletedTasks.forEach((id) => {
-      if (!state.excludedAutoTasks.has(id)) merged.add(id)
-    })
-    return merged
-  }, [autoCompletedTasks, state.completedTasks, state.excludedAutoTasks])
+  const effectiveCompletedTasks = state.completedTasks
 
   const customTasksByPhase = useMemo(() => {
     const map = new Map<number, CustomTask[]>()
@@ -1519,7 +1457,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
           `journey:last-seen:${userId}`,
           JSON.stringify({
             at: new Date().toISOString(),
-            completedTaskIds: [...effectiveCompletedTasks],
+            completedTaskIds: [...state.completedTasks],
             completedCustomTaskIds: [...state.completedCustomTaskIds],
             phase: currentPhaseIndex,
           })
@@ -1530,7 +1468,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
     }
     window.addEventListener('pagehide', persist)
     return () => window.removeEventListener('pagehide', persist)
-  }, [currentPhaseIndex, effectiveCompletedTasks, state.completedCustomTaskIds, userId])
+  }, [currentPhaseIndex, state.completedCustomTaskIds, state.completedTasks, userId])
 
   return (
     <div style={{ minHeight: '100vh', background: T.hero }}>
@@ -1862,7 +1800,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
               </div>
               <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 10 }}>Move through the journey in phases</h2>
               <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.75, marginBottom: 16 }}>
-                Each phase opens after the prior one is complete, so the list stays focused instead of overwhelming.
+                Select a phase above to focus on that part of the move.
               </p>
 
               <div style={{ display: 'grid', gap: 10, gridTemplateColumns: `repeat(${alreadyMoved ? 2 : 5}, minmax(0, 1fr))` }}>
@@ -1898,251 +1836,219 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
               </div>
             </SurfaceCard>
 
-            {PHASES.map((phase, i) => {
-              if (alreadyMoved && i < 3) return null
-              const tasks = TASKS.filter((task) => task.phase === i)
-              const customTasks = customTasksByPhase.get(i) || []
+            {(() => {
+              const phase = currentPhaseIndex
+              const tasks = TASKS.filter((task) => task.phase === phase)
+              const customTasks = customTasksByPhase.get(phase) || []
               const done =
                 tasks.filter((task) => effectiveCompletedTasks.has(task.id)).length +
                 customTasks.filter((task) => state.completedCustomTaskIds.has(task.id)).length
               const totalTasks = tasks.length + customTasks.length
               const allDone = done === totalTasks && totalTasks > 0
-              const isActive = i === state.currentPhase
-              const phaseStatus = getPhaseTimeStatus(i, activeTimelinePhase)
 
               return (
                 <SurfaceCard
-                  key={phase}
                   style={{
                     overflow: 'hidden',
-                    opacity: phaseStatus === 'future' && !isActive ? 0.72 : 1,
                     borderColor: allDone ? 'rgba(23,117,58,0.18)' : T.border,
                   }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => dispatch({ type: 'SET_PHASE', phase: i })}
+                  <div
                     style={{
                       width: '100%',
                       textAlign: 'left',
                       padding: '1.2rem 1.25rem',
-                      background: isActive ? T.dark : allDone ? T.greenSoft : 'rgba(29,22,15,0.03)',
-                      color: isActive ? T.white : T.ink,
-                      border: 'none',
+                      background: T.dark,
+                      color: T.white,
                       display: 'flex',
                       justifyContent: 'space-between',
                       gap: 16,
                       alignItems: 'center',
+                      flexWrap: 'wrap',
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? 'rgba(255,255,255,0.55)' : allDone ? T.green : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                        {getPhaseWindowLabel(i, A.moveDate)}
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                        {PHASE_WINDOWS[phase]}
                       </div>
-                      <div style={{ fontSize: 18, fontWeight: 800 }}>{phase}</div>
-                      {phaseStatus === 'future' ? <div style={{ fontSize: 13, color: isActive ? 'rgba(255,255,255,0.65)' : T.soft, marginTop: 6 }}>Future phase preview available now.</div> : null}
+                      <div style={{ fontSize: 18, fontWeight: 800 }}>{PHASES[phase]}</div>
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 14, fontWeight: 800 }}>{done}/{totalTasks}</div>
-                      <div style={{ fontSize: 12, color: isActive ? 'rgba(255,255,255,0.55)' : T.soft }}>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
                         {allDone ? 'Complete' : `${totalTasks - done} left`}
                       </div>
                     </div>
-                  </button>
+                  </div>
 
-                  {isActive ? (
-                    <div style={{ padding: '0.4rem 0' }}>
-                      {tasks.map((task, index) => {
-                        const isDone = effectiveCompletedTasks.has(task.id)
-                        const isAuto = autoCompletedTasks.has(task.id)
-                        return (
-                          <div
-                            key={task.id}
-                            style={{
-                              display: 'grid',
-                              gridTemplateColumns: '28px minmax(0, 1fr)',
-                              gap: 14,
-                              padding: '1rem 1.25rem',
-                              borderTop: index === 0 ? 'none' : `1px solid ${T.border}`,
-                              background: isAuto ? 'rgba(23,117,58,0.03)' : T.paper,
-                            }}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => dispatch({ type: 'TOGGLE_TASK', id: task.id, auto: isAuto && !state.completedTasks.has(task.id) })}
-                              style={{
-                                width: 22,
-                                height: 22,
-                                borderRadius: 8,
-                                border: `1.5px solid ${isDone ? (isAuto ? '#6cab7e' : T.green) : task.priority === 'critical' ? T.saffron : T.borderStrong}`,
-                                background: isDone ? (isAuto ? '#6cab7e' : T.green) : 'transparent',
-                                marginTop: 2,
-                              }}
-                            />
-                            <div>
-                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
-                                <div
-                                  style={{
-                                    fontSize: 15,
-                                    fontWeight: 800,
-                                    color: isDone ? T.soft : T.ink,
-                                    textDecoration: isDone ? 'line-through' : 'none',
-                                  }}
-                                >
-                                  {task.title}
-                                </div>
-                                {task.priority === 'critical' ? <Pill tone="saffron">Critical</Pill> : null}
-                                {!alreadyMoved && task.isScoreImpact ? <Pill tone="navy">Score impact</Pill> : null}
-                                {isAuto ? <Pill tone="green">{state.excludedAutoTasks.has(task.id) ? 'Auto removed' : 'Auto'}</Pill> : null}
-                                <Pill tone="navy">{PHASE_WINDOWS[i]}</Pill>
-                              </div>
-                              <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div>
-                            </div>
-                          </div>
-                        )
-                      })}
-
-                      {customTasks.map((task) => {
-                        const isDone = state.completedCustomTaskIds.has(task.id)
-                        return (
-                          <div
-                            key={task.id}
-                            style={{
-                              display: 'grid',
-                              gridTemplateColumns: '28px minmax(0, 1fr)',
-                              gap: 14,
-                              padding: '1rem 1.25rem',
-                              borderTop: `1px solid ${T.border}`,
-                              background: 'rgba(23,62,143,0.03)',
-                            }}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => dispatch({ type: 'TOGGLE_CUSTOM_TASK', id: task.id })}
-                              style={{
-                                width: 22,
-                                height: 22,
-                                borderRadius: 8,
-                                border: `1.5px solid ${isDone ? T.green : T.navy}`,
-                                background: isDone ? T.green : 'transparent',
-                                marginTop: 2,
-                              }}
-                            />
-                            <div>
-                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
-                                <div style={{ fontSize: 15, fontWeight: 800, color: isDone ? T.soft : T.ink, textDecoration: isDone ? 'line-through' : 'none' }}>
-                                  {task.title}
-                                </div>
-                                <Pill tone="navy">Custom task</Pill>
-                              </div>
-                              {task.desc ? <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div> : null}
-                            </div>
-                          </div>
-                        )
-                      })}
-
-                      <div style={{ padding: '1rem 1.25rem', borderTop: `1px solid ${T.border}`, background: 'rgba(23,62,143,0.04)' }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                          Add your own task for this phase
-                        </div>
-                        <div style={{ display: 'grid', gap: 10 }}>
-                          <input
-                            type="text"
-                            value={isActive ? draftTaskTitle : ''}
-                            onChange={(e) => setDraftTaskTitle(e.target.value)}
-                            placeholder="Custom task title"
-                            style={{
-                              width: '100%',
-                              padding: '0.85rem 0.9rem',
-                              borderRadius: 14,
-                              border: `1px solid ${T.border}`,
-                              background: T.white,
-                              color: T.ink,
-                              fontSize: 13,
-                            }}
-                          />
-                          <textarea
-                            value={isActive ? draftTaskDesc : ''}
-                            onChange={(e) => setDraftTaskDesc(e.target.value)}
-                            placeholder="Optional details, deadline, vendor, school name, banker, CA note, or reminder"
-                            style={{
-                              width: '100%',
-                              minHeight: 72,
-                              padding: '0.85rem 0.9rem',
-                              borderRadius: 14,
-                              border: `1px solid ${T.border}`,
-                              background: T.white,
-                              color: T.ink,
-                              fontSize: 13,
-                              resize: 'vertical',
-                              fontFamily: 'DM Sans, sans-serif',
-                            }}
-                          />
-                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-                            <div style={{ fontSize: 13, color: T.muted }}>Use this for personal tasks the default planner does not know about.</div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const title = draftTaskTitle.trim()
-                                const desc = draftTaskDesc.trim()
-                                if (!title) return
-                                dispatch({ type: 'ADD_CUSTOM_TASK', phase: i, title, desc })
-                                setDraftTaskTitle('')
-                                setDraftTaskDesc('')
-                              }}
-                              style={{
-                                padding: '0.75rem 1rem',
-                                borderRadius: 999,
-                                border: 'none',
-                                background: T.navy,
-                                color: T.white,
-                                fontSize: 13,
-                                fontWeight: 800,
-                              }}
-                            >
-                              Add task
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          padding: '1rem 1.25rem 1.15rem',
-                          borderTop: `1px solid ${T.border}`,
-                          background: 'rgba(29,22,15,0.03)',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          gap: 12,
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        <div style={{ fontSize: 14, color: allDone ? T.green : T.muted }}>
-                          {allDone ? 'All tasks in this phase are complete.' : `${totalTasks - done} tasks remaining in this phase.`}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => dispatch({ type: allDone ? 'UNCOMPLETE_PHASE' : 'COMPLETE_PHASE', phase: i })}
+                  <div style={{ padding: '0.4rem 0' }}>
+                    {tasks.map((task, index) => {
+                      const isDone = effectiveCompletedTasks.has(task.id)
+                      return (
+                        <div
+                          key={task.id}
                           style={{
-                            padding: '0.8rem 1rem',
-                            borderRadius: 999,
-                            border: `1px solid ${allDone ? T.border : 'rgba(240,138,36,0.22)'}`,
-                            background: allDone ? T.white : T.saffronSoft,
-                            color: allDone ? T.muted : T.bronze,
-                            fontSize: 13,
-                            fontWeight: 800,
+                            display: 'grid',
+                            gridTemplateColumns: '28px minmax(0, 1fr)',
+                            gap: 14,
+                            padding: '1rem 1.25rem',
+                            borderTop: index === 0 ? 'none' : `1px solid ${T.border}`,
+                            background: T.paper,
                           }}
                         >
-                          {allDone ? 'Unmark phase' : 'Mark phase complete'}
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => dispatch({ type: 'TOGGLE_TASK', id: task.id })}
+                            style={{
+                              width: 22,
+                              height: 22,
+                              borderRadius: 8,
+                              border: `1.5px solid ${isDone ? T.green : task.priority === 'critical' ? T.saffron : T.borderStrong}`,
+                              background: isDone ? T.green : 'transparent',
+                              marginTop: 2,
+                            }}
+                          />
+                          <div>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
+                              <div
+                                style={{
+                                  fontSize: 15,
+                                  fontWeight: 800,
+                                  color: isDone ? T.soft : T.ink,
+                                  textDecoration: isDone ? 'line-through' : 'none',
+                                }}
+                              >
+                                {task.title}
+                              </div>
+                              {task.priority === 'critical' ? <Pill tone="saffron">Critical</Pill> : null}
+                              {!alreadyMoved && task.isScoreImpact ? <Pill tone="navy">Score impact</Pill> : null}
+                            </div>
+                            <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div>
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                    {customTasks.map((task) => {
+                      const isDone = state.completedCustomTaskIds.has(task.id)
+                      return (
+                        <div
+                          key={task.id}
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: '28px minmax(0, 1fr)',
+                            gap: 14,
+                            padding: '1rem 1.25rem',
+                            borderTop: `1px solid ${T.border}`,
+                            background: 'rgba(23,62,143,0.03)',
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => dispatch({ type: 'TOGGLE_CUSTOM_TASK', id: task.id })}
+                            style={{
+                              width: 22,
+                              height: 22,
+                              borderRadius: 8,
+                              border: `1.5px solid ${isDone ? T.green : T.navy}`,
+                              background: isDone ? T.green : 'transparent',
+                              marginTop: 2,
+                            }}
+                          />
+                          <div>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
+                              <div style={{ fontSize: 15, fontWeight: 800, color: isDone ? T.soft : T.ink, textDecoration: isDone ? 'line-through' : 'none' }}>
+                                {task.title}
+                              </div>
+                              <Pill tone="navy">Custom task</Pill>
+                            </div>
+                            {task.desc ? <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div> : null}
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                    <div style={{ padding: '1rem 1.25rem', borderTop: `1px solid ${T.border}`, background: 'rgba(23,62,143,0.04)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                        Add your own task for this phase
+                      </div>
+                      <div style={{ display: 'grid', gap: 10 }}>
+                        <input
+                          type="text"
+                          value={draftTaskTitle}
+                          onChange={(e) => setDraftTaskTitle(e.target.value)}
+                          placeholder="Custom task title"
+                          style={{
+                            width: '100%',
+                            padding: '0.85rem 0.9rem',
+                            borderRadius: 14,
+                            border: `1px solid ${T.border}`,
+                            background: T.white,
+                            color: T.ink,
+                            fontSize: 13,
+                          }}
+                        />
+                        <textarea
+                          value={draftTaskDesc}
+                          onChange={(e) => setDraftTaskDesc(e.target.value)}
+                          placeholder="Optional details, deadline, vendor, school name, banker, CA note, or reminder"
+                          style={{
+                            width: '100%',
+                            minHeight: 72,
+                            padding: '0.85rem 0.9rem',
+                            borderRadius: 14,
+                            border: `1px solid ${T.border}`,
+                            background: T.white,
+                            color: T.ink,
+                            fontSize: 13,
+                            resize: 'vertical',
+                            fontFamily: 'DM Sans, sans-serif',
+                          }}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                          <div style={{ fontSize: 13, color: T.muted }}>Use this for personal tasks the default planner does not know about.</div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const title = draftTaskTitle.trim()
+                              const desc = draftTaskDesc.trim()
+                              if (!title) return
+                              dispatch({ type: 'ADD_CUSTOM_TASK', phase, title, desc })
+                              setDraftTaskTitle('')
+                              setDraftTaskDesc('')
+                            }}
+                            style={{
+                              padding: '0.75rem 1rem',
+                              borderRadius: 999,
+                              border: 'none',
+                              background: T.navy,
+                              color: T.white,
+                              fontSize: 13,
+                              fontWeight: 800,
+                            }}
+                          >
+                            Add task
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  ) : null}
+
+                    <div
+                      style={{
+                        padding: '1rem 1.25rem 1.15rem',
+                        borderTop: `1px solid ${T.border}`,
+                        background: 'rgba(29,22,15,0.03)',
+                      }}
+                    >
+                      <div style={{ fontSize: 14, color: allDone ? T.green : T.muted }}>
+                        {allDone ? 'All tasks in this phase are complete.' : `${totalTasks - done} tasks remaining in this phase.`}
+                      </div>
+                    </div>
+                  </div>
                 </SurfaceCard>
               )
-            })}
+            })()}
           </div>
         )}
       </div>
@@ -2190,7 +2096,6 @@ export default function JourneyPage() {
             const parsed = JSON.parse(raw) as {
               completedTaskIds?: string[]
               completedCustomTaskIds?: string[]
-              excludedAutoTaskIds?: string[]
               manualMilestoneIds?: string[]
               customTasks?: CustomTask[]
               currentPhase?: number
@@ -2198,7 +2103,6 @@ export default function JourneyPage() {
             persisted = {
               completedTasks: new Set(parsed.completedTaskIds || []),
               completedCustomTaskIds: new Set(parsed.completedCustomTaskIds || []),
-              excludedAutoTasks: new Set(parsed.excludedAutoTaskIds || []),
               manualMilestones: new Set(parsed.manualMilestoneIds || []),
               customTasks: parsed.customTasks || [],
               currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : hasSavedReadiness ? 0 : 0,
@@ -2242,7 +2146,6 @@ export default function JourneyPage() {
         JSON.stringify({
             completedTaskIds: [...state.completedTasks],
             completedCustomTaskIds: [...state.completedCustomTaskIds],
-            excludedAutoTaskIds: [...state.excludedAutoTasks],
             manualMilestoneIds: [...state.manualMilestones],
             customTasks: state.customTasks,
             currentPhase: state.currentPhase,
@@ -2251,7 +2154,7 @@ export default function JourneyPage() {
     } catch {
       return
     }
-  }, [state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.excludedAutoTasks, state.manualMilestones, user?.id])
+  }, [state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.manualMilestones, user?.id])
 
   if (shouldBlock || loadingSavedJourney) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
