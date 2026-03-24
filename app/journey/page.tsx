@@ -852,6 +852,10 @@ function phaseTaskStats(
   return { done, total, pct }
 }
 
+function getPastPhaseTaskIds(phases: number[]) {
+  return new Set(TASKS.filter((task) => phases.includes(task.phase)).map((task) => task.id))
+}
+
 function formatMoveDate(moveDate?: string) {
   if (!moveDate || moveDate === 'exploring') return 'Exploring timeline'
   const [year, month] = moveDate.split('-')
@@ -1371,7 +1375,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
   )
 }
 
-function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; dispatch: React.Dispatch<Action>; userId: string }) {
+function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: React.Dispatch<Action> }) {
   const [tab, setTab] = useState<'tasks' | 'guidance'>('tasks')
   const [draftTaskTitle, setDraftTaskTitle] = useState('')
   const [draftTaskDesc, setDraftTaskDesc] = useState('')
@@ -1392,8 +1396,6 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
     [A, state.completedTasks, state.manualMilestones]
   )
 
-  const effectiveCompletedTasks = state.completedTasks
-
   const customTasksByPhase = useMemo(() => {
     const map = new Map<number, CustomTask[]>()
     state.customTasks.forEach((task) => {
@@ -1408,13 +1410,22 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
   const completedMsCount = msCompleted.size
   const highImpact = MILESTONES.find((m) => !msCompleted.has(m.id))
   const postMove = getPostMoveRecommendation(A)
-  const visiblePhases = alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]
+  const visiblePhases = useMemo(() => (alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]), [alreadyMoved])
   const activeTimelinePhase = getActiveTimelinePhase(A.moveDate)
   const journeyPhaseIndex = visiblePhases.includes(activeTimelinePhase) ? activeTimelinePhase : visiblePhases[0]
   const selectedPhaseIndex = visiblePhases.includes(state.currentPhase) ? state.currentPhase : journeyPhaseIndex
   const currentPhaseLabel = PHASES[journeyPhaseIndex]
   const currentPhaseTasks = TASKS.filter((task) => task.phase === journeyPhaseIndex)
   const journeyHealthPhases = visiblePhases.filter((phase) => phase <= journeyPhaseIndex)
+  const autoCompletedPastTaskIds = useMemo(
+    () => getPastPhaseTaskIds(visiblePhases.filter((phase) => phase < journeyPhaseIndex)),
+    [journeyPhaseIndex, visiblePhases]
+  )
+  const effectiveCompletedTasks = useMemo(() => {
+    const merged = new Set(state.completedTasks)
+    autoCompletedPastTaskIds.forEach((id) => merged.add(id))
+    return merged
+  }, [autoCompletedPastTaskIds, state.completedTasks])
   const nextTask =
     currentPhaseTasks.find((task) => !effectiveCompletedTasks.has(task.id) && task.priority === 'critical') ||
     currentPhaseTasks.find((task) => !effectiveCompletedTasks.has(task.id)) ||
@@ -1433,55 +1444,11 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
         ]
       : ['You have already closed the major move-back levers. Focus on staying consistent through the remaining phases.']
 
-  const lastSeen = useMemo(() => {
-    if (typeof window === 'undefined') return null
-    try {
-      const raw = window.localStorage.getItem(`journey:last-seen:${userId}`)
-      return raw ? (JSON.parse(raw) as { at?: string; completedTaskIds?: string[]; completedCustomTaskIds?: string[]; phase?: number }) : null
-    } catch {
-      return null
-    }
-  }, [userId])
-
-  const changesSinceLastVisit = useMemo(() => {
-    const previousTasks = new Set(lastSeen?.completedTaskIds || [])
-    const previousCustomTasks = new Set(lastSeen?.completedCustomTaskIds || [])
-    const completedNow = [...effectiveCompletedTasks].filter((id) => !previousTasks.has(id))
-    const customCompletedNow = [...state.completedCustomTaskIds].filter((id) => !previousCustomTasks.has(id))
-    const phaseAdvanced = typeof lastSeen?.phase === 'number' && journeyPhaseIndex > lastSeen.phase
-    return {
-      completedNow: [...completedNow, ...customCompletedNow],
-      phaseAdvanced,
-      lastSeenAt: lastSeen?.at || '',
-    }
-  }, [effectiveCompletedTasks, journeyPhaseIndex, lastSeen, state.completedCustomTaskIds])
-
   useEffect(() => {
     if (alreadyMoved && state.currentPhase < 3) {
       dispatch({ type: 'SET_PHASE', phase: 3 })
     }
   }, [alreadyMoved, dispatch, state.currentPhase])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const persist = () => {
-      try {
-        window.localStorage.setItem(
-          `journey:last-seen:${userId}`,
-          JSON.stringify({
-            at: new Date().toISOString(),
-            completedTaskIds: [...state.completedTasks],
-            completedCustomTaskIds: [...state.completedCustomTaskIds],
-            phase: journeyPhaseIndex,
-          })
-        )
-      } catch {
-        return
-      }
-    }
-    window.addEventListener('pagehide', persist)
-    return () => window.removeEventListener('pagehide', persist)
-  }, [journeyPhaseIndex, state.completedCustomTaskIds, state.completedTasks, userId])
 
   return (
     <div style={{ minHeight: '100vh', background: T.hero }}>
@@ -1599,34 +1566,6 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
             </div>
           </SurfaceCard>
         </div>
-
-        {changesSinceLastVisit.lastSeenAt ? (
-          <div
-            style={{
-              marginBottom: '1rem',
-              padding: '0.95rem 1.15rem',
-              borderRadius: 18,
-              background: T.greenSoft,
-              border: `1px solid rgba(23,117,58,0.18)`,
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: 12,
-              alignItems: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <div style={{ fontSize: 14, color: T.green, lineHeight: 1.65 }}>
-              <strong>Since your last visit:</strong>{' '}
-              {changesSinceLastVisit.completedNow.length > 0
-                ? `${changesSinceLastVisit.completedNow.length} tasks are now complete`
-                : 'your plan structure is unchanged'}
-              {changesSinceLastVisit.phaseAdvanced ? ' and you have advanced to a new phase.' : '.'}
-            </div>
-            <div style={{ fontSize: 12, color: T.green }}>
-              Last seen {new Date(changesSinceLastVisit.lastSeenAt).toLocaleDateString()}
-            </div>
-          </div>
-        ) : null}
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1rem' }}>
           {[
@@ -1897,6 +1836,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                   <div style={{ padding: '0.4rem 0' }}>
                     {tasks.map((task, index) => {
                       const isDone = effectiveCompletedTasks.has(task.id)
+                      const isAutoPast = autoCompletedPastTaskIds.has(task.id) && !state.completedTasks.has(task.id)
                       return (
                         <div
                           key={task.id}
@@ -1911,7 +1851,10 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                         >
                           <button
                             type="button"
-                            onClick={() => dispatch({ type: 'TOGGLE_TASK', id: task.id })}
+                            onClick={() => {
+                              if (isAutoPast) return
+                              dispatch({ type: 'TOGGLE_TASK', id: task.id })
+                            }}
                             style={{
                               width: 22,
                               height: 22,
@@ -1919,6 +1862,8 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                               border: `1.5px solid ${isDone ? T.green : task.priority === 'critical' ? T.saffron : T.borderStrong}`,
                               background: isDone ? T.green : 'transparent',
                               marginTop: 2,
+                              cursor: isAutoPast ? 'default' : 'pointer',
+                              opacity: isAutoPast ? 0.85 : 1,
                             }}
                           />
                           <div>
@@ -1934,6 +1879,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                                 {task.title}
                               </div>
                               {task.priority === 'critical' ? <Pill tone="saffron">Critical</Pill> : null}
+                              {isAutoPast ? <Pill tone="green">Past phase</Pill> : null}
                             </div>
                             <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div>
                           </div>
@@ -2184,5 +2130,5 @@ export default function JourneyPage() {
 
   if (shouldBlock || loadingSavedJourney) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
-  return <JourneyDashboard state={state} dispatch={dispatch} userId={user?.id || 'anonymous'} />
+  return <JourneyDashboard state={state} dispatch={dispatch} />
 }
