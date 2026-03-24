@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
@@ -22,7 +22,7 @@ const T = {
     'radial-gradient(ellipse 70% 55% at 50% 10%, rgba(255,153,51,0.1) 0%, transparent 65%), radial-gradient(ellipse 45% 45% at 15% 80%, rgba(19,136,8,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 85% 75%, rgba(0,0,128,0.05) 0%, transparent 60%)',
 }
 
-export default function ConfirmAuthPage() {
+function ConfirmAuthPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying')
@@ -203,5 +203,13 @@ export default function ConfirmAuthPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ConfirmAuthPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad }} />}>
+      <ConfirmAuthPageContent />
+    </Suspense>
   )
 }
