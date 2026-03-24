@@ -25,11 +25,12 @@ export type Rec = {
   actions: string[]
 }
 type Result = { score: ScoreBreakdown; status: string; statusColor: string; statusBg: string; headline: string; subheadline: string; risks: RiskItem[]; financial: FinancialSnapshot; cityName: string; recommendation: Rec }
+type PlannerUser = { firstName: string; lastName: string; email: string }
 
 async function submitPlannerReport(params: {
   answers: Partial<Answers>
   result: Result
-  user: { firstName: string; lastName: string; email: string }
+  user: PlannerUser
 }) {
   const {
     data: { session },
@@ -253,7 +254,7 @@ function UpdateSimulator({
 }: { 
   originalAnswers: Answers
   originalResult: Result
-  user: { firstName: string; email: string }
+  user: PlannerUser
   onClose: (updatedResult?: Result) => void
 }) {
   const [simAnswers, setSimAnswers] = useState<Answers>(originalAnswers)
