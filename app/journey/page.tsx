@@ -685,7 +685,7 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
         editingProfile: action.payload.editingProfile ?? state.editingProfile,
       }
     case 'START_JOURNEY':
-      return { ...state, step: 'journey', editingProfile: false }
+      return { ...state, step: 'journey', editingProfile: false, currentPhase: getDefaultJourneyPhase(state.answers) }
     case 'EDIT_PROFILE':
       return { ...state, step: 'profile', editingProfile: true }
     case 'SET_PHASE':
@@ -880,6 +880,17 @@ function getActiveTimelinePhase(moveDate?: string) {
   if (current < phase4Start) return 3
   if (current < phase5Start) return 4
   return 4
+}
+
+function getDefaultJourneyPhase(answers: Partial<Answers>) {
+  const alreadyMoved = answers.alreadyMoved === 'yes'
+  const visiblePhases = alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]
+  const activePhase = getActiveTimelinePhase(answers.moveDate)
+  return visiblePhases.includes(activePhase) ? activePhase : visiblePhases[0]
+}
+
+function shouldOpenJourneyDashboard(answers: Partial<Answers>) {
+  return Boolean(answers.country || answers.savings || answers.hasJob || answers.city || answers.moveDate || answers.timeline)
 }
 
 function getPhaseTimeStatus(phase: number, activePhase: number) {
@@ -2123,18 +2134,21 @@ export default function JourneyPage() {
         console.error('Error loading journey initialization:', error)
       }
 
+      const mergedAnswers = { ...savedAnswers, ...(persisted.answers || {}) }
+      const shouldOpenDashboard = shouldOpenJourneyDashboard(mergedAnswers)
+
       dispatch({
         type: 'LOAD_SAVED',
         payload: {
           firstName: user.firstName || '',
-          answers: { ...savedAnswers, ...(persisted.answers || {}) },
-          step: persisted.step ?? (hasSavedReadiness ? 'journey' : 'profile'),
+          answers: mergedAnswers,
+          step: persisted.editingProfile ? 'profile' : shouldOpenDashboard ? 'journey' : 'profile',
           editingProfile: persisted.editingProfile ?? false,
           completedTasks: persisted.completedTasks,
           completedCustomTaskIds: persisted.completedCustomTaskIds,
           manualMilestones: persisted.manualMilestones,
           customTasks: persisted.customTasks,
-          currentPhase: persisted.currentPhase,
+          currentPhase: typeof persisted.currentPhase === 'number' ? persisted.currentPhase : getDefaultJourneyPhase(mergedAnswers),
         },
       })
       setLoadingSavedJourney(false)
@@ -2148,7 +2162,7 @@ export default function JourneyPage() {
   }, [authLoading, user])
 
   useEffect(() => {
-    if (!user?.id || typeof window === 'undefined') return
+    if (loadingSavedJourney || !user?.id || typeof window === 'undefined') return
     try {
       window.localStorage.setItem(
         `journey:state:${user.id}`,
@@ -2166,7 +2180,7 @@ export default function JourneyPage() {
     } catch {
       return
     }
-  }, [state.answers, state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.editingProfile, state.manualMilestones, state.step, user?.id])
+  }, [loadingSavedJourney, state.answers, state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.editingProfile, state.manualMilestones, state.step, user?.id])
 
   if (shouldBlock || loadingSavedJourney) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
