@@ -1,153 +1,351 @@
 'use client'
 
-import { useReducer, useMemo, useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useProtectedRoute } from '../../components/useProtectedRoute'
 
-// ─── EXACT SCORING ENGINE (mirrors planner-page.tsx) ─────────────────────────
-
 type Answers = {
-  country: string; savings: string; yearsAbroad: string; hasKids: string
-  kidsAge: string; hasJob: string; city: string
-  timeline: string; knowsRNOR: string; housing: string
-  moveDate: string      // 'YYYY-MM' or 'exploring'
-  alreadyMoved: string  // 'yes' | 'no' | '' — only shown when moveDate is in the past
+  country: string
+  savings: string
+  yearsAbroad: string
+  hasKids: string
+  kidsAge: string
+  hasJob: string
+  city: string
+  timeline: string
+  knowsRNOR: string
+  housing: string
+  moveDate: string
+  alreadyMoved: string
 }
 
 const CITY_BASE: Record<string, number> = {
-  Hyderabad: 180000, Bangalore: 240000, Pune: 160000,
-  Chennai: 170000, Mumbai: 280000, Other: 185000, undecided: 185000,
+  Hyderabad: 180000,
+  Bangalore: 240000,
+  Pune: 160000,
+  Chennai: 170000,
+  Mumbai: 280000,
+  Other: 185000,
+  undecided: 185000,
 }
+
 const SAVINGS_USD: Record<string, number> = {
-  '200000+': 200000, '100000': 150000, '50000': 75000, 'under50': 35000,
+  '200000+': 200000,
+  '100000': 150000,
+  '50000': 75000,
+  'under50': 35000,
 }
 
 function calcRunwayMonths(savings: string, city: string): number {
   const monthly = CITY_BASE[city] || 185000
-  return Math.round((SAVINGS_USD[savings] || 75000) * 83 / monthly)
+  return Math.round(((SAVINGS_USD[savings] || 75000) * 83) / monthly)
 }
 
-type ScoreBreakdown = { financial: number; lifeComplexity: number; career: number; planning: number; total: number }
+type ScoreBreakdown = {
+  financial: number
+  lifeComplexity: number
+  career: number
+  planning: number
+  total: number
+}
 
 function computeScore(A: Answers): ScoreBreakdown {
-  let financial = 0, life = 0, career = 0, planning = 0
-  if (A.savings === '200000+') financial += 20; else if (A.savings === '100000') financial += 15; else if (A.savings === '50000') financial += 10; else financial += 5
-  if (A.yearsAbroad === '10+' || A.yearsAbroad === '7') financial += 10; else if (A.yearsAbroad === '5') financial += 7; else if (A.yearsAbroad === '3') financial += 5; else financial += 2
-  if (A.country === 'USA' || A.country === 'UK') financial += 5; else if (A.country === 'UAE') financial += 4; else financial += 3
-  const runway = calcRunwayMonths(A.savings, A.city)
-  if (runway >= 30) financial += 5; else if (runway >= 24) financial += 4; else if (runway >= 18) financial += 3; else if (runway >= 12) financial += 2; else financial += 1
-  if (A.hasKids === 'no') life += 15; else life += 8
-  if (A.hasKids === 'no') life += 7; else if (A.kidsAge === 'under5') life += 6; else if (A.kidsAge === '5to12') life += 4; else if (A.kidsAge === 'adult') life += 6; else life += 2
-  if (A.housing === 'owned') life += 3; else if (A.housing === 'arranged') life += 2
-  if (A.hasJob === 'remote_us') career = 20; else if (A.hasJob === 'own_business') career = 17; else if (A.hasJob === 'india_job') career = 15; else if (A.hasJob === 'searching') career = 8; else career = 4
-  if (A.city && A.city !== 'undecided') planning += 6; else planning += 2
-  if (A.timeline === 'within6') planning += 6; else if (A.timeline === '6to12') planning += 5; else if (A.timeline === '1to2') planning += 4; else planning += 2
-  if (A.knowsRNOR === 'yes_filed') planning += 8; else if (A.knowsRNOR === 'yes_aware') planning += 5; else if (A.knowsRNOR === 'partial') planning += 3; else planning += 1
-  return { financial, lifeComplexity: life, career, planning, total: Math.min(100, financial + life + career + planning) }
-}
+  let financial = 0
+  let life = 0
+  let career = 0
+  let planning = 0
 
-// ─── THEME ────────────────────────────────────────────────────────────────────
+  if (A.savings === '200000+') financial += 20
+  else if (A.savings === '100000') financial += 15
+  else if (A.savings === '50000') financial += 10
+  else financial += 5
+
+  if (A.yearsAbroad === '10+' || A.yearsAbroad === '7') financial += 10
+  else if (A.yearsAbroad === '5') financial += 7
+  else if (A.yearsAbroad === '3') financial += 5
+  else financial += 2
+
+  if (A.country === 'USA' || A.country === 'UK') financial += 5
+  else if (A.country === 'UAE') financial += 4
+  else financial += 3
+
+  const runway = calcRunwayMonths(A.savings, A.city)
+  if (runway >= 30) financial += 5
+  else if (runway >= 24) financial += 4
+  else if (runway >= 18) financial += 3
+  else if (runway >= 12) financial += 2
+  else financial += 1
+
+  if (A.hasKids === 'no') life += 15
+  else life += 8
+
+  if (A.hasKids === 'no') life += 7
+  else if (A.kidsAge === 'under5') life += 6
+  else if (A.kidsAge === '5to12') life += 4
+  else if (A.kidsAge === 'adult') life += 6
+  else life += 2
+
+  if (A.housing === 'owned') life += 3
+  else if (A.housing === 'arranged') life += 2
+
+  if (A.hasJob === 'remote_us') career = 20
+  else if (A.hasJob === 'own_business') career = 17
+  else if (A.hasJob === 'india_job') career = 15
+  else if (A.hasJob === 'searching') career = 8
+  else career = 4
+
+  if (A.city && A.city !== 'undecided') planning += 6
+  else planning += 2
+
+  if (A.timeline === 'within6') planning += 6
+  else if (A.timeline === '6to12') planning += 5
+  else if (A.timeline === '1to2') planning += 4
+  else planning += 2
+
+  if (A.knowsRNOR === 'yes_filed') planning += 8
+  else if (A.knowsRNOR === 'yes_aware') planning += 5
+  else if (A.knowsRNOR === 'partial') planning += 3
+  else planning += 1
+
+  return {
+    financial,
+    lifeComplexity: life,
+    career,
+    planning,
+    total: Math.min(100, financial + life + career + planning),
+  }
+}
 
 const T = {
-  bg: '#F8F5F0', white: '#FFFFFF', ink: '#1A1208', muted: '#6B5E50', soft: '#B5A898',
-  border: '#E5E1DA', saffron: '#FF9933', saffronLight: '#FFF3E6',
-  saffronBorder: 'rgba(255,153,51,0.25)', green: '#138808', greenLight: '#E8F5E8',
-  navy: '#000080', navyLight: '#EEF2FF', red: '#C0392B', redLight: '#FCEBEB',
-  heroGrad: 'radial-gradient(ellipse 70% 55% at 50% 10%, rgba(255,153,51,0.1) 0%, transparent 65%), radial-gradient(ellipse 45% 45% at 15% 80%, rgba(19,136,8,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 85% 75%, rgba(0,0,128,0.05) 0%, transparent 60%)',
+  paper: '#fffdf9',
+  white: '#ffffff',
+  ink: '#1d160f',
+  muted: '#665848',
+  soft: '#9d907f',
+  border: 'rgba(29,22,15,0.10)',
+  borderStrong: 'rgba(29,22,15,0.16)',
+  saffron: '#f08a24',
+  saffronSoft: '#fff1de',
+  green: '#17753a',
+  greenSoft: '#e8f4eb',
+  navy: '#173e8f',
+  navySoft: '#eaf0ff',
+  rose: '#a64935',
+  roseSoft: '#f7e8e4',
+  bronze: '#8d5c22',
+  hero:
+    'radial-gradient(circle at top left, rgba(240,138,36,0.16), transparent 34%), radial-gradient(circle at 85% 18%, rgba(23,117,58,0.14), transparent 25%), linear-gradient(180deg, #fffaf3 0%, #f5efe6 54%, #f2eadf 100%)',
+  dark: 'linear-gradient(135deg, #20160f 0%, #302117 46%, #173e2c 100%)',
 }
 
-// ─── MILESTONES — mapped to planner scoring pillars ───────────────────────────
-
 type Milestone = {
-  id: string; label: string; icon: string; scoreImpact: number
-  pillar: string; description: string; answerKey: keyof Answers
+  id: string
+  label: string
+  icon: string
+  scoreImpact: number
+  pillar: string
+  description: string
+  answerKey: keyof Answers
   completedWhen: (a: Answers) => boolean
 }
 
 const MILESTONES: Milestone[] = [
   {
-    id: 'income', label: 'Income Secured', icon: '💼', scoreImpact: 20,
-    pillar: 'Career — 20 pts max',
-    description: 'Job offer, remote work, or business income confirmed in writing before moving',
+    id: 'income',
+    label: 'Income secured',
+    icon: 'Income',
+    scoreImpact: 20,
+    pillar: 'Career',
+    description: 'Job offer, remote contract, or business income confirmed in writing before moving.',
     answerKey: 'hasJob',
     completedWhen: (a) => ['remote_us', 'own_business', 'india_job'].includes(a.hasJob),
   },
   {
-    id: 'savings', label: 'Financial Runway', icon: '💰', scoreImpact: 15,
-    pillar: 'Financial — savings pillar',
-    description: '$100K+ liquid savings available — 18+ months of runway secured',
+    id: 'savings',
+    label: 'Financial runway',
+    icon: 'Cash',
+    scoreImpact: 15,
+    pillar: 'Financial',
+    description: '$100K or more in liquid savings, with at least 18 months of runway.',
     answerKey: 'savings',
     completedWhen: (a) => ['200000+', '100000'].includes(a.savings),
   },
   {
-    id: 'rnor', label: 'Tax Strategy Ready', icon: '📊', scoreImpact: 8,
-    pillar: 'Planning — RNOR pillar',
-    description: 'RNOR window understood and CA consultation booked or done',
+    id: 'rnor',
+    label: 'Tax strategy ready',
+    icon: 'Tax',
+    scoreImpact: 8,
+    pillar: 'Planning',
+    description: 'RNOR timing is understood and a specialist CA conversation is booked or done.',
     answerKey: 'knowsRNOR',
     completedWhen: (a) => ['yes_filed', 'yes_aware'].includes(a.knowsRNOR),
   },
   {
-    id: 'housing', label: 'Housing Planned', icon: '🏠', scoreImpact: 3,
-    pillar: 'Life — housing pillar',
-    description: 'Home owned or rental arranged — not arriving without a plan',
+    id: 'housing',
+    label: 'Housing planned',
+    icon: 'Home',
+    scoreImpact: 3,
+    pillar: 'Life',
+    description: 'A home is owned or temporary housing has already been arranged.',
     answerKey: 'housing',
     completedWhen: (a) => ['owned', 'arranged'].includes(a.housing),
   },
   {
-    id: 'city', label: 'City Decided', icon: '🏙️', scoreImpact: 6,
-    pillar: 'Planning — city pillar',
-    description: 'Target city confirmed — enables school search, housing, and job applications',
+    id: 'city',
+    label: 'City decided',
+    icon: 'City',
+    scoreImpact: 6,
+    pillar: 'Planning',
+    description: 'A target city is locked, which makes everything else easier to sequence.',
     answerKey: 'city',
     completedWhen: (a) => !!a.city && a.city !== 'undecided',
   },
   {
-    id: 'family', label: 'Family Ready', icon: '👨‍👩‍👧', scoreImpact: 6,
-    pillar: 'Life — family pillar',
-    description: 'Children\'s school plan sorted and family aligned on move timeline',
+    id: 'family',
+    label: 'Family ready',
+    icon: 'Family',
+    scoreImpact: 6,
+    pillar: 'Life',
+    description: 'Schooling or family timing has been discussed and the move window is realistic.',
     answerKey: 'hasKids',
-    completedWhen: (a) => a.hasKids === 'no' || (a.hasKids === 'yes' && ['under5', '5to12', 'adult'].includes(a.kidsAge)),
+    completedWhen: (a) =>
+      a.hasKids === 'no' || (a.hasKids === 'yes' && ['under5', '5to12', 'adult'].includes(a.kidsAge)),
   },
 ]
 
-// ─── QUESTIONS for profile setup ───────────────────────────────────────────────
-
 type Question = {
-  key: keyof Answers; section: string; q: string; hint: string
-  opts: { k: string; label: string }[]
+  key: keyof Answers
+  section: string
+  q: string
+  hint: string
+  opts: { k: string; label: string; sub?: string }[]
   skipIf?: { key: keyof Answers; value: string }
 }
 
 const SETUP_QUESTIONS: Question[] = [
-  { key: 'country', section: 'Where You Are', q: 'Where are you based?', hint: 'Affects RNOR eligibility',
-    opts: [{ k: 'USA', label: 'United States' }, { k: 'UK', label: 'United Kingdom' }, { k: 'UAE', label: 'UAE / Middle East' }, { k: 'Canada', label: 'Canada' }, { k: 'Other', label: 'Other' }] },
-  { key: 'yearsAbroad', section: 'Where You Are', q: 'Years lived abroad?', hint: '7+ qualifies for full RNOR window',
-    opts: [{ k: '10+', label: '10+ years' }, { k: '7', label: '7–10 years' }, { k: '5', label: '5–7 years' }, { k: '3', label: '3–5 years' }, { k: 'under3', label: 'Under 3 years' }] },
-  { key: 'savings', section: 'Finances', q: 'Total liquid savings?', hint: 'Your financial buffer — #1 readiness factor',
-    opts: [{ k: '200000+', label: '$200,000+' }, { k: '100000', label: '$100K–$200K' }, { k: '50000', label: '$50K–$100K' }, { k: 'under50', label: 'Under $50K' }] },
-  { key: 'hasJob', section: 'Career', q: 'Income after moving?', hint: 'The single biggest risk factor',
-    opts: [{ k: 'remote_us', label: 'Remote US job — keeping same salary' }, { k: 'own_business', label: 'Own business — location independent' }, { k: 'india_job', label: 'India job confirmed' }, { k: 'searching', label: 'Actively searching' }, { k: 'no', label: 'No plan yet' }] },
-  { key: 'hasKids', section: 'Family', q: 'Do you have children?', hint: 'School timing is a top delay factor',
-    opts: [{ k: 'no', label: 'No children' }, { k: 'yes', label: 'Yes, I have kids' }] },
-  { key: 'kidsAge', section: 'Family', q: "Children's age range?", hint: 'Teens face hardest transitions',
-    opts: [{ k: 'under5', label: 'Under 5' }, { k: '5to12', label: '5–12 years' }, { k: 'teen', label: '13–17 (teen)' }, { k: 'adult', label: '18+ adults' }],
-    skipIf: { key: 'hasKids', value: 'no' } },
-  { key: 'city', section: "Where You're Going", q: 'Target city?', hint: 'Affects cost, runway, and planning score',
-    opts: [{ k: 'Hyderabad', label: 'Hyderabad' }, { k: 'Bangalore', label: 'Bangalore' }, { k: 'Pune', label: 'Pune' }, { k: 'Chennai', label: 'Chennai' }, { k: 'Mumbai', label: 'Mumbai' }, { k: 'Other', label: 'Other city' }, { k: 'undecided', label: 'Not decided yet' }] },
-  { key: 'housing', section: "Where You're Going", q: 'Housing status?', hint: 'First 90 days without housing is high-stress',
-    opts: [{ k: 'owned', label: 'Own a home in India' }, { k: 'arranged', label: 'Rental arranged' }, { k: 'searching', label: 'Actively searching' }, { k: 'no', label: 'Not started' }] },
-  { key: 'knowsRNOR', section: 'Tax Planning', q: 'Aware of RNOR tax status?', hint: 'RNOR can save ₹18–40L',
-    opts: [{ k: 'yes_filed', label: 'Yes — planned with CA specialist' }, { k: 'yes_aware', label: 'Yes — aware, not planned' }, { k: 'partial', label: 'Heard of it' }, { k: 'no', label: 'No — first time hearing this' }] },
+  {
+    key: 'country',
+    section: 'Where you are',
+    q: 'Where are you currently based?',
+    hint: 'Country influences RNOR context and return planning assumptions.',
+    opts: [
+      { k: 'USA', label: 'United States' },
+      { k: 'UK', label: 'United Kingdom' },
+      { k: 'UAE', label: 'UAE / Middle East' },
+      { k: 'Canada', label: 'Canada' },
+      { k: 'Other', label: 'Other' },
+    ],
+  },
+  {
+    key: 'yearsAbroad',
+    section: 'Where you are',
+    q: 'How long have you lived abroad?',
+    hint: 'More time abroad often means a stronger RNOR window.',
+    opts: [
+      { k: '10+', label: '10+ years' },
+      { k: '7', label: '7-10 years' },
+      { k: '5', label: '5-7 years' },
+      { k: '3', label: '3-5 years' },
+      { k: 'under3', label: 'Under 3 years' },
+    ],
+  },
+  {
+    key: 'savings',
+    section: 'Finances',
+    q: 'How much liquid savings do you have?',
+    hint: 'Savings are the biggest shock absorber during the move.',
+    opts: [
+      { k: '200000+', label: '$200,000+' },
+      { k: '100000', label: '$100K-$200K' },
+      { k: '50000', label: '$50K-$100K' },
+      { k: 'under50', label: 'Under $50K' },
+    ],
+  },
+  {
+    key: 'hasJob',
+    section: 'Career',
+    q: 'What does income look like after the move?',
+    hint: 'Income continuity is the single biggest readiness lever.',
+    opts: [
+      { k: 'remote_us', label: 'Remote job retained', sub: 'Same employer or same salary band' },
+      { k: 'own_business', label: 'Location independent business' },
+      { k: 'india_job', label: 'India job already confirmed' },
+      { k: 'searching', label: 'Actively searching' },
+      { k: 'no', label: 'No plan yet' },
+    ],
+  },
+  {
+    key: 'hasKids',
+    section: 'Family',
+    q: 'Are children part of this move?',
+    hint: 'School timing can reshape the entire return plan.',
+    opts: [
+      { k: 'no', label: 'No children involved' },
+      { k: 'yes', label: 'Yes, children are involved' },
+    ],
+  },
+  {
+    key: 'kidsAge',
+    section: 'Family',
+    q: 'What is the age range?',
+    hint: 'Teen transitions usually need the most lead time.',
+    opts: [
+      { k: 'under5', label: 'Under 5' },
+      { k: '5to12', label: '5-12 years' },
+      { k: 'teen', label: '13-17 years' },
+      { k: 'adult', label: '18+ adults' },
+    ],
+    skipIf: { key: 'hasKids', value: 'no' },
+  },
+  {
+    key: 'city',
+    section: 'Where you are going',
+    q: 'Which city are you targeting?',
+    hint: 'City choice changes cost, schools, housing, and hiring rhythm.',
+    opts: [
+      { k: 'Hyderabad', label: 'Hyderabad' },
+      { k: 'Bangalore', label: 'Bangalore' },
+      { k: 'Pune', label: 'Pune' },
+      { k: 'Chennai', label: 'Chennai' },
+      { k: 'Mumbai', label: 'Mumbai' },
+      { k: 'Other', label: 'Another city' },
+      { k: 'undecided', label: 'Still undecided' },
+    ],
+  },
+  {
+    key: 'housing',
+    section: 'Where you are going',
+    q: 'How far along is housing?',
+    hint: 'The first 60-90 days feel very different with housing sorted.',
+    opts: [
+      { k: 'owned', label: 'Home already owned' },
+      { k: 'arranged', label: 'Rental or temporary stay arranged' },
+      { k: 'searching', label: 'Actively searching' },
+      { k: 'no', label: 'Not started yet' },
+    ],
+  },
+  {
+    key: 'knowsRNOR',
+    section: 'Tax planning',
+    q: 'How ready are you on RNOR planning?',
+    hint: 'RNOR timing can materially change tax outcomes after the move.',
+    opts: [
+      { k: 'yes_filed', label: 'Planned with a specialist CA' },
+      { k: 'yes_aware', label: 'Aware and researching' },
+      { k: 'partial', label: 'Heard of it, not confident yet' },
+      { k: 'no', label: 'New topic for me' },
+    ],
+  },
 ]
 
-// ─── MOVE DATE HELPERS ────────────────────────────────────────────────────────
-
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 function getYearRange(): number[] {
   const y = new Date().getFullYear()
   return [y - 1, y, y + 1, y + 2]
 }
+
 function moveDateToTimeline(moveDate: string): string {
   if (!moveDate || moveDate === 'exploring') return 'exploring'
   const now = new Date()
@@ -155,7 +353,7 @@ function moveDateToTimeline(moveDate: string): string {
   const target = new Date(y, mo - 1, 1)
   const diffMs = target.getTime() - now.getTime()
   const diffMonths = diffMs / (1000 * 60 * 60 * 24 * 30.44)
-  if (diffMonths <= 0) return 'within6'   // already moved or this month
+  if (diffMonths <= 0) return 'within6'
   if (diffMonths <= 6) return 'within6'
   if (diffMonths <= 12) return '6to12'
   return '1to2'
@@ -168,49 +366,47 @@ function isMoveDatePast(moveDate: string): boolean {
   return new Date(y, mo - 1, 1) < new Date(now.getFullYear(), now.getMonth(), 1)
 }
 
-
 type Task = {
-  id: string; phase: number; title: string; desc: string
-  priority: 'critical' | 'essential'; milestoneId: string | null; isScoreImpact: boolean
+  id: string
+  phase: number
+  title: string
+  desc: string
+  priority: 'critical' | 'essential'
+  milestoneId: string | null
+  isScoreImpact: boolean
 }
 
-const PHASES = ['Decide & Plan', 'Prepare & Execute', 'Move & Settle', 'First Year in India']
+const PHASES = ['Decide and plan', 'Prepare and execute', 'Move and settle', 'First year in India']
 
 const TASKS: Task[] = [
-  // Phase 0 — Decide & Plan
-  { id: 't01', phase: 0, title: 'Calculate financial runway', desc: 'Estimate India monthly costs; confirm 12–18 months buffer in savings', priority: 'critical', milestoneId: 'savings', isScoreImpact: true },
-  { id: 't02', phase: 0, title: 'Research target cities', desc: 'Compare Hyderabad, Pune, Bangalore on cost, schools, and career', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't03', phase: 0, title: 'Book NRI CA consultation', desc: 'Calculate your exact RNOR window — do this 3–6 months before moving', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
-  { id: 't04', phase: 0, title: 'Assess career situation', desc: 'Negotiate remote work, start India job search, or confirm business income', priority: 'critical', milestoneId: 'income', isScoreImpact: true },
-  { id: 't06', phase: 0, title: 'Commit to a target city', desc: 'Without a city decision, nothing else can move forward', priority: 'critical', milestoneId: 'city', isScoreImpact: true },
-  { id: 't07', phase: 0, title: 'Run What-If Simulator', desc: 'See how changing job, savings, or city affects your readiness score', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  // Phase 1 — Prepare & Execute
-  { id: 't08', phase: 1, title: 'Confirm income in writing', desc: 'Job offer letter, remote work contract, or business revenue proof', priority: 'critical', milestoneId: 'income', isScoreImpact: true },
-  { id: 't09', phase: 1, title: 'Apply to schools', desc: 'Good schools fill 12–18 months ahead — submit applications now', priority: 'critical', milestoneId: 'family', isScoreImpact: true },
-  { id: 't10', phase: 1, title: 'Open NRE and NRO accounts', desc: 'Much easier to open while you still have a foreign address', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't11', phase: 1, title: 'Begin NRE fund transfers', desc: 'Systematic transfers before your residency changes', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't12', phase: 1, title: 'Arrange temporary housing', desc: 'Book a serviced apartment for 60–90 days as a bridge on arrival', priority: 'critical', milestoneId: 'housing', isScoreImpact: true },
-  { id: 't13', phase: 1, title: 'Optimise RNOR return date', desc: 'Time your arrival with CA advice to maximise RNOR window', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
-  { id: 't14', phase: 1, title: 'Purchase India health insurance', desc: 'Buy comprehensive cover before arrival — do not wait until after', priority: 'critical', milestoneId: null, isScoreImpact: false },
-  { id: 't15', phase: 1, title: 'Apostille key documents', desc: 'Education, marriage, and property documents for India use', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't16', phase: 1, title: 'Research schools in target city', desc: 'Shortlist IGCSE and IB schools near your planned neighbourhood', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  // Phase 2 — Move & Settle
-  { id: 't17', phase: 2, title: 'File Form 12A — Day 1 priority', desc: 'Cannot be backdated. Locks in RNOR status. Do this within 30 days of arriving.', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
-  { id: 't18', phase: 2, title: 'Update KYC across all accounts', desc: 'Banks, mutual funds, insurance — all need your new India address', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't19', phase: 2, title: 'Confirm school start dates', desc: 'Collect uniforms, books, and arrange teacher introductions', priority: 'critical', milestoneId: 'family', isScoreImpact: true },
-  { id: 't20', phase: 2, title: 'Find permanent housing', desc: 'Transition from serviced apartment to long-term rental or purchase', priority: 'critical', milestoneId: 'housing', isScoreImpact: true },
-  { id: 't21', phase: 2, title: 'Set up local healthcare', desc: 'Identify GP, specialist network, and nearest quality hospital', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't22', phase: 2, title: 'Cancel US services', desc: 'Utilities, subscriptions, storage — eliminate recurring costs', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't23', phase: 2, title: 'Convert NRE account', desc: 'Check timing with CA before converting — affects tax treatment', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  // Phase 3 — First Year
-  { id: 't24', phase: 3, title: 'File first India tax return as RNOR', desc: 'Ensure foreign income is classified correctly — use your NRI CA', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
-  { id: 't25', phase: 3, title: 'Track RNOR residency days', desc: 'Count carefully each financial year — overstaying triggers full ROR status', priority: 'critical', milestoneId: null, isScoreImpact: false },
-  { id: 't26', phase: 3, title: 'Restructure investment portfolio', desc: 'Rebalance for Indian tax residency — MF, NPS, ELSS, LTCG planning', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't27', phase: 3, title: 'Build local professional network', desc: 'LinkedIn India, alumni groups, industry events in your city', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't28', phase: 3, title: 'Annual financial review', desc: 'Review NRE conversion, tax liability, investment performance with CA', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't01', phase: 0, title: 'Calculate financial runway', desc: 'Estimate monthly India costs and confirm 12-18 months of runway.', priority: 'critical', milestoneId: 'savings', isScoreImpact: true },
+  { id: 't02', phase: 0, title: 'Research target cities', desc: 'Compare cost, schools, and job fit across likely cities.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't03', phase: 0, title: 'Book NRI CA consultation', desc: 'Validate RNOR timing and key tax deadlines before committing dates.', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
+  { id: 't04', phase: 0, title: 'Assess career situation', desc: 'Lock remote work, business continuity, or the India job search plan.', priority: 'critical', milestoneId: 'income', isScoreImpact: true },
+  { id: 't06', phase: 0, title: 'Commit to a target city', desc: 'A city decision unlocks housing, schooling, and hiring decisions.', priority: 'critical', milestoneId: 'city', isScoreImpact: true },
+  { id: 't07', phase: 0, title: 'Run what-if scenarios', desc: 'See how changing savings, city, or job status changes readiness.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't08', phase: 1, title: 'Confirm income in writing', desc: 'Collect an offer letter, contract, or business proof before moving.', priority: 'critical', milestoneId: 'income', isScoreImpact: true },
+  { id: 't09', phase: 1, title: 'Apply to schools', desc: 'High-demand schools often fill well ahead of the academic year.', priority: 'critical', milestoneId: 'family', isScoreImpact: true },
+  { id: 't10', phase: 1, title: 'Open NRE and NRO accounts', desc: 'It is usually easier while you still have your foreign address.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't11', phase: 1, title: 'Start NRE fund transfers', desc: 'Move funds gradually before residency status changes.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't12', phase: 1, title: 'Arrange temporary housing', desc: 'Book a 60-90 day bridge stay before landing in India.', priority: 'critical', milestoneId: 'housing', isScoreImpact: true },
+  { id: 't13', phase: 1, title: 'Optimize RNOR return date', desc: 'Coordinate your move timing with tax advice.', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
+  { id: 't14', phase: 1, title: 'Purchase India health insurance', desc: 'Buy cover before arrival instead of waiting.', priority: 'critical', milestoneId: null, isScoreImpact: false },
+  { id: 't15', phase: 1, title: 'Apostille key documents', desc: 'Prepare education, marriage, property, and identity paperwork.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't16', phase: 1, title: 'Shortlist schools', desc: 'Research curriculum, commute, and intake windows in your city.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't17', phase: 2, title: 'File Form 12A', desc: 'Do this promptly after arrival if your CA confirms it applies.', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
+  { id: 't18', phase: 2, title: 'Update KYC everywhere', desc: 'Refresh address and residency details across banks and investments.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't19', phase: 2, title: 'Confirm school start dates', desc: 'Lock uniforms, books, transport, and the first-week plan.', priority: 'critical', milestoneId: 'family', isScoreImpact: true },
+  { id: 't20', phase: 2, title: 'Find permanent housing', desc: 'Move from temporary stay into a stable long-term setup.', priority: 'critical', milestoneId: 'housing', isScoreImpact: true },
+  { id: 't21', phase: 2, title: 'Set up local healthcare', desc: 'Choose your hospital, GP, and specialist network early.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't22', phase: 2, title: 'Cancel legacy overseas costs', desc: 'Remove subscriptions, utilities, and storage you no longer need.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't23', phase: 2, title: 'Review NRE conversion timing', desc: 'Check account conversion timing with your CA.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't24', phase: 3, title: 'File first India tax return', desc: 'Make sure foreign income classification matches your RNOR status.', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
+  { id: 't25', phase: 3, title: 'Track residency days', desc: 'Keep a precise count each financial year.', priority: 'critical', milestoneId: null, isScoreImpact: false },
+  { id: 't26', phase: 3, title: 'Restructure investment portfolio', desc: 'Rebalance around Indian tax residency and cash needs.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't27', phase: 3, title: 'Build a local network', desc: 'Activate alumni, hiring, founder, and city community groups.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  { id: 't28', phase: 3, title: 'Run an annual financial review', desc: 'Review taxes, transfers, and investment positioning with a CA.', priority: 'essential', milestoneId: null, isScoreImpact: false },
 ]
-
-// ─── STATE ────────────────────────────────────────────────────────────────────
 
 type JourneyState = {
   step: 'profile' | 'journey'
@@ -222,8 +418,6 @@ type JourneyState = {
   firstName: string
 }
 
-const blankAnswers: Partial<Answers> = {}
-
 type Action =
   | { type: 'SET_ANSWER'; key: keyof Answers; value: string }
   | { type: 'SET_MOVE_DATE'; value: string }
@@ -234,6 +428,7 @@ type Action =
   | { type: 'UNCOMPLETE_PHASE'; phase: number }
   | { type: 'SET_PHASE'; phase: number }
   | { type: 'SET_NAME'; name: string }
+  | { type: 'RESET' }
 
 function journeyReducer(state: JourneyState, action: Action): JourneyState {
   switch (action.type) {
@@ -261,7 +456,7 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
     case 'COMPLETE_PHASE': {
       const newTasks = new Set(state.completedTasks)
       let lastMilestone = state.lastMilestone
-      TASKS.filter(t => t.phase === action.phase).forEach(t => {
+      TASKS.filter((t) => t.phase === action.phase).forEach((t) => {
         newTasks.add(t.id)
         if (t.milestoneId && t.isScoreImpact) lastMilestone = t.milestoneId
       })
@@ -271,11 +466,11 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
     }
     case 'UNCOMPLETE_PHASE': {
       const newTasks = new Set(state.completedTasks)
-      TASKS.filter(t => t.phase === action.phase).forEach(t => newTasks.delete(t.id))
+      TASKS.filter((t) => t.phase === action.phase).forEach((t) => newTasks.delete(t.id))
       return { ...state, completedTasks: newTasks, currentPhase: action.phase }
     }
     case 'TOGGLE_MILESTONE': {
-      const manualMs = new Set(state.manualMilestones || [])
+      const manualMs = new Set(state.manualMilestones)
       if (manualMs.has(action.id)) manualMs.delete(action.id)
       else manualMs.add(action.id)
       return { ...state, manualMilestones: manualMs, lastMilestone: manualMs.has(action.id) ? action.id : null }
@@ -288,402 +483,680 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
         lastMilestone = null
       } else {
         newTasks.add(action.id)
-        const t = TASKS.find(x => x.id === action.id)
+        const t = TASKS.find((x) => x.id === action.id)
         if (t?.milestoneId && t.isScoreImpact) lastMilestone = t.milestoneId
       }
       return { ...state, completedTasks: newTasks, lastMilestone }
     }
+    case 'RESET':
+      return initialState
     default:
       return state
   }
 }
 
 const initialState: JourneyState = {
-  step: 'profile', answers: blankAnswers, completedTasks: new Set(),
-  manualMilestones: new Set(), currentPhase: 0, lastMilestone: null, firstName: '',
+  step: 'profile',
+  answers: {},
+  completedTasks: new Set(),
+  manualMilestones: new Set(),
+  currentPhase: 0,
+  lastMilestone: null,
+  firstName: '',
 }
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 function journeyPct(completedTasks: Set<string>) {
   return Math.round((completedTasks.size / TASKS.length) * 100)
 }
 
 function getStatusMeta(total: number) {
-  if (total >= 80) return { label: 'Ready to Return', color: T.green, bg: T.greenLight }
-  if (total >= 55) return { label: 'Moderately Ready', color: '#CC7A00', bg: T.saffronLight }
-  return { label: 'Not Ready Yet', color: T.red, bg: T.redLight }
+  if (total >= 80) return { label: 'Ready to return', color: T.green, bg: T.greenSoft }
+  if (total >= 55) return { label: 'Moderately ready', color: T.bronze, bg: T.saffronSoft }
+  return { label: 'Not ready yet', color: T.rose, bg: T.roseSoft }
 }
 
-function getVerdict(answers: Partial<Answers>, score: number): { icon: string; text: string; color: string } {
+function getVerdict(answers: Partial<Answers>, score: number) {
   const a = answers as Answers
-  if (score >= 80 && !['no', 'searching'].includes(a.hasJob || '') && a.savings !== 'under50')
-    return { icon: '✅', text: 'Move as planned — you are financially and logistically ready.', color: T.green }
-  if (a.hasJob === 'no' && a.savings === 'under50')
-    return { icon: '⏸️', text: 'Delay your move — confirm income and build savings to $75K+ first. Both gaps together are high-risk.', color: T.red }
-  if (a.hasJob === 'no' || a.hasJob === 'searching')
-    return { icon: '⚠️', text: 'Almost ready — confirm income before setting a departure date. This is the single highest-risk gap.', color: '#CC7A00' }
-  if (a.savings === 'under50')
-    return { icon: '⚠️', text: 'Build savings to $75K+ before moving. Financial pressure is the #1 reason NRI returns fail.', color: '#CC7A00' }
-  return { icon: '⚠️', text: 'Good progress — close remaining gaps before committing to a firm move date.', color: '#CC7A00' }
+  if (score >= 80 && !['no', 'searching'].includes(a.hasJob || '') && a.savings !== 'under50') {
+    return {
+      tone: 'Green light',
+      text: 'You are in a strong position to move as planned, with the major financial and logistics risks already under control.',
+      color: T.green,
+      bg: T.greenSoft,
+    }
+  }
+  if (a.hasJob === 'no' && a.savings === 'under50') {
+    return {
+      tone: 'Pause and rebuild',
+      text: 'Income and savings are both weak right now. That combination makes the first months after moving much more stressful than they need to be.',
+      color: T.rose,
+      bg: T.roseSoft,
+    }
+  }
+  if (a.hasJob === 'no' || a.hasJob === 'searching') {
+    return {
+      tone: 'Income first',
+      text: 'The move can work, but confirming income before fixing a departure date will remove the biggest source of pressure.',
+      color: T.bronze,
+      bg: T.saffronSoft,
+    }
+  }
+  if (a.savings === 'under50') {
+    return {
+      tone: 'Buffer matters',
+      text: 'Your plan will be much safer with a larger runway. Build more cash cushion before locking the move date.',
+      color: T.bronze,
+      bg: T.saffronSoft,
+    }
+  }
+  return {
+    tone: 'Close the remaining gaps',
+    text: 'You have momentum. A few missing pieces still stand between curiosity and a confident move plan.',
+    color: T.bronze,
+    bg: T.saffronSoft,
+  }
 }
 
-// ─── POST-MOVE RECOMMENDATION — for users already in India ───────────────────
-
-function getPostMoveRecommendation(A: Answers): { icon: string; title: string; text: string; actions: string[]; color: string; bg: string; border: string } {
+function getPostMoveRecommendation(A: Answers) {
   const noIncome = A.hasJob === 'no' || A.hasJob === 'searching'
   const lowSavings = A.savings === 'under50'
   const rnorBlind = A.knowsRNOR === 'no' || A.knowsRNOR === 'partial'
   const noHousing = A.housing === 'no' || A.housing === 'searching'
   const hasTeens = A.hasKids === 'yes' && A.kidsAge === 'teen'
 
-  // Critical — income not sorted
-  if (noIncome && lowSavings) return {
-    icon: '🚨', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
-    title: 'Urgent: income and savings need immediate attention',
-    text: 'You\'ve made the move — now the financial pressure is real. Without confirmed income and a savings buffer, the first 90 days will be stressful. This is the most important thing to fix right now.',
-    actions: [
-      'Activate your network immediately — referrals fill roles faster than job boards in India',
-      'Freeze all non-essential spending until income is confirmed — protect every dollar of savings',
-      'Explore interim remote consulting work with your former employer to bridge the gap',
-    ],
+  if (noIncome && lowSavings) {
+    return {
+      title: 'Income and cash runway need immediate focus',
+      text: 'You have already moved, so the pressure is real now. Protect cash and prioritize the fastest path to stable income.',
+      actions: [
+        'Activate referrals and warm introductions first.',
+        'Freeze non-essential spending and build a 90-day budget.',
+        'Explore bridge consulting work with your prior employer or network.',
+      ],
+      color: T.rose,
+      bg: T.roseSoft,
+      border: 'rgba(166,73,53,0.18)',
+    }
   }
 
-  if (noIncome) return {
-    icon: '⚡', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
-    title: 'Focus everything on securing income — this is your #1 priority',
-    text: 'You\'re settled in India — great. Now the clock is running on your savings. Job hunts in India take 2–4 months on average. The sooner you focus, the more runway you protect.',
-    actions: [
-      'Prioritise warm referrals over cold applications — most senior India roles fill via network',
-      A.savings !== 'under50'
-        ? 'Your savings give you 12+ months of runway — use this time confidently but urgently'
-        : 'Build a 90-day budget and track every expense — know exactly where you stand each week',
-      'Consider a remote consulting arrangement with your previous employer as a bridge income',
-    ],
+  if (noIncome) {
+    return {
+      title: 'Make income the only headline priority',
+      text: 'Everything feels easier once earnings are stable again. Focus the next few weeks around high-conviction job or consulting channels.',
+      actions: [
+        'Prioritize referrals above cold applications.',
+        'Track runway weekly so decisions stay grounded.',
+        'Package your overseas experience into India-ready narratives and salary targets.',
+      ],
+      color: T.bronze,
+      bg: T.saffronSoft,
+      border: 'rgba(141,92,34,0.18)',
+    }
   }
 
-  // RNOR critical — they may have missed the window
-  if (rnorBlind) return {
-    icon: '📊', color: '#000080', bg: '#EEF2FF', border: 'rgba(0,0,128,0.2)',
-    title: 'File Form 12A immediately — every day you wait costs money',
-    text: 'RNOR registration must happen within 30 days of your arrival date. If you haven\'t filed yet, this is your most urgent financial task. Missing this window permanently increases your tax liability by ₹18–40L.',
-    actions: [
-      'Contact an NRI-specialist CA today — not next week. The 30-day window from arrival is strict.',
-      'Gather your passport entry stamps, travel history, and foreign income details for the filing',
-      'Do not transfer large funds from your NRE account until RNOR status is confirmed',
-    ],
+  if (rnorBlind) {
+    return {
+      title: 'RNOR and tax setup should happen now',
+      text: 'Post-move tax mistakes are expensive and hard to reverse. Get clarity before making major transfers or account changes.',
+      actions: [
+        'Book a specialist CA conversation immediately.',
+        'Collect entry dates, travel history, and foreign income records.',
+        'Hold off on large account changes until the tax plan is confirmed.',
+      ],
+      color: T.navy,
+      bg: T.navySoft,
+      border: 'rgba(23,62,143,0.18)',
+    }
   }
 
-  if (noHousing) return {
-    icon: '🏠', color: '#7C5CBF', bg: '#F3F0FF', border: 'rgba(124,92,191,0.2)',
-    title: 'Sort permanent housing — everything else depends on it',
-    text: 'Settling into a permanent home is the foundation for everything else — school commute, daily routine, and your family\'s sense of stability. Living in temporary accommodation adds daily friction that slows every other transition.',
-    actions: [
-      'Give yourself a hard deadline: permanent rental signed within 60 days of arrival',
-      'Prioritise proximity to children\'s school over other preferences — commute shapes daily wellbeing',
-      'Use a local broker who specialises in expat/NRI tenants — they know which landlords are flexible on deposits',
-    ],
+  if (noHousing) {
+    return {
+      title: 'Permanent housing is the next anchor',
+      text: 'A stable home reduces stress across commute, school, routines, and the overall feeling of being settled.',
+      actions: [
+        'Set a hard deadline for signing a longer-term place.',
+        'Choose commute quality over minor amenity differences.',
+        'Use a broker who understands NRI tenants and documentation.',
+      ],
+      color: T.bronze,
+      bg: T.saffronSoft,
+      border: 'rgba(141,92,34,0.18)',
+    }
   }
 
-  if (hasTeens) return {
-    icon: '🏫', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
-    title: 'Your teenager\'s school transition is the critical variable right now',
-    text: 'For families with teenagers, school adjustment shapes how the entire family feels about the move for years. Getting this right — right school, right curriculum, right timing — is worth more time than anything else on the list.',
-    actions: [
-      'Have a direct, honest conversation with your teenager about their adjustment — address concerns before they become resentment',
-      'Research whether an IGCSE or IB school can accept a mid-term transfer — many have NRI-specific intake processes',
-      'Give it 6 months before judging the school — the first term is almost always harder than it should be',
-    ],
+  if (hasTeens) {
+    return {
+      title: 'School transition deserves disproportionate attention',
+      text: 'For families with teens, the school fit often shapes how the whole move is remembered.',
+      actions: [
+        'Have direct conversations about adjustment, not just logistics.',
+        'Confirm transfer timing and curriculum fit early.',
+        'Give the first term time before making big judgments.',
+      ],
+      color: T.navy,
+      bg: T.navySoft,
+      border: 'rgba(23,62,143,0.18)',
+    }
   }
 
-  // All good
   return {
-    icon: '✅', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
-    title: 'You\'re well-positioned — focus on settling in fully',
-    text: `You've handled the biggest risks. Income sorted, finances solid${A.knowsRNOR === 'yes_filed' ? ', RNOR filed' : ''}. The transition from here is about depth, not urgency — building routines, community, and feeling truly at home.`,
+    title: 'You are through the highest-risk part',
+    text: 'The focus now is on depth: routines, financial structure, community, and feeling established rather than provisional.',
     actions: [
-      'File your first India tax return as RNOR — ensure foreign income is classified correctly',
-      'Start building your local professional network — alumni groups, industry events, LinkedIn India connections',
-      'Do a 6-month financial review with your CA — rebalance investments for Indian tax residency',
+      'Plan the first India tax return carefully.',
+      'Build local professional and social networks deliberately.',
+      'Do a six-month financial review after the move stabilizes.',
     ],
+    color: T.green,
+    bg: T.greenSoft,
+    border: 'rgba(23,117,58,0.18)',
   }
 }
 
-// ─── SELECT COMPONENT ─────────────────────────────────────────────────────────
+function phaseTaskStats(phase: number, completedTasks: Set<string>) {
+  const phaseTasks = TASKS.filter((t) => t.phase === phase)
+  const done = phaseTasks.filter((t) => completedTasks.has(t.id)).length
+  const total = phaseTasks.length
+  const pct = total ? Math.round((done / total) * 100) : 0
+  return { done, total, pct }
+}
 
-function QSelect({ value, onChange, opts }: { value: string; onChange: (v: string) => void; opts: { k: string; label: string }[] }) {
+function formatMoveDate(moveDate?: string) {
+  if (!moveDate || moveDate === 'exploring') return 'Exploring timeline'
+  const [year, month] = moveDate.split('-')
+  return `${MONTHS_FULL[Number(month) - 1]} ${year}`
+}
+
+function SurfaceCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{ position: 'relative' }}>
-      <select value={value} onChange={e => onChange(e.target.value)}
-        style={{
-          width: '100%', padding: '11px 36px 11px 14px',
-          background: value ? T.saffronLight : T.white,
-          border: `1.5px solid ${value ? T.saffron : T.border}`,
-          borderRadius: 10, color: value ? T.ink : T.soft,
-          fontFamily: 'DM Sans, sans-serif', fontSize: 14,
-          outline: 'none', appearance: 'none' as const, cursor: 'pointer',
-          transition: 'all 0.15s',
-        }}>
-        <option value="" disabled style={{ color: T.soft }}>Select an answer…</option>
-        {opts.map(o => <option key={o.k} value={o.k} style={{ color: T.ink, background: '#fff' }}>{o.label}</option>)}
-      </select>
-      <svg style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <path d="M2 4l4 4 4-4" stroke={value ? T.saffron : T.soft} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+    <div
+      style={{
+        background: T.paper,
+        border: `1px solid ${T.border}`,
+        borderRadius: 24,
+        boxShadow: '0 22px 48px rgba(29,22,15,0.06)',
+        ...style,
+      }}
+    >
+      {children}
     </div>
   )
 }
 
-// ─── PROFILE SETUP ────────────────────────────────────────────────────────────
+function Pill({
+  children,
+  tone = 'neutral',
+}: {
+  children: React.ReactNode
+  tone?: 'neutral' | 'saffron' | 'green' | 'navy'
+}) {
+  const palette =
+    tone === 'saffron'
+      ? { bg: T.saffronSoft, color: T.bronze }
+      : tone === 'green'
+        ? { bg: T.greenSoft, color: T.green }
+        : tone === 'navy'
+          ? { bg: T.navySoft, color: T.navy }
+          : { bg: 'rgba(29,22,15,0.06)', color: T.muted }
+
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '0.42rem 0.8rem',
+        borderRadius: 999,
+        background: palette.bg,
+        color: palette.color,
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: '0.04em',
+        textTransform: 'uppercase',
+      }}
+    >
+      {children}
+    </span>
+  )
+}
+
+function LabeledMetric({
+  label,
+  value,
+  tone = 'neutral',
+}: {
+  label: string
+  value: string
+  tone?: 'neutral' | 'green' | 'saffron' | 'navy'
+}) {
+  const color = tone === 'green' ? T.green : tone === 'saffron' ? T.saffron : tone === 'navy' ? T.navy : T.white
+  return (
+    <div style={{ minWidth: 116 }}>
+      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+        {label}
+      </div>
+      <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2rem', color, lineHeight: 1 }}>{value}</div>
+    </div>
+  )
+}
+
+function OptionButton({
+  selected,
+  label,
+  sub,
+  onClick,
+}: {
+  selected: boolean
+  label: string
+  sub?: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        textAlign: 'left',
+        padding: '1rem 1rem 0.95rem',
+        borderRadius: 18,
+        border: `1.5px solid ${selected ? T.saffron : T.border}`,
+        background: selected ? T.saffronSoft : T.white,
+        boxShadow: selected ? '0 10px 24px rgba(240,138,36,0.14)' : 'none',
+        transition: 'all .18s ease',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, lineHeight: 1.4 }}>{label}</div>
+          {sub ? <div style={{ marginTop: 6, fontSize: 12, color: T.muted, lineHeight: 1.55 }}>{sub}</div> : null}
+        </div>
+        <div
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: '50%',
+            border: `1.5px solid ${selected ? T.saffron : T.borderStrong}`,
+            background: selected ? T.saffron : 'transparent',
+            flexShrink: 0,
+            marginTop: 2,
+          }}
+        />
+      </div>
+    </button>
+  )
+}
+
+function QuestionBlock({
+  question,
+  value,
+  onChange,
+}: {
+  question: Question
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <SurfaceCard style={{ padding: '1.2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+            {question.section}
+          </div>
+          <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink }}>{question.q}</h3>
+          <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>{question.hint}</p>
+        </div>
+        {value ? <Pill tone="green">Set</Pill> : null}
+      </div>
+      <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+        {question.opts.map((opt) => (
+          <OptionButton
+            key={opt.k}
+            selected={value === opt.k}
+            label={opt.label}
+            sub={opt.sub}
+            onClick={() => onChange(opt.k)}
+          />
+        ))}
+      </div>
+    </SurfaceCard>
+  )
+}
+
+function TimelinePicker({
+  value,
+  alreadyMoved,
+  onMoveDate,
+  onAlreadyMoved,
+}: {
+  value: string
+  alreadyMoved: string
+  onMoveDate: (value: string) => void
+  onAlreadyMoved: (value: string) => void
+}) {
+  const selectedYear = value && value !== 'exploring' ? Number(value.split('-')[0]) : null
+  const selectedMonth = value && value !== 'exploring' ? Number(value.split('-')[1]) : null
+
+  return (
+    <SurfaceCard style={{ padding: '1.3rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+            Timeline
+          </div>
+          <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink }}>When are you planning to move?</h3>
+          <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>
+            Choose a likely date if you have one. A rough estimate is enough to shape the journey.
+          </p>
+        </div>
+        {value ? <Pill tone="saffron">{formatMoveDate(value)}</Pill> : null}
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+          Year
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
+          {getYearRange().map((year) => {
+            const selected = selectedYear === year
+            return (
+              <button
+                type="button"
+                key={year}
+                onClick={() => {
+                  const month = selectedMonth || new Date().getMonth() + 1
+                  onMoveDate(`${year}-${String(month).padStart(2, '0')}`)
+                }}
+                style={{
+                  padding: '0.9rem 0.75rem',
+                  borderRadius: 16,
+                  border: `1.5px solid ${selected ? T.saffron : T.border}`,
+                  background: selected ? T.saffronSoft : T.white,
+                  color: selected ? T.ink : T.muted,
+                  fontSize: 14,
+                  fontWeight: 700,
+                }}
+              >
+                {year}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+          Month
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
+          {MONTHS_SHORT.map((month, idx) => {
+            const monthNumber = idx + 1
+            const selected = selectedMonth === monthNumber
+            const now = new Date()
+            const past = selectedYear !== null && new Date(selectedYear, idx, 1) < new Date(now.getFullYear(), now.getMonth(), 1)
+            return (
+              <button
+                type="button"
+                key={month}
+                disabled={!selectedYear}
+                onClick={() => selectedYear && onMoveDate(`${selectedYear}-${String(monthNumber).padStart(2, '0')}`)}
+                style={{
+                  padding: '0.95rem 0.5rem',
+                  borderRadius: 16,
+                  border: `1.5px solid ${selected ? T.saffron : T.border}`,
+                  background: selected ? T.saffronSoft : selectedYear ? T.white : 'rgba(29,22,15,0.03)',
+                  color: selected ? T.ink : !selectedYear ? T.soft : past ? T.soft : T.muted,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  opacity: selectedYear ? 1 : 0.55,
+                }}
+              >
+                {month}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onMoveDate('exploring')}
+        style={{
+          width: '100%',
+          padding: '0.9rem 1rem',
+          borderRadius: 16,
+          border: `1.5px dashed ${value === 'exploring' ? T.saffron : T.borderStrong}`,
+          background: value === 'exploring' ? T.saffronSoft : 'transparent',
+          color: value === 'exploring' ? T.ink : T.muted,
+          fontSize: 14,
+          fontWeight: 700,
+        }}
+      >
+        I am still exploring the timing
+      </button>
+
+      {isMoveDatePast(value) ? (
+        <div
+          style={{
+            marginTop: 16,
+            padding: '1rem',
+            borderRadius: 18,
+            background: 'rgba(240,138,36,0.08)',
+            border: `1px solid rgba(240,138,36,0.18)`,
+          }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.bronze, marginBottom: 10 }}>That date has already passed. Have you moved already?</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+            {[
+              { key: 'yes', label: 'Yes, I am already in India' },
+              { key: 'no', label: 'No, still planning' },
+            ].map((opt) => (
+              <OptionButton
+                key={opt.key}
+                selected={alreadyMoved === opt.key}
+                label={opt.label}
+                onClick={() => onAlreadyMoved(opt.key)}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </SurfaceCard>
+  )
+}
 
 function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: React.Dispatch<Action> }) {
-  const visible = SETUP_QUESTIONS.filter(q => !q.skipIf || state.answers[q.skipIf.key] !== q.skipIf.value)
-  const answered = visible.filter(q => state.answers[q.key]).length
+  const visibleQuestions = SETUP_QUESTIONS.filter((q) => !q.skipIf || state.answers[q.skipIf.key] !== q.skipIf.value)
+  const answered = visibleQuestions.filter((q) => state.answers[q.key]).length
   const moveDateAnswered = !!state.answers.moveDate
   const alreadyMovedRequired = isMoveDatePast(state.answers.moveDate || '')
   const alreadyMovedAnswered = !alreadyMovedRequired || !!state.answers.alreadyMoved
-  const totalRequired = visible.length + 1 + (alreadyMovedRequired ? 1 : 0) // +1 for moveDate
-  const totalAnswered = answered + (moveDateAnswered ? 1 : 0) + (alreadyMovedRequired && state.answers.alreadyMoved ? 1 : 0)
+  const totalRequired = visibleQuestions.length + 1 + (alreadyMovedRequired ? 1 : 0)
+  const totalAnswered = answered + (moveDateAnswered ? 1 : 0) + (alreadyMovedAnswered && alreadyMovedRequired ? 1 : 0)
   const allDone = totalAnswered === totalRequired && !!state.firstName.trim()
   const progress = Math.round((totalAnswered / totalRequired) * 100)
+  const projectedAnswers = state.answers as Answers
 
-  const isPast = isMoveDatePast(state.answers.moveDate || '')
-
-  const sections: { name: string; qs: typeof SETUP_QUESTIONS }[] = []
-  visible.forEach(q => {
-    const last = sections[sections.length - 1]
-    if (!last || last.name !== q.section) sections.push({ name: q.section, qs: [q] })
-    else last.qs.push(q)
-  })
-
-  const sectionColor: Record<string, string> = {
-    'Where You Are': T.saffron, 'Finances': T.green, 'Career': T.navy,
-    'Family': '#7C5CBF', "Where You're Going": '#E0531A', 'Timeline': T.saffron, 'Tax Planning': '#7C5CBF',
-  }
+  const projectedScore = useMemo(() => {
+    const requiredKeys: (keyof Answers)[] = ['country', 'savings', 'yearsAbroad', 'hasKids', 'hasJob', 'city', 'timeline', 'knowsRNOR', 'housing', 'moveDate', 'alreadyMoved', 'kidsAge']
+    const completeEnough = requiredKeys.every((key) => {
+      if (key === 'kidsAge' && state.answers.hasKids === 'no') return true
+      if (key === 'alreadyMoved' && !alreadyMovedRequired) return true
+      return !!state.answers[key]
+    })
+    return completeEnough ? computeScore(projectedAnswers).total : null
+  }, [alreadyMovedRequired, projectedAnswers, state.answers])
 
   return (
-    <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif' }}>
-      <style>{`select option{background:#fff;color:${T.ink}} select:focus{box-shadow:0 0 0 3px ${T.saffronBorder}}`}</style>
+    <div style={{ minHeight: '100vh', background: T.hero, padding: '2rem 1.25rem 4rem' }}>
+      <style>{`
+        .journey-shell { max-width: 1240px; margin: 0 auto; }
+        .journey-grid { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+        .sticky-panel { position: sticky; top: 96px; }
+        .option-grid { display: grid; gap: 1rem; }
+        @media (max-width: 980px) {
+          .journey-grid { grid-template-columns: 1fr; }
+          .sticky-panel { position: static; }
+        }
+      `}</style>
 
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '3rem 1.5rem 2rem' }}>
-        {/* Badge */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: 100, padding: '5px 14px', marginBottom: '1.25rem', boxShadow: '0 1px 8px rgba(255,153,51,.1)' }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.saffron }} />
-          <span style={{ fontSize: 11, fontWeight: 500, color: T.muted, letterSpacing: '.06em' }}>Back2India Journey · Personalised relocation system</span>
-        </div>
+      <div className="journey-shell">
+        <div className="journey-grid">
+          <div className="sticky-panel">
+            <SurfaceCard style={{ overflow: 'hidden' }}>
+              <div style={{ padding: '1.4rem 1.4rem 1rem', background: T.dark }}>
+                <Pill tone="saffron">Back2India journey</Pill>
+                <h1 style={{ fontSize: 'clamp(2.35rem, 6vw, 4.5rem)', lineHeight: 0.96, color: T.white, marginTop: 16, marginBottom: 14 }}>
+                  Plan the move like a real transition.
+                </h1>
+                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>
+                  This setup turns your answers into a living relocation dashboard: readiness, risks, milestones, and the exact next moves.
+                </p>
+              </div>
 
-        <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.7rem,4vw,2.4rem)', color: T.ink, marginBottom: '.5rem', lineHeight: 1.2 }}>
-          Set up your <em style={{ fontStyle: 'italic', color: T.saffron }}>journey profile</em>
-        </h1>
-        <p style={{ color: T.muted, fontSize: '.95rem', marginBottom: '1.5rem', lineHeight: 1.7 }}>
-          Answer {visible.length} questions. We'll calculate your exact readiness score, identify your risks, and build your personalised action plan — using the same engine as the Readiness Check.
-        </p>
-
-        {/* Progress */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '.5rem' }}>
-          <div style={{ flex: 1, height: 4, background: '#EDE9E0', borderRadius: 100, overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: T.saffron, borderRadius: 100, width: progress + '%', transition: 'width .3s ease' }} />
-          </div>
-          <span style={{ fontSize: 12, color: progress === 100 ? T.green : T.saffron, fontWeight: 600, flexShrink: 0 }}>
-            {answered}/{visible.length}{progress === 100 ? ' ✓' : ''}
-          </span>
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 1.5rem 3rem' }}>
-        {/* Name */}
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: '0.6rem' }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: T.saffron }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '.1em' }}>Your Name</span>
-          </div>
-          <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 14, padding: '1.125rem', boxShadow: '0 2px 8px rgba(0,0,0,.04)' }}>
-            <label style={{ fontSize: 14, fontWeight: 500, color: state.firstName ? T.ink : T.muted, display: 'block', marginBottom: 6 }}>What should we call you?</label>
-            <input type="text" placeholder="Your first name" value={state.firstName}
-              onChange={e => dispatch({ type: 'SET_NAME', name: e.target.value })}
-              style={{ width: '100%', padding: '11px 14px', background: state.firstName ? T.saffronLight : T.white, border: `1.5px solid ${state.firstName ? T.saffron : T.border}`, borderRadius: 10, color: T.ink, fontFamily: 'DM Sans, sans-serif', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
-          </div>
-        </div>
-
-        {/* Questions grouped by section */}
-        {sections.map(section => (
-          <div key={section.name} style={{ marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: '.6rem' }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: sectionColor[section.name] || T.saffron }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '.1em' }}>{section.name}</span>
-            </div>
-            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 14, padding: '1.125rem', boxShadow: '0 2px 8px rgba(0,0,0,.04)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {section.qs.map(q => (
-                <div key={q.key as string}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <label style={{ fontSize: 14, fontWeight: 500, color: state.answers[q.key] ? T.ink : T.muted }}>{q.q}</label>
-                    {state.answers[q.key] && <span style={{ fontSize: 11, color: T.green }}>✓</span>}
+              <div style={{ padding: '1.25rem 1.4rem 1.4rem' }}>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.muted, marginBottom: 8 }}>
+                    <span>Setup progress</span>
+                    <span style={{ fontWeight: 700 }}>{progress}%</span>
                   </div>
-                  <QSelect value={state.answers[q.key] || ''} onChange={v => dispatch({ type: 'SET_ANSWER', key: q.key, value: v })} opts={q.opts} />
-                  {!state.answers[q.key] && <div style={{ fontSize: 11, color: T.soft, marginTop: 4 }}>{q.hint}</div>}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-
-        {/* ── TIMELINE SECTION — premium calendar picker ── */}
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: '.6rem' }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: T.saffron }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '.1em' }}>Timeline</span>
-          </div>
-          <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.04)' }}>
-
-            {/* Header row */}
-            <div style={{ padding: '1rem 1.25rem .875rem', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 14, fontWeight: 500, color: state.answers.moveDate ? T.ink : T.muted }}>When are you planning to move to India?</span>
-              {state.answers.moveDate && (
-                <span style={{ fontSize: 12, fontWeight: 600, color: T.green, display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="6.5" fill="#138808"/><path d="M3.5 6.5L5.5 8.5L9.5 4.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  {state.answers.moveDate === 'exploring' ? 'Just exploring' : `${MONTHS_FULL[parseInt(state.answers.moveDate.split('-')[1]) - 1]} ${state.answers.moveDate.split('-')[0]}`}
-                </span>
-              )}
-            </div>
-
-            {/* Year selector */}
-            <div style={{ padding: '.875rem 1.25rem .75rem', borderBottom: `1px solid ${T.border}` }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: T.soft, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 8 }}>Year</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                {getYearRange().map(y => {
-                  const selYear = state.answers.moveDate && state.answers.moveDate !== 'exploring' ? parseInt(state.answers.moveDate.split('-')[0]) : null
-                  const sel = selYear === y
-                  return (
-                    <button key={y} onClick={() => {
-                      const mo = state.answers.moveDate && state.answers.moveDate !== 'exploring' ? state.answers.moveDate.split('-')[1] : String(new Date().getMonth() + 1).padStart(2, '0')
-                      dispatch({ type: 'SET_MOVE_DATE', value: `${y}-${mo}` })
-                    }} style={{
-                      padding: '11px 0', borderRadius: 12, cursor: 'pointer', textAlign: 'center' as const,
-                      fontFamily: 'DM Sans, sans-serif', fontSize: 15, fontWeight: 600, transition: 'all .15s',
-                      border: `2px solid ${sel ? T.saffron : T.border}`,
-                      background: sel ? T.saffron : T.white,
-                      color: sel ? '#fff' : y < new Date().getFullYear() ? T.soft : T.ink,
-                      boxShadow: sel ? '0 4px 14px rgba(255,153,51,.3)' : 'none',
-                    }}>{y}</button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Month grid */}
-            <div style={{ padding: '.875rem 1.25rem 1rem' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: T.soft, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 10 }}>Month</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                {MONTHS_FULL.map((m, idx) => {
-                  const hasYear = !!(state.answers.moveDate && state.answers.moveDate !== 'exploring')
-                  const selYear = hasYear ? parseInt(state.answers.moveDate!.split('-')[0]) : null
-                  const selMonth = hasYear ? parseInt(state.answers.moveDate!.split('-')[1]) : null
-                  const sel = selMonth === idx + 1
-                  const now = new Date()
-                  const isPast = selYear !== null && new Date(selYear, idx, 1) < new Date(now.getFullYear(), now.getMonth(), 1)
-                  return (
-                    <button key={m} disabled={!hasYear}
-                      onClick={() => selYear && dispatch({ type: 'SET_MOVE_DATE', value: `${selYear}-${String(idx + 1).padStart(2, '0')}` })}
-                      style={{
-                        padding: '9px 4px 7px', borderRadius: 10, cursor: hasYear ? 'pointer' : 'not-allowed',
-                        fontFamily: 'DM Sans, sans-serif', textAlign: 'center' as const, transition: 'all .15s', position: 'relative' as const,
-                        fontSize: 13, fontWeight: sel ? 600 : 400,
-                        border: `1.5px solid ${sel ? T.saffron : T.border}`,
-                        background: sel ? T.saffronLight : isPast && hasYear ? '#F9F7F4' : !hasYear ? '#FAFAF8' : T.white,
-                        color: sel ? T.ink : !hasYear ? '#D0CABC' : isPast ? T.soft : T.muted,
-                        opacity: !hasYear ? 0.55 : 1,
-                      }}>
-                      <div>{m.slice(0, 3)}</div>
-                      {isPast && hasYear && !sel && <div style={{ fontSize: 8, color: T.soft, marginTop: 1 }}>past</div>}
-                      {sel && <div style={{ position: 'absolute', top: 4, right: 4, width: 5, height: 5, borderRadius: '50%', background: T.saffron }} />}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Not sure option */}
-              <button onClick={() => dispatch({ type: 'SET_MOVE_DATE', value: 'exploring' })}
-                style={{
-                  width: '100%', marginTop: 8, padding: '10px', borderRadius: 10, cursor: 'pointer',
-                  fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 500, textAlign: 'center' as const,
-                  border: `1.5px dashed ${state.answers.moveDate === 'exploring' ? T.saffron : T.border}`,
-                  background: state.answers.moveDate === 'exploring' ? T.saffronLight : 'transparent',
-                  color: state.answers.moveDate === 'exploring' ? T.ink : T.muted, transition: 'all .15s',
-                }}>
-                🤔 &nbsp;Not sure yet — just exploring
-              </button>
-
-              {/* Hint */}
-              {state.answers.moveDate && state.answers.moveDate !== 'exploring' && (
-                <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.saffron, flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, color: T.muted }}>
-                    Scored as: <strong style={{ color: T.ink, fontWeight: 600 }}>
-                      {state.answers.timeline === 'within6' ? 'Within 6 months' : state.answers.timeline === '6to12' ? '6–12 months' : '1–2 years'}
-                    </strong>
-                    {isMoveDatePast(state.answers.moveDate) && <span style={{ color: '#CC7A00' }}> · past date</span>}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Already moved — shown when past date selected */}
-            {isMoveDatePast(state.answers.moveDate || '') && state.answers.moveDate && (
-              <div style={{ borderTop: `1px solid ${T.border}`, padding: '1rem 1.25rem', background: '#FFFBF5' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#CC7A00', background: T.saffronLight, border: `1px solid ${T.saffronBorder}`, padding: '3px 10px', borderRadius: 100, textTransform: 'uppercase' as const, letterSpacing: '.06em' }}>
-                    ✋ That date has passed
-                  </span>
-                  {state.answers.alreadyMoved && <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="6.5" fill="#138808"/><path d="M3.5 6.5L5.5 8.5L9.5 4.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: T.muted, marginBottom: 10 }}>Have you already moved to India?</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {[{ k: 'yes', icon: '🇮🇳', line1: 'Yes — I\'ve moved', line2: 'I\'m in India now' }, { k: 'no', icon: '⏳', line1: 'Not yet', line2: 'Still planning' }].map(opt => (
-                    <button key={opt.k} onClick={() => dispatch({ type: 'SET_ANSWER', key: 'alreadyMoved', value: opt.k })}
-                      style={{
-                        padding: '14px 10px', borderRadius: 12, cursor: 'pointer', textAlign: 'center' as const,
-                        fontFamily: 'DM Sans, sans-serif', transition: 'all .15s',
-                        border: `2px solid ${state.answers.alreadyMoved === opt.k ? T.saffron : T.border}`,
-                        background: state.answers.alreadyMoved === opt.k ? T.saffronLight : T.white,
-                        boxShadow: state.answers.alreadyMoved === opt.k ? '0 2px 12px rgba(255,153,51,.2)' : 'none',
-                      }}>
-                      <div style={{ fontSize: 22, marginBottom: 5 }}>{opt.icon}</div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: state.answers.alreadyMoved === opt.k ? T.ink : T.muted }}>{opt.line1}</div>
-                      <div style={{ fontSize: 11, color: T.soft, marginTop: 2 }}>{opt.line2}</div>
-                    </button>
-                  ))}
-                </div>
-                {state.answers.alreadyMoved === 'yes' && (
-                  <div style={{ marginTop: 10, padding: '10px 12px', background: T.greenLight, borderRadius: 10, fontSize: 12, color: '#27500A', lineHeight: 1.55 }}>
-                    🎉 Welcome back! Your dashboard focuses on settling in and your first year.
+                  <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
+                    <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #f08a24 0%, #f3a44f 100%)' }} />
                   </div>
-                )}
+                </div>
+
+                <div style={{ display: 'grid', gap: 12 }}>
+                  <SurfaceCard style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      Profile
+                    </div>
+                    <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.65 }}>
+                      {state.firstName ? `Planning for ${state.firstName}.` : 'Add your first name so the dashboard feels personal.'}
+                    </div>
+                  </SurfaceCard>
+
+                  <SurfaceCard style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      What this unlocks
+                    </div>
+                    <div style={{ display: 'grid', gap: 8, fontSize: 14, color: T.muted }}>
+                      <div>Readiness score tied to your move context</div>
+                      <div>Milestones that surface the biggest levers</div>
+                      <div>Task phases from planning through first year</div>
+                    </div>
+                  </SurfaceCard>
+
+                  <SurfaceCard style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      Early signal
+                    </div>
+                    <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2rem', color: projectedScore !== null ? T.green : T.ink, lineHeight: 1, marginBottom: 4 }}>
+                      {projectedScore !== null ? `${projectedScore}/100` : '--'}
+                    </div>
+                    <div style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>
+                      {projectedScore !== null
+                        ? 'Enough information is in place to estimate readiness.'
+                        : 'Complete the setup to generate the personalized dashboard.'}
+                    </div>
+                  </SurfaceCard>
+                </div>
               </div>
-            )}
+            </SurfaceCard>
+          </div>
+
+          <div className="option-grid">
+            <SurfaceCard style={{ padding: '1.25rem 1.3rem' }}>
+              <div style={{ display: 'grid', gap: 16 }}>
+                <div>
+                  <Pill tone="navy">Setup</Pill>
+                  <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', color: T.ink, marginTop: 14, marginBottom: 8 }}>
+                    Build your journey profile
+                  </h2>
+                  <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, maxWidth: 760 }}>
+                    The goal is not to collect everything. It is to gather enough signal to show you where the move is strong, where it is fragile, and what to do next.
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                    Your first name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="What should we call you?"
+                    value={state.firstName}
+                    onChange={(e) => dispatch({ type: 'SET_NAME', name: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '1rem 1rem',
+                      borderRadius: 18,
+                      border: `1.5px solid ${state.firstName ? T.saffron : T.border}`,
+                      background: state.firstName ? T.saffronSoft : T.white,
+                      color: T.ink,
+                      fontSize: 15,
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+              </div>
+            </SurfaceCard>
+
+            {visibleQuestions.map((question) => (
+              <QuestionBlock
+                key={question.key}
+                question={question}
+                value={state.answers[question.key] || ''}
+                onChange={(value) => dispatch({ type: 'SET_ANSWER', key: question.key, value })}
+              />
+            ))}
+
+            <TimelinePicker
+              value={state.answers.moveDate || ''}
+              alreadyMoved={state.answers.alreadyMoved || ''}
+              onMoveDate={(value) => dispatch({ type: 'SET_MOVE_DATE', value })}
+              onAlreadyMoved={(value) => dispatch({ type: 'SET_ANSWER', key: 'alreadyMoved', value })}
+            />
+
+            <SurfaceCard style={{ padding: '1.2rem', background: allDone ? T.dark : T.paper }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: allDone ? 'rgba(255,255,255,0.65)' : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                    Next step
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: allDone ? T.white : T.ink, marginBottom: 4 }}>
+                    {allDone ? 'Your dashboard is ready.' : `${totalRequired - totalAnswered + (state.firstName.trim() ? 0 : 1)} inputs still missing.`}
+                  </div>
+                  <div style={{ fontSize: 14, color: allDone ? 'rgba(255,255,255,0.7)' : T.muted, lineHeight: 1.7 }}>
+                    {allDone
+                      ? 'Start the journey dashboard to see readiness, milestones, and phased tasks.'
+                      : 'Finish the setup so we can calculate the score and personalize the journey.'}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={!allDone}
+                  onClick={() => dispatch({ type: 'START_JOURNEY' })}
+                  style={{
+                    padding: '1rem 1.4rem',
+                    borderRadius: 999,
+                    border: 'none',
+                    background: allDone ? T.saffron : 'rgba(29,22,15,0.08)',
+                    color: allDone ? T.white : T.soft,
+                    fontSize: 14,
+                    fontWeight: 800,
+                    minWidth: 220,
+                  }}
+                >
+                  Open journey dashboard
+                </button>
+              </div>
+            </SurfaceCard>
           </div>
         </div>
-
-        {/* CTA */}
-        {allDone ? (
-          <button onClick={() => dispatch({ type: 'START_JOURNEY' })}
-            style={{ width: '100%', padding: 15, background: T.saffron, color: '#fff', border: 'none', borderRadius: 12, fontFamily: 'DM Sans, sans-serif', fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(255,153,51,.4)' }}>
-            Start My Journey Dashboard →
-          </button>
-        ) : (
-          <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 2px 8px rgba(0,0,0,.04)' }}>
-            <span style={{ fontSize: '1.2rem' }}>📋</span>
-            <div>
-              <div style={{ fontSize: 13, color: T.muted }}>Answer all questions + your name to start</div>
-              <div style={{ fontSize: 11, color: T.soft, marginTop: 2 }}>{totalRequired - totalAnswered} question{totalRequired - totalAnswered !== 1 ? 's' : ''} remaining</div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
 }
-
-// ─── JOURNEY DASHBOARD ────────────────────────────────────────────────────────
 
 function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: React.Dispatch<Action> }) {
   const [tab, setTab] = useState<'overview' | 'tasks'>('overview')
@@ -694,583 +1167,626 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
   const A = state.answers as Answers
   const alreadyMoved = A.alreadyMoved === 'yes'
 
-  // Milestone completion: answers + task completions + manual toggles
-  const msCompleted = useMemo(() => new Set(
-    MILESTONES.filter(m =>
-      m.completedWhen(A) ||
-      TASKS.filter(t => t.milestoneId === m.id && t.isScoreImpact).some(t => state.completedTasks.has(t.id)) ||
-      state.manualMilestones.has(m.id)
-    ).map(m => m.id)
-  ), [state.answers, state.completedTasks, state.manualMilestones])
+  const msCompleted = useMemo(
+    () =>
+      new Set(
+        MILESTONES.filter(
+          (m) =>
+            m.completedWhen(A) ||
+            TASKS.filter((t) => t.milestoneId === m.id && t.isScoreImpact).some((t) => state.completedTasks.has(t.id)) ||
+            state.manualMilestones.has(m.id)
+        ).map((m) => m.id)
+      ),
+    [A, state.completedTasks, state.manualMilestones]
+  )
 
-  // Score: base from answers + bonus pts from milestones completed beyond what answers alone give
-  const scoreBreakdown = useMemo(() => {
-    const base = computeScore(A)
-    // Add points for milestones that are completed (manually or via tasks) but NOT already captured by answers
-    let bonus = 0
-    MILESTONES.forEach(m => {
-      const inScore = m.completedWhen(A)
-      const manualOrTask = state.manualMilestones.has(m.id) ||
-        TASKS.filter(t => t.milestoneId === m.id && t.isScoreImpact).some(t => state.completedTasks.has(t.id))
-      if (!inScore && manualOrTask) bonus += m.scoreImpact
-    })
-    const total = Math.min(100, base.total + bonus)
-    return { ...base, total }
-  }, [state.answers, state.completedTasks, state.manualMilestones])
-
-  const score = scoreBreakdown.total
-
-  // Auto-complete tasks based on profile answers
   const autoCompletedTasks = useMemo(() => {
     const auto = new Set<string>()
-    TASKS.forEach(t => {
+    TASKS.forEach((t) => {
       if (!t.milestoneId) return
-      const ms = MILESTONES.find(m => m.id === t.milestoneId)
-      if (ms && ms.completedWhen(A)) auto.add(t.id)
+      const milestone = MILESTONES.find((m) => m.id === t.milestoneId)
+      if (milestone && milestone.completedWhen(A)) auto.add(t.id)
     })
-    // Also auto-complete specific tasks based on answers
-    if (['owned', 'arranged'].includes(A.housing)) {
-      // Housing arranged — mark arrange temp housing as done
-      auto.add('t12')
-    }
-    if (['yes_filed', 'yes_aware'].includes(A.knowsRNOR)) {
-      auto.add('t03') // CA consultation booked
-    }
+    if (['owned', 'arranged'].includes(A.housing)) auto.add('t12')
+    if (['yes_filed', 'yes_aware'].includes(A.knowsRNOR)) auto.add('t03')
     if (A.city && A.city !== 'undecided') {
-      auto.add('t06') // committed to city
-      auto.add('t02') // researched cities
+      auto.add('t06')
+      auto.add('t02')
     }
     if (['remote_us', 'own_business', 'india_job'].includes(A.hasJob)) {
-      auto.add('t04') // assessed career
-      auto.add('t08') // confirmed income in writing
+      auto.add('t04')
+      auto.add('t08')
     }
     if (A.hasKids === 'no') {
-      // No kids — school tasks not applicable, mark them done
-      auto.add('t07') // run simulator
-      auto.add('t09') // apply to schools — not applicable
+      auto.add('t07')
+      auto.add('t09')
     }
     return auto
-  }, [state.answers])
+  }, [A])
 
-  // Effective completed tasks = manual completions ∪ auto-completed from answers
   const effectiveCompletedTasks = useMemo(() => {
     const merged = new Set(state.completedTasks)
-    autoCompletedTasks.forEach(id => merged.add(id))
+    autoCompletedTasks.forEach((id) => merged.add(id))
     return merged
-  }, [state.completedTasks, autoCompletedTasks])
+  }, [autoCompletedTasks, state.completedTasks])
 
-  const statusMeta = useMemo(() => getStatusMeta(score), [score])
-  const verdict = useMemo(() => getVerdict(state.answers, score), [state.answers, score])
-  const pct = useMemo(() => journeyPct(effectiveCompletedTasks), [effectiveCompletedTasks])
+  const scoreBreakdown = useMemo(() => {
+    const base = computeScore(A)
+    let bonus = 0
+    MILESTONES.forEach((m) => {
+      const inScore = m.completedWhen(A)
+      const manualOrTask =
+        state.manualMilestones.has(m.id) ||
+        TASKS.filter((t) => t.milestoneId === m.id && t.isScoreImpact).some((t) => state.completedTasks.has(t.id))
+      if (!inScore && manualOrTask) bonus += m.scoreImpact
+    })
+    return { ...base, total: Math.min(100, base.total + bonus) }
+  }, [A, state.completedTasks, state.manualMilestones])
+
+  const score = scoreBreakdown.total
+  const statusMeta = getStatusMeta(score)
+  const verdict = getVerdict(state.answers, score)
+  const pct = journeyPct(effectiveCompletedTasks)
   const completedMsCount = msCompleted.size
-  const highImpact = MILESTONES.find(m => !msCompleted.has(m.id))
+  const highImpact = MILESTONES.find((m) => !msCompleted.has(m.id))
+  const postMove = getPostMoveRecommendation(A)
 
-  // Auto-set phase to Move & Settle if already moved
   useEffect(() => {
     if (alreadyMoved && state.currentPhase < 2) {
       dispatch({ type: 'SET_PHASE', phase: 2 })
     }
-  }, [alreadyMoved])
+  }, [alreadyMoved, dispatch, state.currentPhase])
+
   useEffect(() => {
     if (state.lastMilestone) {
-      const ms = MILESTONES.find(m => m.id === state.lastMilestone)
-      if (ms && prevScoreRef.current !== null) {
-        setChangedBanner({ ms, prevScore: prevScoreRef.current, newScore: score })
+      const milestone = MILESTONES.find((m) => m.id === state.lastMilestone)
+      if (milestone && prevScoreRef.current !== null) {
+        setChangedBanner({ ms: milestone, prevScore: prevScoreRef.current, newScore: score })
         if (bannerTimer.current) clearTimeout(bannerTimer.current)
-        bannerTimer.current = setTimeout(() => setChangedBanner(null), 5000)
+        bannerTimer.current = setTimeout(() => setChangedBanner(null), 4000)
       }
     }
     prevScoreRef.current = score
-  }, [state.lastMilestone, score])
-
-  const scoreSegments = [
-    { label: 'Financial', s: scoreBreakdown.financial, max: 40, color: T.saffron },
-    { label: 'Life', s: scoreBreakdown.lifeComplexity, max: 25, color: '#7C5CBF' },
-    { label: 'Career', s: scoreBreakdown.career, max: 20, color: T.green },
-    { label: 'Planning', s: scoreBreakdown.planning, max: 20, color: T.navy },
-  ]
-
-  const iStyle = { fontFamily: 'DM Sans, sans-serif' }
+  }, [score, state.lastMilestone])
 
   return (
-    <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: T.hero }}>
       <style>{`
-        @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .slide-in{animation:slideIn .35s ease both}
-        .task-check{transition:all .15s}
-        .task-check:hover{opacity:.8}
-        select option{background:#fff;color:${T.ink}}
+        .dashboard-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.95fr); gap: 1rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; }
+        .overview-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; }
+        .milestone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; }
+        @media (max-width: 980px) {
+          .hero-grid, .overview-grid { grid-template-columns: 1fr; }
+          .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 640px) {
+          .stats-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
 
-      {/* ── DARK HEADER ── */}
-      <div style={{ background: '#1A1208', padding: '2rem 1.5rem 1.75rem' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: '1.25rem' }}>
-            <div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 4 }}>Back2India Journey</div>
-              <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.2rem,3vw,1.8rem)', color: '#fff', lineHeight: 1.2, marginBottom: 4 }}>
-                {state.firstName ? `${state.firstName}'s` : 'Your'} Relocation Dashboard
-              </h1>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', lineHeight: 1.5 }}>
-                {completedMsCount} of {MILESTONES.length} milestones complete · {effectiveCompletedTasks.size} of {TASKS.length} tasks done
-                {A.moveDate && A.moveDate !== 'exploring' && (
-                  <span> · {alreadyMoved ? '✅ Moved' : '📅 Moving'} {MONTHS[parseInt(A.moveDate.split('-')[1]) - 1]} {A.moveDate.split('-')[0]}</span>
-                )}
-              </p>
-            </div>
-            {/* Headline numbers — readiness hidden for already-moved users */}
-            <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-              {[
-                ...(!alreadyMoved ? [{ label: 'Readiness', val: score + '/100', color: statusMeta.color }] : []),
-                { label: 'Journey', val: pct + '%', color: '#4ADE80' },
-                { label: 'Milestones', val: `${completedMsCount}/${MILESTONES.length}`, color: '#60A5FA' },
-                ...(alreadyMoved ? [{ label: 'Status', val: 'In India', color: '#4ADE80' }] : []),
-              ].map(s => (
-                <div key={s.label} style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.6rem', color: s.color, lineHeight: 1 }}>{s.val}</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 3 }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '1.25rem 1.5rem 4rem' }}>
-
-        {/* ALREADY MOVED banner */}
-        {alreadyMoved && (
-          <div style={{ background: T.greenLight, border: `1.5px solid rgba(19,136,8,.25)`, borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 20, flexShrink: 0 }}>🎉</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#27500A', marginBottom: 2 }}>
-                You&apos;ve made the move
-                {A.moveDate && A.moveDate !== 'exploring' ? ` — ${MONTHS[parseInt(A.moveDate.split('-')[1]) - 1]} ${A.moveDate.split('-')[0]}` : ''}
-              </div>
-              <div style={{ fontSize: 12, color: '#27500A', opacity: .8, lineHeight: 1.5 }}>
-                Your dashboard is focused on settling-in tasks and first-year actions. Welcome back to India!
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* WHAT CHANGED banner */}
-        {changedBanner && (
-          <div className="slide-in" style={{ background: T.greenLight, border: `1px solid rgba(19,136,8,.2)`, borderRadius: 12, padding: '.875rem 1.125rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 18, flexShrink: 0 }}>{changedBanner.ms.icon}</span>
-            <div style={{ fontSize: 13, color: '#27500A' }}>
-              <strong>Milestone unlocked: {changedBanner.ms.label}</strong>
-              {' — '}Score improved {changedBanner.prevScore} → {changedBanner.newScore}/100
-            </div>
-            <button onClick={() => setChangedBanner(null)} style={{ marginLeft: 'auto', color: '#27500A', opacity: .5, fontSize: 16, cursor: 'pointer', background: 'none', border: 'none' }}>×</button>
-          </div>
-        )}
-
-        {/* RECOMMENDATION — different for pre/post move */}
-        {alreadyMoved ? (() => {
-          const pm = getPostMoveRecommendation(A)
-          return (
-            <div style={{ background: pm.bg, border: `1.5px solid ${pm.border}`, borderRadius: 14, padding: '1.25rem 1.5rem', marginBottom: '1rem' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: pm.color, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>What to focus on now</div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
-                <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>{pm.icon}</span>
+      <div className="dashboard-shell">
+        <div className="hero-grid" style={{ marginBottom: '1rem' }}>
+          <SurfaceCard style={{ overflow: 'hidden' }}>
+            <div style={{ padding: '1.5rem', background: T.dark }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 18 }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: pm.color, marginBottom: 4, lineHeight: 1.4 }}>{pm.title}</div>
-                  <div style={{ fontSize: 13, color: pm.color, lineHeight: 1.65, opacity: .88 }}>{pm.text}</div>
+                  <Pill tone="saffron">Back2India dashboard</Pill>
+                  <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.8rem)', lineHeight: 0.98, color: T.white, marginTop: 16, marginBottom: 10 }}>
+                    {state.firstName ? `${state.firstName}'s journey` : 'Your journey'}
+                  </h1>
+                  <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, maxWidth: 700 }}>
+                    {alreadyMoved
+                      ? 'The move has happened. This dashboard now shifts from planning to settling in and protecting the first year.'
+                      : 'A personal control panel for moving back: readiness, biggest gaps, and what to do in each phase.'}
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  {!alreadyMoved ? <LabeledMetric label="Readiness" value={`${score}/100`} tone="green" /> : null}
+                  <LabeledMetric label="Journey" value={`${pct}%`} tone="saffron" />
+                  <LabeledMetric label="Milestones" value={`${completedMsCount}/${MILESTONES.length}`} tone="navy" />
                 </div>
               </div>
-              <div style={{ borderTop: `1px solid ${pm.border}`, paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {pm.actions.map((a, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                    <div style={{ width: 17, height: 17, borderRadius: '50%', background: pm.color, color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{i + 1}</div>
-                    <div style={{ fontSize: 13, color: pm.color, lineHeight: 1.55, opacity: .85 }}>{a}</div>
+
+              <div className="stats-grid">
+                {[
+                  { label: 'Target move', value: formatMoveDate(A.moveDate) },
+                  { label: 'Country', value: A.country || 'Not set' },
+                  { label: 'City', value: A.city || 'Not set' },
+                  { label: 'Runway', value: `${calcRunwayMonths(A.savings, A.city)} months` },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    style={{
+                      padding: '1rem',
+                      borderRadius: 18,
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}
+                  >
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: T.white }}>{item.value}</div>
                   </div>
                 ))}
               </div>
             </div>
-          )
-        })() : (
-          <div style={{
-            background: T.white, border: `1.5px solid`,
-            borderColor: verdict.icon === '✅' ? 'rgba(19,136,8,.25)' : verdict.icon === '⏸️' ? 'rgba(192,57,43,.2)' : T.saffronBorder,
-            borderRadius: 14, padding: '1.125rem 1.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'flex-start', gap: 12,
-          }}>
-            <span style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{verdict.icon}</span>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: verdict.color, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>Recommendation</div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: T.ink, lineHeight: 1.6 }}>{verdict.text}</div>
-            </div>
-            <Link href="/planner" style={{ marginLeft: 'auto', fontSize: 12, color: T.saffron, textDecoration: 'none', fontWeight: 500, flexShrink: 0, whiteSpace: 'nowrap' }}>
-              Full analysis →
-            </Link>
-          </div>
-        )}
+          </SurfaceCard>
 
-        {/* TABS */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-          {([['overview', 'Overview'], ['tasks', 'Journey Progress']] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setTab(k as any)}
+          <SurfaceCard style={{ padding: '1.35rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                  Current focus
+                </div>
+                <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 6 }}>
+                  {alreadyMoved ? postMove.title : highImpact ? highImpact.label : 'Strong overall plan'}
+                </h2>
+              </div>
+              {alreadyMoved ? <Pill tone="navy">Post-move</Pill> : highImpact ? <Pill tone="saffron">Highest leverage</Pill> : <Pill tone="green">Stable</Pill>}
+            </div>
+
+            <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.75, marginBottom: 16 }}>
+              {alreadyMoved ? postMove.text : highImpact ? highImpact.description : 'You have already closed the main risk areas.'}
+            </p>
+
+            {!alreadyMoved && highImpact ? (
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+                <Pill tone="green">+{highImpact.scoreImpact} points</Pill>
+                <Pill tone="navy">{highImpact.pillar}</Pill>
+              </div>
+            ) : null}
+
+            <div
               style={{
-                padding: '7px 16px', borderRadius: 100, fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                fontFamily: 'DM Sans, sans-serif', transition: 'all .15s',
-                background: tab === k ? T.white : 'transparent',
-                color: tab === k ? T.ink : T.muted,
-                border: `1px solid ${tab === k ? T.border : 'transparent'}`,
-                boxShadow: tab === k ? '0 1px 4px rgba(0,0,0,.06)' : 'none',
-              }}>
-              {l}
-            </button>
-          ))}
+                padding: '1rem',
+                borderRadius: 18,
+                background: alreadyMoved ? postMove.bg : verdict.bg,
+                border: `1px solid ${alreadyMoved ? postMove.border : T.border}`,
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 700, color: alreadyMoved ? postMove.color : verdict.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                {alreadyMoved ? 'Recommendation' : verdict.tone}
+              </div>
+              <div style={{ fontSize: 14, color: alreadyMoved ? postMove.color : verdict.color, lineHeight: 1.75 }}>
+                {alreadyMoved ? postMove.actions[0] : verdict.text}
+              </div>
+            </div>
+
+            {!alreadyMoved ? (
+              <Link
+                href="/planner"
+                style={{
+                  display: 'inline-flex',
+                  marginTop: 16,
+                  padding: '0.82rem 1.1rem',
+                  borderRadius: 999,
+                  background: T.ink,
+                  color: T.white,
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                Open full readiness analysis
+              </Link>
+            ) : null}
+          </SurfaceCard>
         </div>
 
-        {/* ── OVERVIEW TAB ── */}
-        {tab === 'overview' && (
-          <div className="slide-in" style={{ display: 'grid', gap: '1rem' }}>
+        {changedBanner ? (
+          <div
+            style={{
+              marginBottom: '1rem',
+              padding: '0.95rem 1.15rem',
+              borderRadius: 18,
+              background: T.greenSoft,
+              border: `1px solid rgba(23,117,58,0.18)`,
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 12,
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ fontSize: 14, color: T.green, lineHeight: 1.65 }}>
+              <strong>{changedBanner.ms.label}</strong> completed. Score moved from {changedBanner.prevScore} to {changedBanner.newScore}.
+            </div>
+            <button type="button" onClick={() => setChangedBanner(null)} style={{ border: 'none', background: 'transparent', color: T.green, fontWeight: 800, fontSize: 14 }}>
+              Dismiss
+            </button>
+          </div>
+        ) : null}
 
-            {/* Top row: score ring (or moved card) + highest impact */}
-            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))' }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1rem' }}>
+          {[
+            ['overview', 'Overview'],
+            ['tasks', 'Task flow'],
+          ].map(([value, label]) => {
+            const active = tab === value
+            return (
+              <button
+                type="button"
+                key={value}
+                onClick={() => setTab(value as 'overview' | 'tasks')}
+                style={{
+                  padding: '0.8rem 1.05rem',
+                  borderRadius: 999,
+                  border: `1px solid ${active ? T.ink : T.border}`,
+                  background: active ? T.ink : T.paper,
+                  color: active ? T.white : T.muted,
+                  fontSize: 13,
+                  fontWeight: 800,
+                }}
+              >
+                {label}
+              </button>
+            )
+          })}
 
-              {/* Score ring (pre-move) | Journey progress card (post-move) */}
-              {alreadyMoved ? (
-                <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 16, padding: '1.25rem 1.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1rem', paddingBottom: '1rem', borderBottom: `1px solid ${T.border}` }}>
-                    <span style={{ fontSize: 22, flexShrink: 0 }}>🇮🇳</span>
-                    <div>
-                      <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.05rem', color: T.green, lineHeight: 1.2 }}>
-                        You&apos;re in India{A.moveDate && A.moveDate !== 'exploring' ? ` — since ${MONTHS_FULL[parseInt(A.moveDate.split('-')[1]) - 1]} ${A.moveDate.split('-')[0]}` : ''}
-                      </div>
-                      <div style={{ fontSize: 11, color: '#27500A', opacity: .75, marginTop: 2 }}>Settling in &amp; first year</div>
+          <button
+            type="button"
+            onClick={() => dispatch({ type: 'RESET' })}
+            style={{
+              marginLeft: 'auto',
+              padding: '0.8rem 1.05rem',
+              borderRadius: 999,
+              border: `1px solid ${T.border}`,
+              background: T.paper,
+              color: T.muted,
+              fontSize: 13,
+              fontWeight: 700,
+            }}
+          >
+            Reset and update profile
+          </button>
+        </div>
+
+        {tab === 'overview' ? (
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            <div className="overview-grid">
+              <SurfaceCard style={{ padding: '1.35rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      Score anatomy
                     </div>
+                    <h2 style={{ fontSize: '1.35rem', color: T.ink }}>
+                      {alreadyMoved ? 'Journey progress by phase' : 'Readiness, broken into real levers'}
+                    </h2>
                   </div>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Journey Progress</div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                    <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.2rem', color: T.green }}>{pct}%</span>
-                    <span style={{ fontSize: 12, color: T.muted }}>{effectiveCompletedTasks.size} of {TASKS.length} tasks</span>
-                  </div>
-                  <div style={{ height: 7, background: '#EDE9E0', borderRadius: 100, overflow: 'hidden', marginBottom: '1rem' }}>
-                    <div style={{ height: '100%', background: T.green, width: pct + '%', borderRadius: 100, transition: 'width .6s ease' }} />
-                  </div>
-                  {[2, 3].map(i => {
-                    const pt = TASKS.filter(t => t.phase === i)
-                    const dn = pt.filter(t => effectiveCompletedTasks.has(t.id)).length
-                    const pp = pt.length ? Math.round((dn / pt.length) * 100) : 0
-                    return (
-                      <div key={PHASES[i]} style={{ marginBottom: 8 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.muted, marginBottom: 3 }}>
-                          <span style={{ fontWeight: 500 }}>{PHASES[i]}</span><span>{dn}/{pt.length}</span>
-                        </div>
-                        <div style={{ height: 4, background: '#EDE9E0', borderRadius: 100, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', background: T.green, width: pp + '%', borderRadius: 100 }} />
-                        </div>
-                      </div>
-                    )
-                  })}
+                  <Pill tone={alreadyMoved ? 'green' : 'saffron'}>
+                    {alreadyMoved ? `${pct}% complete` : statusMeta.label}
+                  </Pill>
                 </div>
-              ) : (
-                <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 16, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                  <svg width="108" height="108" viewBox="0 0 108 108">
-                    {(() => { const r = 44, circ = 2 * Math.PI * r, p = score / 100; return <>
-                      <circle cx="54" cy="54" r={r} fill="none" stroke="#EDE9E0" strokeWidth="8" />
-                      <circle cx="54" cy="54" r={r} fill="none" stroke={statusMeta.color} strokeWidth="8"
-                        strokeDasharray={circ} strokeDashoffset={circ * (1 - p)} strokeLinecap="round" transform="rotate(-90 54 54)"
-                        style={{ transition: 'stroke-dashoffset .8s ease' }} />
-                      <text x="54" y="50" textAnchor="middle" fontSize="26" fontWeight="600" fill={statusMeta.color} fontFamily="inherit">{score}</text>
-                      <text x="54" y="67" textAnchor="middle" fontSize="12" fill={T.soft} fontFamily="inherit">/ 100</text>
-                    </> })()}
-                  </svg>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Readiness Score</div>
-                    <div style={{ display: 'inline-block', background: statusMeta.bg, color: statusMeta.color, fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 100, marginBottom: 12 }}>{statusMeta.label}</div>
-                    {scoreSegments.map(s => (
-                      <div key={s.label} style={{ marginBottom: 7 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.soft, marginBottom: 3 }}>
-                          <span>{s.label}</span><span style={{ fontWeight: 600, color: s.color }}>{s.s}/{s.max}</span>
-                        </div>
-                        <div style={{ height: 3, background: '#EDE9E0', borderRadius: 100, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', background: s.color, width: Math.round((s.s / s.max) * 100) + '%', borderRadius: 100 }} />
-                        </div>
-                      </div>
-                    ))}
-                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${T.border}` }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.soft, marginBottom: 4 }}>
-                        <span>Total</span>
-                        <span style={{ fontWeight: 700, color: statusMeta.color }}>{score}/100</span>
-                      </div>
-                      <div style={{ height: 5, background: '#EDE9E0', borderRadius: 100, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', background: statusMeta.color, width: score + '%', borderRadius: 100, transition: 'width .6s ease' }} />
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-                        {[0,25,50,75,100].map(v => <span key={v} style={{ fontSize: 9, color: T.soft }}>{v}</span>)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
-              {/* Highest impact / post-move priority */}
-              {!alreadyMoved && highImpact && (
-                <div style={{ background: '#1A1208', borderRadius: 16, padding: '1.25rem 1.5rem', color: '#fff' }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', color: 'rgba(255,255,255,.35)', marginBottom: 8 }}>Highest impact action</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                    <span style={{ fontSize: 20 }}>{highImpact.icon}</span>
-                    <span style={{ fontSize: 15, fontWeight: 500, color: T.saffron, lineHeight: 1.3 }}>{highImpact.label}</span>
+                {!alreadyMoved ? (
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    {[
+                      { label: 'Financial', value: scoreBreakdown.financial, max: 40, color: T.saffron },
+                      { label: 'Life complexity', value: scoreBreakdown.lifeComplexity, max: 25, color: '#7f4fa0' },
+                      { label: 'Career', value: scoreBreakdown.career, max: 20, color: T.green },
+                      { label: 'Planning', value: scoreBreakdown.planning, max: 20, color: T.navy },
+                    ].map((item) => {
+                      const bar = Math.round((item.value / item.max) * 100)
+                      return (
+                        <div key={item.label}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
+                            <span style={{ color: T.muted }}>{item.label}</span>
+                            <strong style={{ color: item.color }}>{item.value}/{item.max}</strong>
+                          </div>
+                          <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
+                            <div style={{ width: `${bar}%`, height: '100%', background: item.color }} />
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,.5)', lineHeight: 1.6, marginBottom: 14 }}>{highImpact.description}</div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,153,51,.12)', border: '1px solid rgba(255,153,51,.25)', borderRadius: 100, padding: '5px 14px' }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: T.saffron }}>+{highImpact.scoreImpact} pts to score</span>
+                ) : (
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    {[2, 3].map((phase) => {
+                      const stats = phaseTaskStats(phase, effectiveCompletedTasks)
+                      return (
+                        <div key={phase}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
+                            <span style={{ color: T.muted }}>{PHASES[phase]}</span>
+                            <strong style={{ color: T.green }}>{stats.done}/{stats.total}</strong>
+                          </div>
+                          <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
+                            <div style={{ width: `${stats.pct}%`, height: '100%', background: T.green }} />
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
+                )}
+              </SurfaceCard>
+
+              <SurfaceCard style={{ padding: '1.35rem' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                  Next steps
                 </div>
-              )}
-              {alreadyMoved && (() => {
-                const pm = getPostMoveRecommendation(A)
-                return (
-                  <div style={{ background: '#1A1208', borderRadius: 16, padding: '1.25rem 1.5rem', color: '#fff' }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', color: 'rgba(255,255,255,.35)', marginBottom: 8 }}>Top priority right now</div>
-                    <div style={{ fontSize: 22, marginBottom: 8 }}>{pm.icon}</div>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 8 }}>{pm.title}</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', lineHeight: 1.6 }}>{pm.actions[0]}</div>
-                  </div>
-                )
-              })()}
+                <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 12 }}>
+                  {alreadyMoved ? 'What to tighten this month' : 'What most improves this plan'}
+                </h2>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {(alreadyMoved ? postMove.actions : highImpact ? [`Complete the "${highImpact.label}" milestone.`, 'Use the task flow tab to batch the next phase instead of doing everything at once.', 'Keep the move date realistic; forcing the timeline creates avoidable stress.'] : ['Maintain momentum across the remaining task phases.']).map((item, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '26px minmax(0, 1fr)',
+                        gap: 12,
+                        alignItems: 'start',
+                        padding: '0.95rem',
+                        borderRadius: 18,
+                        background: 'rgba(29,22,15,0.03)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: '50%',
+                          background: alreadyMoved ? postMove.color : T.ink,
+                          color: T.white,
+                          display: 'grid',
+                          placeItems: 'center',
+                          fontSize: 12,
+                          fontWeight: 800,
+                        }}
+                      >
+                        {index + 1}
+                      </div>
+                      <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.7 }}>{item}</div>
+                    </div>
+                  ))}
+                </div>
+              </SurfaceCard>
             </div>
 
-            {/* Risk insight */}
-            {!alreadyMoved && verdict.icon !== '✅' && highImpact && (
-              <div style={{ background: T.saffronLight, border: `1px solid ${T.saffronBorder}`, borderRadius: 12, padding: '.875rem 1.125rem' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#CC7A00', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Key Risk</div>
-                <div style={{ fontWeight: 500, color: '#7D5300', marginBottom: 4 }}>{highImpact.label} — pending</div>
-                <div style={{ fontSize: 13, color: '#7D5300', lineHeight: 1.6, opacity: .85 }}>{highImpact.description}</div>
+            <SurfaceCard style={{ padding: '1.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                    Milestones
+                  </div>
+                  <h2 style={{ fontSize: '1.35rem', color: T.ink }}>The levers that matter most</h2>
+                </div>
+                <Pill tone="green">{completedMsCount}/{MILESTONES.length} complete</Pill>
               </div>
-            )}
 
-            {/* ── MILESTONE CARDS — clickable, full width ── */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '.08em' }}>Milestones</div>
-                <div style={{ fontSize: 12, color: T.muted }}>{msCompleted.size}/{MILESTONES.length} complete</div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '.75rem' }}>
-                {MILESTONES.map(m => {
-                  const done = msCompleted.has(m.id)
-                  const autoDetected = m.completedWhen(A)
+              <div className="milestone-grid">
+                {MILESTONES.map((milestone) => {
+                  const done = msCompleted.has(milestone.id)
+                  const autoDetected = milestone.completedWhen(A)
                   return (
-                    <div key={m.id}
-                      onClick={() => !autoDetected && dispatch({ type: 'TOGGLE_MILESTONE', id: m.id })}
+                    <button
+                      type="button"
+                      key={milestone.id}
+                      onClick={() => !autoDetected && dispatch({ type: 'TOGGLE_MILESTONE', id: milestone.id })}
                       style={{
-                        borderRadius: 14, padding: '1rem 1.125rem',
-                        border: `1.5px solid ${done ? 'rgba(19,136,8,.3)' : T.border}`,
-                        background: done ? T.greenLight : T.white,
-                        cursor: autoDetected ? 'default' : 'pointer',
-                        transition: 'all .2s',
-                      }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 18 }}>{m.icon}</span>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: done ? '#27500A' : T.ink }}>{m.label}</span>
+                        textAlign: 'left',
+                        padding: '1rem',
+                        borderRadius: 20,
+                        border: `1.5px solid ${done ? 'rgba(23,117,58,0.22)' : T.border}`,
+                        background: done ? T.greenSoft : T.white,
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: done ? T.green : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                            {milestone.icon}
+                          </div>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: T.ink }}>{milestone.label}</div>
                         </div>
-                        {/* Checkbox */}
-                        <div style={{
-                          width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-                          border: `1.5px solid ${done ? T.green : T.border}`,
-                          background: done ? T.green : T.white,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          marginLeft: 6,
-                          boxShadow: done ? '0 1px 6px rgba(19,136,8,.2)' : 'none',
-                          transition: 'all .15s',
-                        }}>
-                          {done && <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L4 7.5L10 1.5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                        </div>
+                        <div
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            border: `1.5px solid ${done ? T.green : T.borderStrong}`,
+                            background: done ? T.green : 'transparent',
+                            flexShrink: 0,
+                          }}
+                        />
                       </div>
-                      <div style={{ fontSize: 11, color: done ? '#27500A' : T.muted, lineHeight: 1.5, marginBottom: 8, opacity: done ? .85 : 1 }}>{m.description}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        {autoDetected
-                          ? <span style={{ fontSize: 10, color: done ? '#27500A' : T.soft, background: done ? 'rgba(19,136,8,.1)' : '#F0EDE8', padding: '2px 8px', borderRadius: 100, fontWeight: 500 }}>Auto-detected</span>
-                          : <span style={{ fontSize: 10, color: T.soft, fontStyle: 'italic' }}>{done ? 'Marked complete' : 'Click to mark complete'}</span>
-                        }
-                        {!alreadyMoved && <span style={{ fontSize: 11, fontWeight: 600, color: done ? T.green : T.soft, background: done ? 'rgba(19,136,8,.1)' : T.bg, padding: '2px 8px', borderRadius: 100 }}>+{m.scoreImpact} pts</span>}
+                      <div style={{ fontSize: 13, color: T.muted, lineHeight: 1.7, marginBottom: 12 }}>{milestone.description}</div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <Pill tone={done ? 'green' : 'navy'}>{done ? 'Complete' : 'Open'}</Pill>
+                        {!alreadyMoved ? <Pill tone="saffron">+{milestone.scoreImpact} pts</Pill> : null}
+                        {autoDetected ? <Pill tone="navy">Auto-detected</Pill> : null}
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
-            </div>
+            </SurfaceCard>
           </div>
-        )}
-
-
-        {/* ── JOURNEY PROGRESS TAB ── */}
-        {tab === 'tasks' && (
-          <div className="slide-in" style={{ display: 'grid', gap: '1rem' }}>
-
-            {/* Overall progress bar */}
-            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 16, padding: '1.25rem 1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '.06em' }}>Overall Journey</div>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.6rem', color: T.green }}>{pct}%</div>
+        ) : (
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            <SurfaceCard style={{ padding: '1.35rem' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                Task flow
               </div>
-              {(() => {
-                const visiblePhases = alreadyMoved ? [2, 3] : [0, 1, 2, 3]
-                const visibleTasks = TASKS.filter(t => visiblePhases.includes(t.phase))
-                const visibleDone = visibleTasks.filter(t => effectiveCompletedTasks.has(t.id)).length
-                const visiblePct = visibleTasks.length ? Math.round((visibleDone / visibleTasks.length) * 100) : 0
-                return (
-                  <>
-                    <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
-                      {alreadyMoved
-                        ? `${visibleDone} of ${visibleTasks.length} post-move tasks complete`
-                        : `${effectiveCompletedTasks.size} of ${TASKS.length} tasks complete`}
-                    </div>
-                    <div style={{ height: 8, background: '#EDE9E0', borderRadius: 100, overflow: 'hidden', marginBottom: 10 }}>
-                      <div style={{ height: '100%', background: T.green, width: (alreadyMoved ? visiblePct : pct) + '%', borderRadius: 100, transition: 'width .5s ease' }} />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${visiblePhases.length},1fr)`, gap: '8px 16px' }}>
-                      {visiblePhases.map((i, idx) => {
-                        const pt = TASKS.filter(t => t.phase === i)
-                        const dn = pt.filter(t => effectiveCompletedTasks.has(t.id)).length
-                        const pp = pt.length ? Math.round((dn / pt.length) * 100) : 0
-                        return (
-                          <div key={PHASES[i]} onClick={() => dispatch({ type: 'SET_PHASE', phase: i })} style={{ cursor: 'pointer' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: i === state.currentPhase ? T.ink : T.soft, marginBottom: 3, fontWeight: i === state.currentPhase ? 600 : 400 }}>
-                              <span>{PHASES[i]}</span><span>{dn}/{pt.length}</span>
-                            </div>
-                            <div style={{ height: 4, background: '#EDE9E0', borderRadius: 100, overflow: 'hidden' }}>
-                              <div style={{ height: '100%', background: i === state.currentPhase ? T.saffron : T.green, width: pp + '%', borderRadius: 100, transition: 'width .4s ease' }} />
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </>
-                )
-              })()}
-            </div>
+              <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 10 }}>Move through the journey in phases</h2>
+              <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.75, marginBottom: 16 }}>
+                Each phase opens after the prior one is complete, so the list stays focused instead of overwhelming.
+              </p>
 
-            {/* Legend */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 12, color: T.muted }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: T.saffron, display: 'inline-block' }} />
-                Critical
-              </span>
-              {!alreadyMoved && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 2, background: T.navy, display: 'inline-block' }} />
-                  Affects score
-                </span>
-              )}
-            </div>
+              <div style={{ display: 'grid', gap: 10, gridTemplateColumns: `repeat(${alreadyMoved ? 2 : 4}, minmax(0, 1fr))` }}>
+                {(alreadyMoved ? [2, 3] : [0, 1, 2, 3]).map((phase) => {
+                  const stats = phaseTaskStats(phase, effectiveCompletedTasks)
+                  const active = state.currentPhase === phase
+                  return (
+                    <button
+                      type="button"
+                      key={phase}
+                      onClick={() => dispatch({ type: 'SET_PHASE', phase })}
+                      style={{
+                        textAlign: 'left',
+                        padding: '0.95rem',
+                        borderRadius: 18,
+                        border: `1.5px solid ${active ? T.saffron : T.border}`,
+                        background: active ? T.saffronSoft : T.white,
+                      }}
+                    >
+                      <div style={{ fontSize: 12, fontWeight: 700, color: active ? T.bronze : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                        Phase {phase + 1}
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 10 }}>{PHASES[phase]}</div>
+                      <div style={{ height: 8, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden', marginBottom: 10 }}>
+                        <div style={{ width: `${stats.pct}%`, height: '100%', background: active ? T.saffron : T.green }} />
+                      </div>
+                      <div style={{ fontSize: 13, color: T.muted }}>{stats.done} of {stats.total} complete</div>
+                    </button>
+                  )
+                })}
+              </div>
+            </SurfaceCard>
 
-            {/* Phase accordions — gated: each phase unlocks only after previous is complete */}
             {PHASES.map((phase, i) => {
               if (alreadyMoved && i < 2) return null
-              const tasks = TASKS.filter(t => t.phase === i)
-              const done = tasks.filter(t => effectiveCompletedTasks.has(t.id)).length
+              const tasks = TASKS.filter((task) => task.phase === i)
+              const done = tasks.filter((task) => effectiveCompletedTasks.has(task.id)).length
               const allDone = done === tasks.length && tasks.length > 0
               const isActive = i === state.currentPhase
-
-              // Determine if this phase is unlocked
               const firstPhase = alreadyMoved ? 2 : 0
-              const prevTasks = i > firstPhase ? TASKS.filter(t => t.phase === i - 1) : []
-              const prevAllDone = i === firstPhase || prevTasks.every(t => effectiveCompletedTasks.has(t.id))
-              const isLocked = !prevAllDone
+              const prevTasks = i > firstPhase ? TASKS.filter((task) => task.phase === i - 1) : []
+              const isLocked = !(i === firstPhase || prevTasks.every((task) => effectiveCompletedTasks.has(task.id)))
 
               return (
-                <div key={phase} style={{
-                  border: `1px solid ${isLocked ? '#EDE9E0' : allDone ? 'rgba(19,136,8,.2)' : T.border}`,
-                  borderRadius: 14, overflow: 'hidden',
-                  opacity: isLocked ? 0.55 : 1,
-                  transition: 'opacity .2s',
-                }}>
-                  {/* Phase header */}
-                  <div
-                    onClick={() => !isLocked && dispatch({ type: 'SET_PHASE', phase: i })}
+                <SurfaceCard
+                  key={phase}
+                  style={{
+                    overflow: 'hidden',
+                    opacity: isLocked ? 0.58 : 1,
+                    borderColor: allDone ? 'rgba(23,117,58,0.18)' : T.border,
+                  }}
+                >
+                  <button
+                    type="button"
+                    disabled={isLocked}
+                    onClick={() => dispatch({ type: 'SET_PHASE', phase: i })}
                     style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '.875rem 1.25rem',
-                      background: isActive ? '#1A1208' : allDone ? T.greenLight : T.bg,
-                      cursor: isLocked ? 'not-allowed' : 'pointer',
-                    }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      {/* Phase number / completion indicator */}
-                      <div style={{
-                        width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-                        background: isActive ? T.saffron : allDone ? T.green : isLocked ? '#EDE9E0' : T.border,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 11, fontWeight: 700,
-                        color: isActive ? '#1A1208' : allDone ? '#fff' : T.soft,
-                      }}>
-                        {allDone
-                          ? <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                          : isLocked
-                            ? <svg width="11" height="13" viewBox="0 0 11 13" fill="none"><rect x="2" y="5" width="7" height="7" rx="1.5" stroke={T.soft} strokeWidth="1.4"/><path d="M3.5 5V3.5a2 2 0 014 0V5" stroke={T.soft} strokeWidth="1.4" strokeLinecap="round"/></svg>
-                            : i + 1}
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '1.2rem 1.25rem',
+                      background: isActive ? T.dark : allDone ? T.greenSoft : 'rgba(29,22,15,0.03)',
+                      color: isActive ? T.white : T.ink,
+                      border: 'none',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      gap: 16,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? 'rgba(255,255,255,0.55)' : allDone ? T.green : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                        Phase {i + 1}
                       </div>
-                      <div>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: isActive ? '#fff' : allDone ? '#27500A' : T.ink }}>{phase}</span>
-                        {isLocked && <div style={{ fontSize: 10, color: T.soft, marginTop: 1 }}>Complete previous phase to unlock</div>}
-                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 800 }}>{phase}</div>
+                      {isLocked ? <div style={{ fontSize: 13, color: isActive ? 'rgba(255,255,255,0.65)' : T.soft, marginTop: 6 }}>Complete the previous phase to unlock this one.</div> : null}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 12, color: isActive ? 'rgba(255,255,255,.4)' : allDone ? '#27500A' : T.soft }}>{done}/{tasks.length}</span>
-
-                      {!isLocked && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: isActive ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}>
-                          <path d="M2 4l4 4 4-4" stroke={isActive ? 'rgba(255,255,255,.4)' : allDone ? '#27500A' : T.soft} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 14, fontWeight: 800 }}>{done}/{tasks.length}</div>
+                      <div style={{ fontSize: 12, color: isActive ? 'rgba(255,255,255,0.55)' : T.soft }}>
+                        {allDone ? 'Complete' : `${tasks.length - done} left`}
+                      </div>
                     </div>
-                  </div>
+                  </button>
 
-                  {/* Task list — only shown when active and not locked */}
-                  {isActive && !isLocked && (
-                    <div style={{ background: T.white }}>
-                      {tasks.map((t, ti) => {
-                        const isDone = effectiveCompletedTasks.has(t.id)
-                        const isAuto = autoCompletedTasks.has(t.id)
-                        const showScoreBadge = i < 2 && !alreadyMoved
+                  {isActive && !isLocked ? (
+                    <div style={{ padding: '0.4rem 0' }}>
+                      {tasks.map((task, index) => {
+                        const isDone = effectiveCompletedTasks.has(task.id)
+                        const isAuto = autoCompletedTasks.has(task.id)
                         return (
-                          <div key={t.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 1.25rem', borderTop: ti === 0 ? 'none' : `1px solid ${T.border}`, background: isAuto ? '#FAFFF9' : T.white }}>
-                            <div
-                              onClick={() => !isAuto && dispatch({ type: 'TOGGLE_TASK', id: t.id })}
-                              title={isAuto ? 'Auto-completed from your profile' : undefined}
-                              style={{ width: 20, height: 20, borderRadius: 6, border: `1.5px solid ${isDone ? (isAuto ? '#6DBD6D' : T.green) : t.priority === 'critical' ? T.saffron : T.border}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isAuto ? 'default' : 'pointer', marginTop: 1, background: isDone ? (isAuto ? '#6DBD6D' : T.green) : 'transparent', transition: 'all .15s', opacity: isAuto ? 0.7 : 1 }}>
-                              {isDone && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                            </div>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: 13, fontWeight: 500, color: isDone ? T.soft : T.ink, textDecoration: isDone ? 'line-through' : 'none' }}>{t.title}</span>
-                                {isAuto && <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 100, background: T.greenLight, color: T.green, textTransform: 'uppercase' as const, letterSpacing: '.05em' }}>Auto</span>}
-                                {!isAuto && t.priority === 'critical' && <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 100, background: T.saffronLight, color: '#CC7A00', textTransform: 'uppercase' as const, letterSpacing: '.05em' }}>Critical</span>}
-                                {showScoreBadge && t.isScoreImpact && <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 100, background: T.navyLight, color: T.navy, textTransform: 'uppercase' as const, letterSpacing: '.05em' }}>Score</span>}
+                          <div
+                            key={task.id}
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: '28px minmax(0, 1fr)',
+                              gap: 14,
+                              padding: '1rem 1.25rem',
+                              borderTop: index === 0 ? 'none' : `1px solid ${T.border}`,
+                              background: isAuto ? 'rgba(23,117,58,0.03)' : T.paper,
+                            }}
+                          >
+                            <button
+                              type="button"
+                              disabled={isAuto}
+                              onClick={() => dispatch({ type: 'TOGGLE_TASK', id: task.id })}
+                              style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: 8,
+                                border: `1.5px solid ${isDone ? (isAuto ? '#6cab7e' : T.green) : task.priority === 'critical' ? T.saffron : T.borderStrong}`,
+                                background: isDone ? (isAuto ? '#6cab7e' : T.green) : 'transparent',
+                                marginTop: 2,
+                              }}
+                            />
+                            <div>
+                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
+                                <div
+                                  style={{
+                                    fontSize: 15,
+                                    fontWeight: 800,
+                                    color: isDone ? T.soft : T.ink,
+                                    textDecoration: isDone ? 'line-through' : 'none',
+                                  }}
+                                >
+                                  {task.title}
+                                </div>
+                                {task.priority === 'critical' ? <Pill tone="saffron">Critical</Pill> : null}
+                                {!alreadyMoved && task.isScoreImpact ? <Pill tone="navy">Score impact</Pill> : null}
+                                {isAuto ? <Pill tone="green">Auto</Pill> : null}
                               </div>
-                              <div style={{ fontSize: 12, color: T.muted, lineHeight: 1.5 }}>{t.desc}</div>
+                              <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div>
                             </div>
                           </div>
                         )
                       })}
-                      {/* Phase footer — always visible, toggles complete/incomplete */}
-                      <div style={{ padding: '10px 1.25rem', borderTop: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FAFAF8' }}>
-                        <span style={{ fontSize: 12, color: allDone ? T.green : T.muted, fontWeight: allDone ? 500 : 400 }}>
-                          {allDone ? 'All tasks complete ✓' : `${tasks.length - done} task${tasks.length - done !== 1 ? 's' : ''} remaining`}
-                        </span>
+
+                      <div
+                        style={{
+                          padding: '1rem 1.25rem 1.15rem',
+                          borderTop: `1px solid ${T.border}`,
+                          background: 'rgba(29,22,15,0.03)',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: 12,
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <div style={{ fontSize: 14, color: allDone ? T.green : T.muted }}>
+                          {allDone ? 'All tasks in this phase are complete.' : `${tasks.length - done} tasks remaining in this phase.`}
+                        </div>
                         <button
+                          type="button"
                           onClick={() => dispatch({ type: allDone ? 'UNCOMPLETE_PHASE' : 'COMPLETE_PHASE', phase: i })}
-                          style={{ fontSize: 12, fontWeight: 600, color: allDone ? T.muted : T.saffron, background: allDone ? T.bg : T.saffronLight, border: `1px solid ${allDone ? T.border : T.saffronBorder}`, borderRadius: 100, padding: '5px 14px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', transition: 'all .15s' }}>
-                          {allDone ? '← Unmark all' : 'Mark all complete →'}
+                          style={{
+                            padding: '0.8rem 1rem',
+                            borderRadius: 999,
+                            border: `1px solid ${allDone ? T.border : 'rgba(240,138,36,0.22)'}`,
+                            background: allDone ? T.white : T.saffronSoft,
+                            color: allDone ? T.muted : T.bronze,
+                            fontSize: 13,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {allDone ? 'Unmark phase' : 'Mark phase complete'}
                         </button>
                       </div>
                     </div>
-                  )}
-                </div>
+                  ) : null}
+                </SurfaceCard>
               )
             })}
-
-            <button onClick={() => window.location.reload()}
-              style={{ background: 'none', border: `1px solid ${T.border}`, color: T.muted, fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', width: '100%', textAlign: 'center' as const, padding: '.875rem', borderRadius: 10 }}>
-              ← Reset journey &amp; update profile
-            </button>
           </div>
         )}
       </div>
@@ -1278,14 +1794,11 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
   )
 }
 
-// ─── ROOT ─────────────────────────────────────────────────────────────────────
-
 export default function JourneyPage() {
   const { shouldBlock } = useProtectedRoute()
-
   const [state, dispatch] = useReducer(journeyReducer, initialState)
-  if (shouldBlock) return null
 
+  if (shouldBlock) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
   return <JourneyDashboard state={state} dispatch={dispatch} />
 }
