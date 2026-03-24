@@ -2,8 +2,6 @@ import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 function buildResetEmailHtml(name: string, actionLink: string) {
   return `<!DOCTYPE html>
 <html>
@@ -84,6 +82,7 @@ export async function POST(request: Request) {
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
     const origin = new URL(request.url).origin
     const supabaseAdmin = getSupabaseAdmin()
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     if (!email) {
       return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 })

@@ -2,8 +2,6 @@ import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 function normalizeSignupError(message: string) {
   const lower = message.toLowerCase()
 
@@ -82,6 +80,18 @@ function buildSignupEmailHtml(name: string, actionLink: string) {
 
 export async function POST(request: Request) {
   try {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json({ success: false, error: 'Server is missing SUPABASE_SERVICE_ROLE_KEY' }, { status: 500 })
+    }
+
+    if (!process.env.RESEND_API_KEY) {
+      return NextResponse.json({ success: false, error: 'Server is missing RESEND_API_KEY' }, { status: 500 })
+    }
+
+    if (!process.env.RESEND_FROM_EMAIL) {
+      return NextResponse.json({ success: false, error: 'Server is missing RESEND_FROM_EMAIL' }, { status: 500 })
+    }
+
     const body = await request.json()
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
@@ -89,6 +99,7 @@ export async function POST(request: Request) {
     const origin = new URL(request.url).origin
     const next = typeof body.next === 'string' && body.next.startsWith('/') ? body.next : '/'
     const supabaseAdmin = getSupabaseAdmin()
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     if (!name || !email || !password) {
       return NextResponse.json({ success: false, error: 'Missing required signup fields' }, { status: 400 })
