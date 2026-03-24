@@ -1471,9 +1471,8 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
         <div className="hero-grid" style={{ marginBottom: '1rem' }}>
           <SurfaceCard style={{ overflow: 'hidden' }}>
             <div style={{ padding: '1.15rem 1.2rem', background: T.dark }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 14 }}>
-                <div>
-                  <Pill tone="saffron">Back2India dashboard</Pill>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'flex-start', marginBottom: 14 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <h1 style={{ fontSize: 'clamp(1.7rem, 4vw, 3rem)', lineHeight: 0.98, color: T.white, marginTop: 12, marginBottom: 8 }}>
                     {state.firstName ? `${state.firstName}'s journey` : 'Your journey'}
                   </h1>
@@ -1483,12 +1482,15 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                       : 'Your retained relocation flow from decision through arrival and the first year back in India.'}
                   </p>
                 </div>
-
-                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                  <LabeledMetric label="Journey" value={`${pct}%`} tone="saffron" />
-                  <LabeledMetric label="Phase" value={`${journeyPhaseIndex + 1}`} tone="navy" />
-                  <LabeledMetric label="Milestones" value={`${completedMsCount}/${MILESTONES.length}`} tone="green" />
+                <div style={{ flexShrink: 0, paddingTop: 2 }}>
+                  <Pill tone="saffron">Back2India dashboard</Pill>
                 </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 14 }}>
+                <LabeledMetric label="Journey" value={`${pct}%`} tone="saffron" />
+                <LabeledMetric label="Phase" value={`${journeyPhaseIndex + 1}`} tone="navy" />
+                <LabeledMetric label="Milestones" value={`${completedMsCount}/${MILESTONES.length}`} tone="green" />
               </div>
 
               <div className="stats-grid">
