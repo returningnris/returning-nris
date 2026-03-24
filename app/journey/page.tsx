@@ -377,43 +377,249 @@ type Task = {
   isScoreImpact: boolean
 }
 
-const PHASES = ['Decide and plan', 'Prepare and execute', 'Move and settle', 'First year in India']
+type CustomTask = {
+  id: string
+  phase: number
+  title: string
+  desc: string
+  createdAt: string
+}
+
+const PHASES = [
+  'Foundation window',
+  'Build and prepare window',
+  'Final approach window',
+  'Landing window',
+  'Stabilize and optimize window',
+]
+
+const PHASE_WINDOWS = [
+  '12+ months before move',
+  '12 months to 3 months before move',
+  'Final 3 months before move',
+  'Move month to first 3 months in India',
+  '3 months after move to first anniversary',
+]
 
 const TASKS: Task[] = [
-  { id: 't01', phase: 0, title: 'Calculate financial runway', desc: 'Estimate monthly India costs and confirm 12-18 months of runway.', priority: 'critical', milestoneId: 'savings', isScoreImpact: true },
-  { id: 't02', phase: 0, title: 'Research target cities', desc: 'Compare cost, schools, and job fit across likely cities.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't03', phase: 0, title: 'Book NRI CA consultation', desc: 'Validate RNOR timing and key tax deadlines before committing dates.', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
-  { id: 't04', phase: 0, title: 'Assess career situation', desc: 'Lock remote work, business continuity, or the India job search plan.', priority: 'critical', milestoneId: 'income', isScoreImpact: true },
-  { id: 't06', phase: 0, title: 'Commit to a target city', desc: 'A city decision unlocks housing, schooling, and hiring decisions.', priority: 'critical', milestoneId: 'city', isScoreImpact: true },
-  { id: 't07', phase: 0, title: 'Run what-if scenarios', desc: 'See how changing savings, city, or job status changes readiness.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't08', phase: 1, title: 'Confirm income in writing', desc: 'Collect an offer letter, contract, or business proof before moving.', priority: 'critical', milestoneId: 'income', isScoreImpact: true },
-  { id: 't09', phase: 1, title: 'Apply to schools', desc: 'High-demand schools often fill well ahead of the academic year.', priority: 'critical', milestoneId: 'family', isScoreImpact: true },
-  { id: 't10', phase: 1, title: 'Open NRE and NRO accounts', desc: 'It is usually easier while you still have your foreign address.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't11', phase: 1, title: 'Start NRE fund transfers', desc: 'Move funds gradually before residency status changes.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't12', phase: 1, title: 'Arrange temporary housing', desc: 'Book a 60-90 day bridge stay before landing in India.', priority: 'critical', milestoneId: 'housing', isScoreImpact: true },
-  { id: 't13', phase: 1, title: 'Optimize RNOR return date', desc: 'Coordinate your move timing with tax advice.', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
-  { id: 't14', phase: 1, title: 'Purchase India health insurance', desc: 'Buy cover before arrival instead of waiting.', priority: 'critical', milestoneId: null, isScoreImpact: false },
-  { id: 't15', phase: 1, title: 'Apostille key documents', desc: 'Prepare education, marriage, property, and identity paperwork.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't16', phase: 1, title: 'Shortlist schools', desc: 'Research curriculum, commute, and intake windows in your city.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't17', phase: 2, title: 'File Form 12A', desc: 'Do this promptly after arrival if your CA confirms it applies.', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
-  { id: 't18', phase: 2, title: 'Update KYC everywhere', desc: 'Refresh address and residency details across banks and investments.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't19', phase: 2, title: 'Confirm school start dates', desc: 'Lock uniforms, books, transport, and the first-week plan.', priority: 'critical', milestoneId: 'family', isScoreImpact: true },
-  { id: 't20', phase: 2, title: 'Find permanent housing', desc: 'Move from temporary stay into a stable long-term setup.', priority: 'critical', milestoneId: 'housing', isScoreImpact: true },
-  { id: 't21', phase: 2, title: 'Set up local healthcare', desc: 'Choose your hospital, GP, and specialist network early.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't22', phase: 2, title: 'Cancel legacy overseas costs', desc: 'Remove subscriptions, utilities, and storage you no longer need.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't23', phase: 2, title: 'Review NRE conversion timing', desc: 'Check account conversion timing with your CA.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't24', phase: 3, title: 'File first India tax return', desc: 'Make sure foreign income classification matches your RNOR status.', priority: 'critical', milestoneId: 'rnor', isScoreImpact: true },
-  { id: 't25', phase: 3, title: 'Track residency days', desc: 'Keep a precise count each financial year.', priority: 'critical', milestoneId: null, isScoreImpact: false },
-  { id: 't26', phase: 3, title: 'Restructure investment portfolio', desc: 'Rebalance around Indian tax residency and cash needs.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't27', phase: 3, title: 'Build a local network', desc: 'Activate alumni, hiring, founder, and city community groups.', priority: 'essential', milestoneId: null, isScoreImpact: false },
-  { id: 't28', phase: 3, title: 'Run an annual financial review', desc: 'Review taxes, transfers, and investment positioning with a CA.', priority: 'essential', milestoneId: null, isScoreImpact: false },
+  {
+    id: 't01',
+    phase: 0,
+    title: 'Lock the move window and decision criteria',
+    desc: 'Define the target move month, the non-negotiables for returning, and what must be true before you trigger the move. Best tackled 12 or more months before departure.',
+    priority: 'critical',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't02',
+    phase: 0,
+    title: 'Validate RNOR and cross-border tax strategy',
+    desc: 'Work out RNOR timing, tax residency implications, retirement account questions, and the return date strategy with a specialist CA while the move window is still flexible.',
+    priority: 'critical',
+    milestoneId: 'rnor',
+    isScoreImpact: true,
+  },
+  {
+    id: 't03',
+    phase: 0,
+    title: 'Stress-test savings and first-year cash runway',
+    desc: 'Model India living costs, setup costs, and a realistic no-income buffer so the move is not undercapitalized before decisions harden.',
+    priority: 'critical',
+    milestoneId: 'savings',
+    isScoreImpact: true,
+  },
+  {
+    id: 't04',
+    phase: 0,
+    title: 'Define income continuity after the move',
+    desc: 'Secure the remote role, India offer, business continuity plan, or a clear bridge-income strategy before progressing into execution.',
+    priority: 'critical',
+    milestoneId: 'income',
+    isScoreImpact: true,
+  },
+  {
+    id: 't05',
+    phase: 0,
+    title: 'Choose city and neighborhood direction',
+    desc: 'Narrow your destination so housing, schools, commute, and family logistics can all move from research to execution in the next window.',
+    priority: 'critical',
+    milestoneId: 'city',
+    isScoreImpact: true,
+  },
+  {
+    id: 't06',
+    phase: 0,
+    title: 'Set the family and school strategy',
+    desc: 'Decide curriculum, shortlist schools, and align the family on timing early, especially if children are part of the move.',
+    priority: 'essential',
+    milestoneId: 'family',
+    isScoreImpact: true,
+  },
+  {
+    id: 't07',
+    phase: 1,
+    title: 'Set up banking and remittance rails',
+    desc: 'Open or organize NRE/NRO banking, define transfer mechanics, and prepare where your operating cash will sit before and after the move. This belongs in the 12-to-3-month preparation window.',
+    priority: 'critical',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't08',
+    phase: 1,
+    title: 'Build the move documentation pack',
+    desc: 'Gather passports, OCI or visa paperwork, school records, medical records, financial statements, and any documents that need apostille or notarization well before departure.',
+    priority: 'critical',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't09',
+    phase: 1,
+    title: 'Start school applications and record transfers',
+    desc: 'Move from research into admissions, interviews, records collection, and calendar coordination if children are involved. This should start before the last quarter pre-move.',
+    priority: 'critical',
+    milestoneId: 'family',
+    isScoreImpact: true,
+  },
+  {
+    id: 't10',
+    phase: 1,
+    title: 'Buy India health insurance and care coverage',
+    desc: 'Put health cover in force before the move and identify the core hospitals, doctors, and contingency plan for day-one care.',
+    priority: 'critical',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't11',
+    phase: 1,
+    title: 'Decide what to ship, sell, store, or carry',
+    desc: 'Create the inventory plan, get shipping quotes, and avoid leaving logistics until the final month.',
+    priority: 'essential',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't12',
+    phase: 1,
+    title: 'Arrange temporary or permanent housing',
+    desc: 'Book the first 60-90 days or secure the permanent place so the arrival is stable rather than improvised.',
+    priority: 'critical',
+    milestoneId: 'housing',
+    isScoreImpact: true,
+  },
+  {
+    id: 't13',
+    phase: 2,
+    title: 'Finalize exit logistics in the current country',
+    desc: 'Close or hand off leases, utilities, subscriptions, mail handling, storage, and any employer or school paperwork that must finish during the final 3 months before departure.',
+    priority: 'critical',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't14',
+    phase: 2,
+    title: 'Move operating cash and emergency reserves',
+    desc: 'Transfer enough money for the first months in India while staying aligned with the remittance and tax plan before the travel date.',
+    priority: 'critical',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't15',
+    phase: 2,
+    title: 'Confirm the first 30-day arrival plan',
+    desc: 'Lock flights, airport transfer, SIM or connectivity, temporary stay, first appointments, and the sequence for your first month in India.',
+    priority: 'critical',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't16',
+    phase: 2,
+    title: 'Pack critical carry-on documents and essentials',
+    desc: 'Keep identity papers, financial access, prescriptions, school documents, and key onboarding items with you rather than in shipment.',
+    priority: 'essential',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't17',
+    phase: 2,
+    title: 'Activate the move-week checklist',
+    desc: 'Execute the last-week handoffs, vendor confirmations, final packing checks, and departure-day readiness list without gaps.',
+    priority: 'essential',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't18',
+    phase: 3,
+    title: 'Complete arrival admin and local identity setup',
+    desc: 'Update address and residency details across banking, PAN, Aadhaar, mobile, investments, and every system that now needs your India profile in the first 90 days.',
+    priority: 'critical',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't19',
+    phase: 3,
+    title: 'Stabilize housing, school, and healthcare routines',
+    desc: 'Move from temporary arrival mode into a durable weekly routine across home, commute, school, and medical care during your first 3 months in India.',
+    priority: 'critical',
+    milestoneId: 'housing',
+    isScoreImpact: true,
+  },
+  {
+    id: 't20',
+    phase: 3,
+    title: 'Execute the first India tax and residency cycle correctly',
+    desc: 'Track residency days, validate RNOR treatment, and handle the first return-year decisions before mistakes become expensive.',
+    priority: 'critical',
+    milestoneId: 'rnor',
+    isScoreImpact: true,
+  },
+  {
+    id: 't21',
+    phase: 4,
+    title: 'Rebuild your local work and community base',
+    desc: 'From month 3 onward, invest in professional network, family support systems, and the routines that make the move feel durable instead of transitional.',
+    priority: 'essential',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't22',
+    phase: 4,
+    title: 'Run a 90-day and 12-month review',
+    desc: 'Review finances, career fit, school stability, tax structure, and whether anything in the first-year plan needs correction before the one-year mark.',
+    priority: 'essential',
+    milestoneId: null,
+    isScoreImpact: false,
+  },
+  {
+    id: 't23',
+    phase: 4,
+    title: 'Restructure long-term financial and residency operations',
+    desc: 'After the move has stabilized, clean up investment structure, account conversions, compliance cadence, and any first-year residency optimizations.',
+    priority: 'critical',
+    milestoneId: 'rnor',
+    isScoreImpact: true,
+  },
 ]
 
 type JourneyState = {
   step: 'profile' | 'journey'
+  editingProfile: boolean
   answers: Partial<Answers>
   completedTasks: Set<string>
+  completedCustomTaskIds: Set<string>
   manualMilestones: Set<string>
+  taskNotes: Record<string, string>
+  customTasks: CustomTask[]
   currentPhase: number
   lastMilestone: string | null
   firstName: string
@@ -423,12 +629,16 @@ type Action =
   | { type: 'SET_ANSWER'; key: keyof Answers; value: string }
   | { type: 'SET_MOVE_DATE'; value: string }
   | { type: 'START_JOURNEY' }
+  | { type: 'EDIT_PROFILE' }
   | { type: 'TOGGLE_TASK'; id: string }
+  | { type: 'TOGGLE_CUSTOM_TASK'; id: string }
   | { type: 'TOGGLE_MILESTONE'; id: string }
   | { type: 'COMPLETE_PHASE'; phase: number }
   | { type: 'UNCOMPLETE_PHASE'; phase: number }
   | { type: 'SET_PHASE'; phase: number }
   | { type: 'SET_NAME'; name: string }
+  | { type: 'SET_TASK_NOTE'; id: string; note: string }
+  | { type: 'ADD_CUSTOM_TASK'; phase: number; title: string; desc: string }
   | { type: 'LOAD_SAVED'; payload: Partial<JourneyState> }
   | { type: 'RESET' }
 
@@ -451,18 +661,40 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
     }
     case 'SET_NAME':
       return { ...state, firstName: action.name }
+    case 'SET_TASK_NOTE':
+      return { ...state, taskNotes: { ...state.taskNotes, [action.id]: action.note } }
+    case 'ADD_CUSTOM_TASK':
+      return {
+        ...state,
+        customTasks: [
+          ...state.customTasks,
+          {
+            id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            phase: action.phase,
+            title: action.title,
+            desc: action.desc,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      }
     case 'LOAD_SAVED':
       return {
         ...state,
         ...action.payload,
         answers: action.payload.answers ?? state.answers,
         completedTasks: action.payload.completedTasks ?? state.completedTasks,
+        completedCustomTaskIds: action.payload.completedCustomTaskIds ?? state.completedCustomTaskIds,
         manualMilestones: action.payload.manualMilestones ?? state.manualMilestones,
+        taskNotes: action.payload.taskNotes ?? state.taskNotes,
+        customTasks: action.payload.customTasks ?? state.customTasks,
         currentPhase: action.payload.currentPhase ?? state.currentPhase,
         firstName: action.payload.firstName ?? state.firstName,
+        editingProfile: action.payload.editingProfile ?? state.editingProfile,
       }
     case 'START_JOURNEY':
-      return { ...state, step: 'journey' }
+      return { ...state, step: 'journey', editingProfile: false }
+    case 'EDIT_PROFILE':
+      return { ...state, step: 'profile', editingProfile: true }
     case 'SET_PHASE':
       return { ...state, currentPhase: state.currentPhase === action.phase ? -1 : action.phase }
     case 'COMPLETE_PHASE': {
@@ -500,6 +732,12 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
       }
       return { ...state, completedTasks: newTasks, lastMilestone }
     }
+    case 'TOGGLE_CUSTOM_TASK': {
+      const newTasks = new Set(state.completedCustomTaskIds)
+      if (newTasks.has(action.id)) newTasks.delete(action.id)
+      else newTasks.add(action.id)
+      return { ...state, completedCustomTaskIds: newTasks }
+    }
     case 'RESET':
       return initialState
     default:
@@ -509,16 +747,21 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
 
 const initialState: JourneyState = {
   step: 'profile',
+  editingProfile: false,
   answers: {},
   completedTasks: new Set(),
+  completedCustomTaskIds: new Set(),
   manualMilestones: new Set(),
+  taskNotes: {},
+  customTasks: [],
   currentPhase: 0,
   lastMilestone: null,
   firstName: '',
 }
 
-function journeyPct(completedTasks: Set<string>) {
-  return Math.round((completedTasks.size / TASKS.length) * 100)
+function journeyPct(completedTaskCount: number, totalTaskCount: number) {
+  if (!totalTaskCount) return 0
+  return Math.round((completedTaskCount / totalTaskCount) * 100)
 }
 
 function getPostMoveRecommendation(A: Answers) {
@@ -617,10 +860,18 @@ function getPostMoveRecommendation(A: Answers) {
   }
 }
 
-function phaseTaskStats(phase: number, completedTasks: Set<string>) {
+function phaseTaskStats(
+  phase: number,
+  completedTasks: Set<string>,
+  customTasks: CustomTask[],
+  completedCustomTaskIds: Set<string>
+) {
   const phaseTasks = TASKS.filter((t) => t.phase === phase)
-  const done = phaseTasks.filter((t) => completedTasks.has(t.id)).length
-  const total = phaseTasks.length
+  const phaseCustomTasks = customTasks.filter((t) => t.phase === phase)
+  const done =
+    phaseTasks.filter((t) => completedTasks.has(t.id)).length +
+    phaseCustomTasks.filter((t) => completedCustomTaskIds.has(t.id)).length
+  const total = phaseTasks.length + phaseCustomTasks.length
   const pct = total ? Math.round((done / total) * 100) : 0
   return { done, total, pct }
 }
@@ -629,6 +880,11 @@ function formatMoveDate(moveDate?: string) {
   if (!moveDate || moveDate === 'exploring') return 'Exploring timeline'
   const [year, month] = moveDate.split('-')
   return `${MONTHS_FULL[Number(month) - 1]} ${year}`
+}
+
+function getPhaseWindowLabel(phase: number, moveDate?: string) {
+  if (!moveDate || moveDate === 'exploring') return PHASE_WINDOWS[phase]
+  return `${PHASE_WINDOWS[phase]} • anchored to ${formatMoveDate(moveDate)}`
 }
 
 function SurfaceCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
@@ -1062,11 +1318,17 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
                     Next step
                   </div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: allDone ? T.white : T.ink, marginBottom: 4 }}>
-                    {allDone ? 'Your dashboard is ready.' : `${totalRequired - totalAnswered} inputs still missing.`}
+                    {allDone
+                      ? state.editingProfile
+                        ? 'Your dashboard can be updated now.'
+                        : 'Your dashboard is ready.'
+                      : `${totalRequired - totalAnswered} inputs still missing.`}
                   </div>
                   <div style={{ fontSize: 14, color: allDone ? 'rgba(255,255,255,0.7)' : T.muted, lineHeight: 1.7 }}>
                     {allDone
-                      ? 'Open the journey dashboard to start using the live relocation flow.'
+                      ? state.editingProfile
+                        ? 'Go back to the journey dashboard with these updated answers applied.'
+                        : 'Open the journey dashboard to start using the live relocation flow.'
                       : 'Finish the missing answers once, then the journey can initialize from this data going forward.'}
                   </div>
                 </div>
@@ -1086,7 +1348,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
                     minWidth: 220,
                   }}
                 >
-                  Open journey dashboard
+                  {state.editingProfile ? 'Return to dashboard' : 'Open journey dashboard'}
                 </button>
               </div>
             </SurfaceCard>
@@ -1097,8 +1359,10 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
   )
 }
 
-function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: React.Dispatch<Action> }) {
+function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; dispatch: React.Dispatch<Action>; userId: string }) {
   const [tab, setTab] = useState<'tasks' | 'guidance'>('tasks')
+  const [draftTaskTitle, setDraftTaskTitle] = useState('')
+  const [draftTaskDesc, setDraftTaskDesc] = useState('')
 
   const A = state.answers as Answers
   const alreadyMoved = A.alreadyMoved === 'yes'
@@ -1146,11 +1410,21 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
     return merged
   }, [autoCompletedTasks, state.completedTasks])
 
-  const pct = journeyPct(effectiveCompletedTasks)
+  const customTasksByPhase = useMemo(() => {
+    const map = new Map<number, CustomTask[]>()
+    state.customTasks.forEach((task) => {
+      const current = map.get(task.phase) || []
+      current.push(task)
+      map.set(task.phase, current)
+    })
+    return map
+  }, [state.customTasks])
+
+  const pct = journeyPct(effectiveCompletedTasks.size + state.completedCustomTaskIds.size, TASKS.length + state.customTasks.length)
   const completedMsCount = msCompleted.size
   const highImpact = MILESTONES.find((m) => !msCompleted.has(m.id))
   const postMove = getPostMoveRecommendation(A)
-  const visiblePhases = alreadyMoved ? [2, 3] : [0, 1, 2, 3]
+  const visiblePhases = alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]
   const currentPhaseIndex = visiblePhases.includes(state.currentPhase) ? state.currentPhase : visiblePhases[0]
   const currentPhaseLabel = PHASES[currentPhaseIndex]
   const currentPhaseTasks = TASKS.filter((task) => task.phase === currentPhaseIndex)
@@ -1175,23 +1449,25 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
   const lastSeen = useMemo(() => {
     if (typeof window === 'undefined') return null
     try {
-      const raw = window.localStorage.getItem(`journey:last-seen:${state.firstName || 'user'}`)
-      return raw ? (JSON.parse(raw) as { at?: string; completedTaskIds?: string[]; phase?: number }) : null
+      const raw = window.localStorage.getItem(`journey:last-seen:${userId}`)
+      return raw ? (JSON.parse(raw) as { at?: string; completedTaskIds?: string[]; completedCustomTaskIds?: string[]; phase?: number }) : null
     } catch {
       return null
     }
-  }, [state.firstName])
+  }, [userId])
 
   const changesSinceLastVisit = useMemo(() => {
     const previousTasks = new Set(lastSeen?.completedTaskIds || [])
+    const previousCustomTasks = new Set(lastSeen?.completedCustomTaskIds || [])
     const completedNow = [...effectiveCompletedTasks].filter((id) => !previousTasks.has(id))
+    const customCompletedNow = [...state.completedCustomTaskIds].filter((id) => !previousCustomTasks.has(id))
     const phaseAdvanced = typeof lastSeen?.phase === 'number' && currentPhaseIndex > lastSeen.phase
     return {
-      completedNow,
+      completedNow: [...completedNow, ...customCompletedNow],
       phaseAdvanced,
       lastSeenAt: lastSeen?.at || '',
     }
-  }, [currentPhaseIndex, effectiveCompletedTasks, lastSeen])
+  }, [currentPhaseIndex, effectiveCompletedTasks, lastSeen, state.completedCustomTaskIds])
 
   useEffect(() => {
     if (alreadyMoved && state.currentPhase < 2) {
@@ -1204,10 +1480,11 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
     const persist = () => {
       try {
         window.localStorage.setItem(
-          `journey:last-seen:${state.firstName || 'user'}`,
+          `journey:last-seen:${userId}`,
           JSON.stringify({
             at: new Date().toISOString(),
             completedTaskIds: [...effectiveCompletedTasks],
+            completedCustomTaskIds: [...state.completedCustomTaskIds],
             phase: currentPhaseIndex,
           })
         )
@@ -1217,7 +1494,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
     }
     window.addEventListener('pagehide', persist)
     return () => window.removeEventListener('pagehide', persist)
-  }, [currentPhaseIndex, effectiveCompletedTasks, state.firstName])
+  }, [currentPhaseIndex, effectiveCompletedTasks, state.completedCustomTaskIds, userId])
 
   return (
     <div style={{ minHeight: '100vh', background: T.hero }}>
@@ -1262,10 +1539,10 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
 
               <div className="stats-grid">
                 {[
-                  { label: 'Current phase', value: currentPhaseLabel },
+                  { label: 'Current phase', value: `${currentPhaseLabel}` },
+                  { label: 'When', value: PHASE_WINDOWS[currentPhaseIndex] },
                   { label: 'Next best action', value: nextTask ? nextTask.title : 'Maintain momentum' },
                   { label: 'Target move', value: formatMoveDate(A.moveDate) },
-                  { label: 'City', value: A.city || 'Not set' },
                 ].map((item) => (
                   <div
                     key={item.label}
@@ -1392,7 +1669,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
 
           <button
             type="button"
-            onClick={() => dispatch({ type: 'RESET' })}
+            onClick={() => dispatch({ type: 'EDIT_PROFILE' })}
             style={{
               marginLeft: 'auto',
               padding: '0.8rem 1.05rem',
@@ -1404,7 +1681,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
               fontWeight: 700,
             }}
           >
-            Reset and update profile
+            Update profile answers
           </button>
         </div>
 
@@ -1424,11 +1701,11 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
 
                 <div style={{ display: 'grid', gap: 12 }}>
                   {visiblePhases.map((phase) => {
-                    const stats = phaseTaskStats(phase, effectiveCompletedTasks)
+                    const stats = phaseTaskStats(phase, effectiveCompletedTasks, state.customTasks, state.completedCustomTaskIds)
                     return (
                       <div key={phase}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
-                          <span style={{ color: T.muted }}>{PHASES[phase]}</span>
+                          <span style={{ color: T.muted }}>{PHASES[phase]} • {PHASE_WINDOWS[phase]}</span>
                           <strong style={{ color: phase === currentPhaseIndex ? T.saffron : T.green }}>{stats.done}/{stats.total}</strong>
                         </div>
                         <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
@@ -1552,9 +1829,9 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                 Each phase opens after the prior one is complete, so the list stays focused instead of overwhelming.
               </p>
 
-              <div style={{ display: 'grid', gap: 10, gridTemplateColumns: `repeat(${alreadyMoved ? 2 : 4}, minmax(0, 1fr))` }}>
-                {(alreadyMoved ? [2, 3] : [0, 1, 2, 3]).map((phase) => {
-                  const stats = phaseTaskStats(phase, effectiveCompletedTasks)
+              <div style={{ display: 'grid', gap: 10, gridTemplateColumns: `repeat(${alreadyMoved ? 2 : 5}, minmax(0, 1fr))` }}>
+                {(alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]).map((phase) => {
+                  const stats = phaseTaskStats(phase, effectiveCompletedTasks, state.customTasks, state.completedCustomTaskIds)
                   const active = state.currentPhase === phase
                   return (
                     <button
@@ -1570,7 +1847,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                       }}
                     >
                       <div style={{ fontSize: 12, fontWeight: 700, color: active ? T.bronze : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                        Phase {phase + 1}
+                        {PHASE_WINDOWS[phase]}
                       </div>
                       <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 10 }}>{PHASES[phase]}</div>
                       <div style={{ height: 8, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden', marginBottom: 10 }}>
@@ -1584,14 +1861,23 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
             </SurfaceCard>
 
             {PHASES.map((phase, i) => {
-              if (alreadyMoved && i < 2) return null
+              if (alreadyMoved && i < 3) return null
               const tasks = TASKS.filter((task) => task.phase === i)
-              const done = tasks.filter((task) => effectiveCompletedTasks.has(task.id)).length
-              const allDone = done === tasks.length && tasks.length > 0
+              const customTasks = customTasksByPhase.get(i) || []
+              const done =
+                tasks.filter((task) => effectiveCompletedTasks.has(task.id)).length +
+                customTasks.filter((task) => state.completedCustomTaskIds.has(task.id)).length
+              const totalTasks = tasks.length + customTasks.length
+              const allDone = done === totalTasks && totalTasks > 0
               const isActive = i === state.currentPhase
-              const firstPhase = alreadyMoved ? 2 : 0
+              const firstPhase = alreadyMoved ? 3 : 0
               const prevTasks = i > firstPhase ? TASKS.filter((task) => task.phase === i - 1) : []
-              const isLocked = !(i === firstPhase || prevTasks.every((task) => effectiveCompletedTasks.has(task.id)))
+              const prevCustomTasks = i > firstPhase ? customTasksByPhase.get(i - 1) || [] : []
+              const isLocked = !(
+                i === firstPhase ||
+                (prevTasks.every((task) => effectiveCompletedTasks.has(task.id)) &&
+                  prevCustomTasks.every((task) => state.completedCustomTaskIds.has(task.id)))
+              )
 
               return (
                 <SurfaceCard
@@ -1621,16 +1907,16 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                   >
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? 'rgba(255,255,255,0.55)' : allDone ? T.green : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                        Phase {i + 1}
+                        {getPhaseWindowLabel(i, A.moveDate)}
                       </div>
                       <div style={{ fontSize: 18, fontWeight: 800 }}>{phase}</div>
                       {isLocked ? <div style={{ fontSize: 13, color: isActive ? 'rgba(255,255,255,0.65)' : T.soft, marginTop: 6 }}>Complete the previous phase to unlock this one.</div> : null}
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 14, fontWeight: 800 }}>{done}/{tasks.length}</div>
+                      <div style={{ fontSize: 14, fontWeight: 800 }}>{done}/{totalTasks}</div>
                       <div style={{ fontSize: 12, color: isActive ? 'rgba(255,255,255,0.55)' : T.soft }}>
-                        {allDone ? 'Complete' : `${tasks.length - done} left`}
+                        {allDone ? 'Complete' : `${totalTasks - done} left`}
                       </div>
                     </div>
                   </button>
@@ -1680,12 +1966,155 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                                 {task.priority === 'critical' ? <Pill tone="saffron">Critical</Pill> : null}
                                 {!alreadyMoved && task.isScoreImpact ? <Pill tone="navy">Score impact</Pill> : null}
                                 {isAuto ? <Pill tone="green">Auto</Pill> : null}
+                                <Pill tone="navy">{PHASE_WINDOWS[i]}</Pill>
                               </div>
                               <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div>
+                              <textarea
+                                value={state.taskNotes[task.id] || ''}
+                                onChange={(e) => dispatch({ type: 'SET_TASK_NOTE', id: task.id, note: e.target.value })}
+                                placeholder="Add notes, links, deadlines, contacts, or custom details for this step"
+                                style={{
+                                  width: '100%',
+                                  minHeight: 78,
+                                  marginTop: 10,
+                                  padding: '0.8rem 0.9rem',
+                                  borderRadius: 14,
+                                  border: `1px solid ${T.border}`,
+                                  background: T.white,
+                                  color: T.ink,
+                                  fontSize: 13,
+                                  lineHeight: 1.6,
+                                  resize: 'vertical',
+                                  fontFamily: 'DM Sans, sans-serif',
+                                }}
+                              />
                             </div>
                           </div>
                         )
                       })}
+
+                      {customTasks.map((task) => {
+                        const isDone = state.completedCustomTaskIds.has(task.id)
+                        return (
+                          <div
+                            key={task.id}
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: '28px minmax(0, 1fr)',
+                              gap: 14,
+                              padding: '1rem 1.25rem',
+                              borderTop: `1px solid ${T.border}`,
+                              background: 'rgba(23,62,143,0.03)',
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => dispatch({ type: 'TOGGLE_CUSTOM_TASK', id: task.id })}
+                              style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: 8,
+                                border: `1.5px solid ${isDone ? T.green : T.navy}`,
+                                background: isDone ? T.green : 'transparent',
+                                marginTop: 2,
+                              }}
+                            />
+                            <div>
+                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
+                                <div style={{ fontSize: 15, fontWeight: 800, color: isDone ? T.soft : T.ink, textDecoration: isDone ? 'line-through' : 'none' }}>
+                                  {task.title}
+                                </div>
+                                <Pill tone="navy">Custom task</Pill>
+                              </div>
+                              {task.desc ? <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div> : null}
+                              <textarea
+                                value={state.taskNotes[task.id] || ''}
+                                onChange={(e) => dispatch({ type: 'SET_TASK_NOTE', id: task.id, note: e.target.value })}
+                                placeholder="Add notes for this custom task"
+                                style={{
+                                  width: '100%',
+                                  minHeight: 78,
+                                  marginTop: 10,
+                                  padding: '0.8rem 0.9rem',
+                                  borderRadius: 14,
+                                  border: `1px solid ${T.border}`,
+                                  background: T.white,
+                                  color: T.ink,
+                                  fontSize: 13,
+                                  lineHeight: 1.6,
+                                  resize: 'vertical',
+                                  fontFamily: 'DM Sans, sans-serif',
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+
+                      <div style={{ padding: '1rem 1.25rem', borderTop: `1px solid ${T.border}`, background: 'rgba(23,62,143,0.04)' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                          Add your own task for this phase
+                        </div>
+                        <div style={{ display: 'grid', gap: 10 }}>
+                          <input
+                            type="text"
+                            value={isActive ? draftTaskTitle : ''}
+                            onChange={(e) => setDraftTaskTitle(e.target.value)}
+                            placeholder="Custom task title"
+                            style={{
+                              width: '100%',
+                              padding: '0.85rem 0.9rem',
+                              borderRadius: 14,
+                              border: `1px solid ${T.border}`,
+                              background: T.white,
+                              color: T.ink,
+                              fontSize: 13,
+                            }}
+                          />
+                          <textarea
+                            value={isActive ? draftTaskDesc : ''}
+                            onChange={(e) => setDraftTaskDesc(e.target.value)}
+                            placeholder="Optional details, deadline, vendor, school name, banker, CA note, or reminder"
+                            style={{
+                              width: '100%',
+                              minHeight: 72,
+                              padding: '0.85rem 0.9rem',
+                              borderRadius: 14,
+                              border: `1px solid ${T.border}`,
+                              background: T.white,
+                              color: T.ink,
+                              fontSize: 13,
+                              resize: 'vertical',
+                              fontFamily: 'DM Sans, sans-serif',
+                            }}
+                          />
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <div style={{ fontSize: 13, color: T.muted }}>Use this for personal tasks the default planner does not know about.</div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const title = draftTaskTitle.trim()
+                                const desc = draftTaskDesc.trim()
+                                if (!title) return
+                                dispatch({ type: 'ADD_CUSTOM_TASK', phase: i, title, desc })
+                                setDraftTaskTitle('')
+                                setDraftTaskDesc('')
+                              }}
+                              style={{
+                                padding: '0.75rem 1rem',
+                                borderRadius: 999,
+                                border: 'none',
+                                background: T.navy,
+                                color: T.white,
+                                fontSize: 13,
+                                fontWeight: 800,
+                              }}
+                            >
+                              Add task
+                            </button>
+                          </div>
+                        </div>
+                      </div>
 
                       <div
                         style={{
@@ -1700,7 +2129,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                         }}
                       >
                         <div style={{ fontSize: 14, color: allDone ? T.green : T.muted }}>
-                          {allDone ? 'All tasks in this phase are complete.' : `${tasks.length - done} tasks remaining in this phase.`}
+                          {allDone ? 'All tasks in this phase are complete.' : `${totalTasks - done} tasks remaining in this phase.`}
                         </div>
                         <button
                           type="button"
@@ -1769,12 +2198,18 @@ export default function JourneyPage() {
           if (raw) {
             const parsed = JSON.parse(raw) as {
               completedTaskIds?: string[]
+              completedCustomTaskIds?: string[]
               manualMilestoneIds?: string[]
+              taskNotes?: Record<string, string>
+              customTasks?: CustomTask[]
               currentPhase?: number
             }
             persisted = {
               completedTasks: new Set(parsed.completedTaskIds || []),
+              completedCustomTaskIds: new Set(parsed.completedCustomTaskIds || []),
               manualMilestones: new Set(parsed.manualMilestoneIds || []),
+              taskNotes: parsed.taskNotes || {},
+              customTasks: parsed.customTasks || [],
               currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : hasSavedReadiness ? 0 : 0,
             }
           }
@@ -1814,17 +2249,20 @@ export default function JourneyPage() {
       window.localStorage.setItem(
         `journey:state:${user.id}`,
         JSON.stringify({
-          completedTaskIds: [...state.completedTasks],
-          manualMilestoneIds: [...state.manualMilestones],
-          currentPhase: state.currentPhase,
-        })
-      )
+            completedTaskIds: [...state.completedTasks],
+            completedCustomTaskIds: [...state.completedCustomTaskIds],
+            manualMilestoneIds: [...state.manualMilestones],
+            taskNotes: state.taskNotes,
+            customTasks: state.customTasks,
+            currentPhase: state.currentPhase,
+          })
+        )
     } catch {
       return
     }
-  }, [state.completedTasks, state.currentPhase, state.manualMilestones, user?.id])
+  }, [state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.manualMilestones, state.taskNotes, user?.id])
 
   if (shouldBlock || loadingSavedJourney) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
-  return <JourneyDashboard state={state} dispatch={dispatch} />
+  return <JourneyDashboard state={state} dispatch={dispatch} userId={user?.id || 'anonymous'} />
 }
