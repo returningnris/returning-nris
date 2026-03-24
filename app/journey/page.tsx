@@ -1406,10 +1406,6 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
     return map
   }, [state.customTasks])
 
-  const pct = journeyPct(effectiveCompletedTasks.size + state.completedCustomTaskIds.size, TASKS.length + state.customTasks.length)
-  const completedMsCount = msCompleted.size
-  const highImpact = MILESTONES.find((m) => !msCompleted.has(m.id))
-  const postMove = getPostMoveRecommendation(A)
   const visiblePhases = useMemo(() => (alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]), [alreadyMoved])
   const activeTimelinePhase = getActiveTimelinePhase(A.moveDate)
   const journeyPhaseIndex = visiblePhases.includes(activeTimelinePhase) ? activeTimelinePhase : visiblePhases[0]
@@ -1426,6 +1422,10 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
     autoCompletedPastTaskIds.forEach((id) => merged.add(id))
     return merged
   }, [autoCompletedPastTaskIds, state.completedTasks])
+  const pct = journeyPct(effectiveCompletedTasks.size + state.completedCustomTaskIds.size, TASKS.length + state.customTasks.length)
+  const completedMsCount = msCompleted.size
+  const highImpact = MILESTONES.find((m) => !msCompleted.has(m.id))
+  const postMove = getPostMoveRecommendation(A)
   const nextTask =
     currentPhaseTasks.find((task) => !effectiveCompletedTasks.has(task.id) && task.priority === 'critical') ||
     currentPhaseTasks.find((task) => !effectiveCompletedTasks.has(task.id)) ||
