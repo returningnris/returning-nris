@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
+import { getSiteUrl } from '../../../../lib/site-url'
 
 function normalizeSignupError(message: string) {
   const lower = message.toLowerCase()
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
     const password = typeof body.password === 'string' ? body.password : ''
-    const origin = new URL(request.url).origin
+    const siteUrl = getSiteUrl(request)
     const next = typeof body.next === 'string' && body.next.startsWith('/') ? body.next : '/'
     const supabaseAdmin = getSupabaseAdmin()
     const resend = new Resend(process.env.RESEND_API_KEY)
@@ -110,7 +111,7 @@ export async function POST(request: Request) {
       email,
       password,
       options: {
-        redirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(next)}`,
+        redirectTo: `${siteUrl}/auth/confirm?next=${encodeURIComponent(next)}`,
         data: {
           first_name: name,
           last_name: '',

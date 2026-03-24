@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
+import { getSiteUrl } from '../../../../lib/site-url'
 
 function buildResetEmailHtml(name: string, actionLink: string) {
   return `<!DOCTYPE html>
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
 
     const body = await request.json()
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
-    const origin = new URL(request.url).origin
+    const siteUrl = getSiteUrl(request)
     const supabaseAdmin = getSupabaseAdmin()
     const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
       type: 'recovery',
       email,
       options: {
-        redirectTo: `${origin}/auth/update-password`,
+        redirectTo: `${siteUrl}/auth/update-password`,
       },
     })
 
