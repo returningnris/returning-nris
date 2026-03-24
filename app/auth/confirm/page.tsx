@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 
+const EMAIL_OTP_TYPES = ['email', 'signup', 'invite', 'magiclink', 'recovery', 'email_change'] as const
+type EmailOtpType = (typeof EMAIL_OTP_TYPES)[number]
+
 const T = {
   bg: '#F8F5F0',
   white: '#FFFFFF',
@@ -72,9 +75,18 @@ export default function ConfirmAuthPage() {
       }
 
       if (tokenHash && type) {
+        const emailOtpType = EMAIL_OTP_TYPES.find((otpType) => otpType === type)
+
+        if (!emailOtpType) {
+          if (!active) return
+          setStatus('error')
+          setMessage('This confirmation link is invalid or no longer supported. Please request a fresh email link.')
+          return
+        }
+
         const { error } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
-          type: type as 'email' | 'signup' | 'invite' | 'magiclink' | 'recovery' | 'email_change' | 'phone_change',
+          type: emailOtpType as EmailOtpType,
         })
 
         if (error) {
