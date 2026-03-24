@@ -2,6 +2,7 @@
 
 import { useReducer, useMemo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useProtectedRoute } from '../../components/useProtectedRoute'
 
 // ─── EXACT SCORING ENGINE (mirrors planner-page.tsx) ─────────────────────────
 
@@ -1280,7 +1281,10 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 
 export default function JourneyPage() {
+  const { shouldBlock } = useProtectedRoute()
+
   const [state, dispatch] = useReducer(journeyReducer, initialState)
+  if (shouldBlock) return null
 
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
   return <JourneyDashboard state={state} dispatch={dispatch} />

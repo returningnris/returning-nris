@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useProtectedRoute } from '../../components/useProtectedRoute'
 
 type Inputs = {
   city: string
@@ -77,6 +78,8 @@ const STEPS = [
 ]
 
 export default function HealthcareGuide() {
+  const { shouldBlock } = useProtectedRoute()
+
   const [answers, setAnswers] = useState<Partial<Inputs>>({})
   const [currentStep, setCurrentStep] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -85,6 +88,7 @@ export default function HealthcareGuide() {
   const step = STEPS[currentStep]
   const progress = Math.round((currentStep / STEPS.length) * 100)
   const sectionColors: Record<string, string> = { 'Your Profile': '#FF9933', 'US Coverage Gap': '#E24B4A', 'Insurance': '#138808' }
+  if (shouldBlock) return null
 
   function pick(key: string, val: string) {
     const next = { ...answers, [key]: val }

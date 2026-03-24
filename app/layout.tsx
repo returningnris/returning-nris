@@ -84,7 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <body suppressHydrationWarning style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <NavBar />
         <main style={{ flex: 1 }}>
           {children}

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../components/useAuth'
+import { useProtectedRoute } from '../../components/useProtectedRoute'
+import { supabase } from '../../lib/supabase'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -23,6 +25,45 @@ export type Rec = {
   actions: string[]
 }
 type Result = { score: ScoreBreakdown; status: string; statusColor: string; statusBg: string; headline: string; subheadline: string; risks: RiskItem[]; financial: FinancialSnapshot; cityName: string; recommendation: Rec }
+
+async function submitPlannerReport(params: {
+  answers: Partial<Answers>
+  result: Result
+  user: { firstName: string; lastName: string; email: string }
+}) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session?.access_token) {
+    throw new Error('AUTH_REQUIRED')
+  }
+
+  const response = await fetch('/api/submit-planner', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      userDetails: {
+        firstName: params.user.firstName,
+        lastName: params.user.lastName,
+        age: '',
+        gender: '',
+        email: params.user.email,
+      },
+      answers: params.answers,
+      result: params.result,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error('SUBMIT_FAILED')
+  }
+
+  return response.json()
+}
 
 // ─── THEME TOKENS ─────────────────────────────────────────────────────────────
 
@@ -241,40 +282,16 @@ function UpdateSimulator({
   async function sendEmail() {
     setEmailSending(true)
     try {
-      // Call the existing email API
-      const emailResponse = await fetch('/api/submit-planner', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userDetails: {
-            firstName: user.firstName,
-            lastName: (user as any).lastName || '',
-            age: '',
-            gender: '',
-            email: emailInput
-          },
-          answers: simAnswers,
-          result: simResult
-        })
+      await submitPlannerReport({
+        answers: simAnswers,
+        result: simResult,
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName || '',
+          email: emailInput,
+        },
       })
-
-      if (!emailResponse.ok) {
-        throw new Error('Failed to send email')
-      }
-      
-      // Save updated data to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('back2india_readiness', JSON.stringify({
-          userDetails: user,
-          answers: simAnswers,
-          result: simResult,
-          timestamp: new Date().toISOString()
-        }))
-      }
-      
       setEmailSent(true)
-      // Don't close - just show success message
-      // User can manually close or continue editing
     } catch (err) {
       console.error('Error sending email:', err)
       alert('Failed to send email. Please try again.')
@@ -688,31 +705,71 @@ function QSelect({ value, onChange, opts, questionKey }: { value: string; onChan
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export default function Planner() {
+  const { shouldBlock } = useProtectedRoute()
+
   const router = useRouter()
   const { user, isAuthenticated, loading: authLoading } = useAuth()
+  const userId = user?.id ?? null
   
   const [answers, setAnswers] = useState<Partial<Answers>>({})
   const [loading, setLoading] = useState(false)
+  const [loadingSavedResult, setLoadingSavedResult] = useState(true)
+  const [submitError, setSubmitError] = useState('')
   const [result, setResult] = useState<Result | null>(null)
   const reportRef = useRef<HTMLDivElement>(null)
 
-  // Load saved readiness data on mount
+  // Load saved readiness data from Supabase for the logged-in user
   useEffect(() => {
-    if (typeof window !== 'undefined' && isAuthenticated && user) {
-      const savedData = localStorage.getItem('back2india_readiness')
-      if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData)
-          if (parsed.answers && parsed.result) {
-            setAnswers(parsed.answers)
-            setResult(parsed.result)
-          }
-        } catch (err) {
-          console.error('Error loading saved data:', err)
-        }
+    let active = true
+
+    async function loadSavedResult() {
+      if (authLoading) {
+        return
       }
+
+      if (!isAuthenticated || !userId) {
+        if (!active) return
+        setAnswers({})
+        setResult(null)
+        setLoadingSavedResult(false)
+        return
+      }
+
+      setLoadingSavedResult(true)
+
+      const { data, error } = await supabase
+        .from('planner_submissions')
+        .select('answers_json, result_json')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (!active) return
+
+      if (error) {
+        console.error('Error loading saved readiness data:', error)
+        setLoadingSavedResult(false)
+        return
+      }
+
+      if (data?.answers_json && data?.result_json) {
+        setAnswers(data.answers_json as Partial<Answers>)
+        setResult(data.result_json as Result)
+      } else {
+        setAnswers({})
+        setResult(null)
+      }
+
+      setLoadingSavedResult(false)
     }
-  }, [isAuthenticated, user])
+
+    void loadSavedResult()
+
+    return () => {
+      active = false
+    }
+  }, [authLoading, isAuthenticated, userId])
 
   // Scroll to top when result is set
   useEffect(() => {
@@ -720,6 +777,8 @@ export default function Planner() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }, [result])
+
+  if (shouldBlock) return null
 
   const visibleQs = QUESTIONS.filter(q => !q.skipIf || answers[q.skipIf.key] !== q.skipIf.value)
   const answered = visibleQs.filter(q => answers[q.key]).length
@@ -736,6 +795,7 @@ export default function Planner() {
   })
 
   function setAnswer(key: keyof Answers, val: string) {
+    setSubmitError('')
     setAnswers(prev => ({ ...prev, [key]: val }))
   }
 
@@ -747,41 +807,24 @@ export default function Planner() {
     }
 
     setLoading(true)
+    setSubmitError('')
     const computedResult = computeResult(answers as Answers)
     
     try {
-      // Send email with results using existing API
-      const emailResponse = await fetch('/api/submit-planner', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ 
-          userDetails: {
-            firstName: user.firstName,
-            lastName: (user as any).lastName || '',
-            age: '',
-            gender: '',
-            email: user.email,
-          },
-          answers,
-          result: computedResult
-        }) 
+      await submitPlannerReport({
+        answers,
+        result: computedResult,
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName || '',
+          email: user.email,
+        },
       })
-
-      if (!emailResponse.ok) {
-        console.error('Failed to send email')
-      }
-      
-      // Save to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('back2india_readiness', JSON.stringify({ 
-          userDetails: user, 
-          answers, 
-          result: computedResult, 
-          timestamp: new Date().toISOString() 
-        }))
-      }
     } catch (err) { 
       console.error('Error:', err) 
+      setSubmitError('We could not save your report to Supabase. Please try again.')
+      setLoading(false)
+      return
     }
     
     setTimeout(() => { 
@@ -794,7 +837,20 @@ export default function Planner() {
     // Keep the answers, just hide results to allow editing
     setResult(null)
     setLoading(false)
+    setSubmitError('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (authLoading || loadingSavedResult) {
+    return (
+      <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: '52px', height: '52px', border: `3px solid ${T.saffronBorder}`, borderTopColor: T.saffron, borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 1.5rem' }} />
+          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.75rem', color: T.ink, marginBottom: '0.5rem' }}>Loading your saved report...</h2>
+          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        </div>
+      </div>
+    )
   }
 
   // ── LOADING ──
@@ -912,7 +968,7 @@ export default function Planner() {
                   Ready to start your move?
                 </h3>
                 <p style={{ fontSize: '14px', color: T.muted, margin: 0, lineHeight: 1.6 }}>
-                  When you're ready to begin your Back2India Journey, your saved answers will automatically pre-fill the setup form. Start tracking your progress with personalized tasks and milestones.
+                  When you&apos;re ready to begin your Back2India Journey, your saved answers will automatically pre-fill the setup form. Start tracking your progress with personalized tasks and milestones.
                 </p>
               </div>
             </div>
@@ -995,6 +1051,11 @@ export default function Planner() {
 
         {/* Submit */}
         <div style={{ marginTop: '0.75rem' }}>
+          {submitError && (
+            <div style={{ padding: '.875rem', background: '#FCEBEB', border: '1px solid #C0392B', borderRadius: '10px', marginBottom: '0.75rem' }}>
+              <p style={{ fontSize: '13px', color: '#C0392B', margin: 0 }}>{submitError}</p>
+            </div>
+          )}
           {allAnswered ? (
             <button onClick={handleGenerateReport} style={{ width: '100%', padding: '15px', background: T.saffron, color: '#fff', border: 'none', borderRadius: '12px', fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(255,153,51,0.4)' }}>
               {!isAuthenticated ? 'Sign In to Generate Report →' : (result ? 'Save Updated Assessment →' : 'Generate My Readiness Report →')}

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ARTICLES as GUIDES } from '../lib/articles-data'
 import AuthButton from '../components/AuthButton'
+import { useAuth } from '../components/useAuth'
 
 const TOOLS = [
   { href: '/rnor', label: 'RNOR Calculator', icon: '📊', sub: 'Optimise your tax window' },
@@ -23,6 +24,7 @@ const TOP_LINKS = [
 
 export default function NavBar() {
   const pathname = usePathname()
+  const { isAuthenticated } = useAuth()
   const [toolsOpen, setToolsOpen] = useState(false)
   const [resourcesOpen, setResourcesOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -31,6 +33,7 @@ export default function NavBar() {
 
   const isToolActive = TOOLS.some(t => pathname === t.href) || pathname === '/Tools'
   const isResourcesActive = GUIDES.some(g => pathname === g.href) || pathname === '/resources' || pathname.startsWith('/resources/')
+  const protectedHref = (href: string) => (isAuthenticated ? href : `/auth?mode=signup&next=${encodeURIComponent(href)}`)
 
   return (
     <>
@@ -66,14 +69,14 @@ export default function NavBar() {
 
             {/* TOP LINKS — Readiness Check, Back2India Journey, Our Story */}
             {TOP_LINKS.map(link => (
-              <Link key={link.href} href={link.href} style={{ fontSize: '13px', fontWeight: 500, color: pathname === link.href ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === link.href ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
+              <Link key={link.href} href={protectedHref(link.href)} style={{ fontSize: '13px', fontWeight: 500, color: pathname === link.href ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === link.href ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
                 {link.label}
               </Link>
             ))}
 
             {/* TOOLS DROPDOWN */}
             <div style={{ position: 'relative' }} onMouseEnter={() => setToolsOpen(true)} onMouseLeave={() => setToolsOpen(false)}>
-              <Link href="/Tools" style={{ fontSize: '13px', fontWeight: 500, color: isToolActive ? '#fff' : 'rgba(255,255,255,0.5)', padding: '6px 12px', borderRadius: '8px', background: isToolActive ? 'rgba(255,255,255,0.06)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', textDecoration: 'none', transition: 'all 0.15s' }}>
+              <Link href={protectedHref('/Tools')} style={{ fontSize: '13px', fontWeight: 500, color: isToolActive ? '#fff' : 'rgba(255,255,255,0.5)', padding: '6px 12px', borderRadius: '8px', background: isToolActive ? 'rgba(255,255,255,0.06)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', textDecoration: 'none', transition: 'all 0.15s' }}>
                 Tools
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transition: 'transform 0.2s', transform: toolsOpen ? 'rotate(180deg)' : 'rotate(0deg)', opacity: 0.5 }}>
                   <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -85,7 +88,7 @@ export default function NavBar() {
                   {TOOLS.map((tool, i) => {
                     const isActive = pathname === tool.href
                     return (
-                      <Link key={tool.href} href={tool.href} onClick={() => setToolsOpen(false)}
+                      <Link key={tool.href} href={protectedHref(tool.href)} onClick={() => setToolsOpen(false)}
                         style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '10px', textDecoration: 'none', background: isActive ? 'rgba(255,153,51,0.12)' : 'transparent', transition: 'background 0.15s', marginBottom: i < TOOLS.length - 1 ? '2px' : '0' }}
                         onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)' }}
                         onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
@@ -168,7 +171,7 @@ export default function NavBar() {
             <Link href="/" onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === '/' ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>Home</Link>
 
             {TOP_LINKS.map(link => (
-              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === link.href ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+              <Link key={link.href} href={protectedHref(link.href)} onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === link.href ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
                 {link.label}
               </Link>
             ))}
@@ -180,7 +183,7 @@ export default function NavBar() {
             {mobileToolsOpen && (
               <div style={{ paddingLeft: '12px', marginBottom: '4px' }}>
                 {TOOLS.map(tool => (
-                  <Link key={tool.href} href={tool.href} onClick={() => { setMobileOpen(false); setMobileToolsOpen(false) }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', textDecoration: 'none', borderBottom: '0.5px solid rgba(255,255,255,0.04)' }}>
+                  <Link key={tool.href} href={protectedHref(tool.href)} onClick={() => { setMobileOpen(false); setMobileToolsOpen(false) }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', textDecoration: 'none', borderBottom: '0.5px solid rgba(255,255,255,0.04)' }}>
                     <span style={{ fontSize: '14px' }}>{tool.icon}</span>
                     <span style={{ fontSize: '13px', color: pathname === tool.href ? '#FF9933' : 'rgba(255,255,255,0.65)' }}>{tool.label}</span>
                   </Link>

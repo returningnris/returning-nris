@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useProtectedRoute } from '../../components/useProtectedRoute'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -418,6 +419,8 @@ function computeRNOR(I: Inputs): TaxResult {
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 
 export default function RNOROptimizer() {
+  const { shouldBlock } = useProtectedRoute()
+
   const [answers, setAnswers] = useState<Partial<Inputs>>({})
   const [currentStep, setCurrentStep] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -426,6 +429,7 @@ export default function RNOROptimizer() {
   const totalSteps = STEPS.length
   const step = STEPS[currentStep]
   const progress = Math.round((currentStep / totalSteps) * 100)
+  if (shouldBlock) return null
 
   const sectionColors: Record<string, string> = {
     'Your Profile': '#FF9933',

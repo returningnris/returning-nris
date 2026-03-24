@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useProtectedRoute } from '../../components/useProtectedRoute'
 
 type Inputs = {
   sector: string
@@ -243,6 +244,8 @@ Always negotiate base + stock + bonus separately. India CTCs bundle these — as
 }
 
 export default function JobCareerGuide() {
+  const { shouldBlock } = useProtectedRoute()
+
   const [answers, setAnswers] = useState<Partial<Inputs>>({})
   const [currentStep, setCurrentStep] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -251,6 +254,7 @@ export default function JobCareerGuide() {
   const step = STEPS[currentStep]
   const progress = Math.round((currentStep / STEPS.length) * 100)
   const sectionColors: Record<string, string> = { 'Your Profile': '#FF9933', 'Your Preferences': '#138808', 'Your Strategy': '#7C5CBF' }
+  if (shouldBlock) return null
 
   function pick(key: string, val: string) {
     const next = { ...answers, [key]: val }

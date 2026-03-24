@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { supabase } from '../../lib/supabase'
 
 // ─── THEME ────────────────────────────────────────────────────────────────────
 
@@ -27,26 +28,24 @@ const T = {
 
 export default function AuthPage() {
   const router = useRouter()
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const searchParams = useSearchParams()
+  const requestedMode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin'
+  const nextPath = searchParams.get('next') || '/'
+  const [mode, setMode] = useState<'signin' | 'signup'>(requestedMode)
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
   })
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-
-  // Debug: log when loading changes
-  useEffect(() => {
-    console.log('[AuthPage] Loading state changed to:', loading)
-  }, [loading])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('[AuthPage] Form submitted, mode:', mode)
     setError('')
+    setSuccess('')
 
     // Validation
     if (!formData.email || !formData.email.includes('@')) {
@@ -59,8 +58,8 @@ export default function AuthPage() {
     }
 
     if (mode === 'signup') {
-      if (!formData.firstName.trim()) {
-        setError('Please enter your first name')
+      if (!formData.name.trim()) {
+        setError('Please enter your name')
         return
       }
       if (formData.password !== formData.confirmPassword) {
@@ -72,94 +71,51 @@ export default function AuthPage() {
     // Only set loading AFTER validation passes
     setLoading(true)
 
-    setLoading(true)
-
     try {
       if (mode === 'signup') {
-        // Sign up - add new user to users array
-        const userData = {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password, // Hash in production!
-          createdAt: new Date().toISOString(),
+        const signUpResponse = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            next: nextPath,
+          }),
+        })
+
+        const signUpPayload = await signUpResponse.json()
+
+        if (!signUpResponse.ok) {
+          setError(signUpPayload.error || 'We could not create your account right now.')
+          setLoading(false)
+          return
         }
 
-        if (typeof window !== 'undefined') {
-          // Get existing users or create empty array
-          const existingUsersStr = localStorage.getItem('back2india_users')
-          const existingUsers = existingUsersStr ? JSON.parse(existingUsersStr) : []
-          
-          // Check if email already exists
-          const emailExists = existingUsers.some((u: any) => u.email === formData.email)
-          if (emailExists) {
-            setError('An account with this email already exists')
-            setLoading(false)
-            return
-          }
-          
-          // Add new user to array
-          existingUsers.push(userData)
-          localStorage.setItem('back2india_users', JSON.stringify(existingUsers))
-          
-          // Set current user
-          localStorage.setItem('back2india_user', JSON.stringify(userData))
-          localStorage.setItem('back2india_auth', 'true')
-        }
-
-        // Force page reload to update navbar
-        window.location.href = '/'
+        setSuccess('Account created. Check your email and click the verification link. It takes about 30 seconds, and your answers and results will be saved to your profile so you can access them anytime.')
       } else {
-        // Sign in - find user in users array
-        console.log('[AuthPage] Attempting sign-in for:', formData.email)
-        if (typeof window !== 'undefined') {
-          let existingUsersStr = localStorage.getItem('back2india_users')
-          let existingUsers = existingUsersStr ? JSON.parse(existingUsersStr) : []
-          
-          console.log('[AuthPage] Found users array:', existingUsers.length, 'users')
-          
-          // Backwards compatibility: if no users array, check old single user location
-          if (existingUsers.length === 0) {
-            const oldUser = localStorage.getItem('back2india_user')
-            console.log('[AuthPage] No users array, checking old location:', oldUser ? 'found' : 'not found')
-            if (oldUser) {
-              existingUsers = [JSON.parse(oldUser)]
-              // Migrate to new system
-              localStorage.setItem('back2india_users', JSON.stringify(existingUsers))
-              console.log('[AuthPage] Migrated old user to new system')
-            }
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email.trim(),
+          password: formData.password,
+        })
+
+        if (signInError) {
+          if (signInError.message.toLowerCase().includes('email not confirmed')) {
+            setError('Please confirm your email first. Check your inbox, click the verification link, then sign in.')
+          } else {
+            setError(signInError.message)
           }
-          
-          // Find user by email
-          const user = existingUsers.find((u: any) => u.email === formData.email)
-          
-          console.log('[AuthPage] User found:', user ? 'YES' : 'NO')
-          
-          if (!user) {
-            console.log('[AuthPage] Available emails:', existingUsers.map((u: any) => u.email))
-            setError('No account found with this email. Please sign up first.')
-            setLoading(false)
-            return
-          }
-          
-          console.log('[AuthPage] Checking password...')
-          if (user.password !== formData.password) {
-            setError('Invalid email or password')
-            setLoading(false)
-            return
-          }
-          
-          console.log('[AuthPage] Login successful! Redirecting...')
-          // Login successful
-          localStorage.setItem('back2india_user', JSON.stringify(user))
-          localStorage.setItem('back2india_auth', 'true')
-          
-          // Force page reload to update navbar
-          window.location.href = '/'
+          setLoading(false)
+          return
         }
+
+        router.push(nextPath)
+        router.refresh()
+        return
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
@@ -180,66 +136,38 @@ export default function AuthPage() {
           <p style={{ fontSize: '.95rem', color: T.muted, lineHeight: 1.6 }}>
             {mode === 'signin' 
               ? 'Sign in to access your readiness assessment and journey progress' 
-              : 'Get started with your personalized Back2India journey'}
+              : 'It takes about 30 seconds to get started. Create your account once, save your answers and results to your profile, and access them anytime.'}
           </p>
         </div>
 
         {/* Auth Form */}
         <form onSubmit={handleSubmit} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '20px', padding: '2rem', boxShadow: '0 8px 32px rgba(0,0,0,0.06)', marginBottom: '1.5rem' }}>
-          
           {/* Sign Up Fields */}
           {mode === 'signup' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: '6px' }}>
-                  First Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  placeholder="Rahul"
-                  style={{
-                    width: '100%',
-                    padding: '11px 12px',
-                    background: T.bg,
-                    border: `1.5px solid ${T.border}`,
-                    borderRadius: '10px',
-                    color: T.ink,
-                    fontFamily: 'DM Sans, sans-serif',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box' as const,
-                  }}
-                  onFocus={(e) => e.currentTarget.style.borderColor = T.saffron}
-                  onBlur={(e) => e.currentTarget.style.borderColor = T.border}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: '6px' }}>
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  placeholder="Sharma"
-                  style={{
-                    width: '100%',
-                    padding: '11px 12px',
-                    background: T.bg,
-                    border: `1.5px solid ${T.border}`,
-                    borderRadius: '10px',
-                    color: T.ink,
-                    fontFamily: 'DM Sans, sans-serif',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box' as const,
-                  }}
-                  onFocus={(e) => e.currentTarget.style.borderColor = T.saffron}
-                  onBlur={(e) => e.currentTarget.style.borderColor = T.border}
-                />
-              </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: '6px' }}>
+                Name *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Rahul Sharma"
+                style={{
+                  width: '100%',
+                  padding: '11px 12px',
+                  background: T.bg,
+                  border: `1.5px solid ${T.border}`,
+                  borderRadius: '10px',
+                  color: T.ink,
+                  fontFamily: 'DM Sans, sans-serif',
+                  fontSize: '14px',
+                  outline: 'none',
+                  boxSizing: 'border-box' as const,
+                }}
+                onFocus={(e) => e.currentTarget.style.borderColor = T.saffron}
+                onBlur={(e) => e.currentTarget.style.borderColor = T.border}
+              />
             </div>
           )}
 
@@ -297,6 +225,14 @@ export default function AuthPage() {
             />
           </div>
 
+          {mode === 'signin' && (
+            <div style={{ textAlign: 'right' as const, marginTop: '-0.75rem', marginBottom: '1.5rem' }}>
+              <Link href="/auth/forgot-password" style={{ fontSize: '12px', color: T.saffron, textDecoration: 'none', fontWeight: 600 }}>
+                Forgot password?
+              </Link>
+            </div>
+          )}
+
           {/* Confirm Password (Sign Up only) */}
           {mode === 'signup' && (
             <div style={{ marginBottom: '1.5rem' }}>
@@ -330,6 +266,12 @@ export default function AuthPage() {
           {error && (
             <div style={{ padding: '.875rem', background: T.redLight, border: `1px solid ${T.red}`, borderRadius: '8px', marginBottom: '1rem' }}>
               <p style={{ fontSize: '13px', color: T.red, margin: 0 }}>{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div style={{ padding: '.875rem', background: T.greenLight, border: `1px solid ${T.green}`, borderRadius: '8px', marginBottom: '1rem' }}>
+              <p style={{ fontSize: '13px', color: T.green, margin: 0 }}>{success}</p>
             </div>
           )}
 
@@ -372,7 +314,8 @@ export default function AuthPage() {
             onClick={() => {
               setMode(mode === 'signin' ? 'signup' : 'signin')
               setError('')
-              setFormData({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' })
+              setSuccess('')
+              setFormData({ name: '', email: '', password: '', confirmPassword: '' })
             }}
             style={{
               background: 'none',

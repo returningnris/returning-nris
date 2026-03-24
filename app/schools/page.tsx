@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useProtectedRoute } from '../../components/useProtectedRoute'
 
 type Inputs = {
   city: string
@@ -127,6 +128,8 @@ function getBoardBadge(board: string) {
 }
 
 export default function SchoolsFinder() {
+  const { shouldBlock } = useProtectedRoute()
+
   const [answers, setAnswers] = useState<Partial<Inputs>>({})
   const [currentStep, setCurrentStep] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -136,6 +139,7 @@ export default function SchoolsFinder() {
   const step = STEPS[currentStep]
   const progress = Math.round((currentStep / STEPS.length) * 100)
   const sectionColors: Record<string, string> = { 'Your Search': '#FF9933', 'Your Child': '#7C5CBF' }
+  if (shouldBlock) return null
 
   function pick(key: string, val: string) {
     const next = { ...answers, [key]: val }

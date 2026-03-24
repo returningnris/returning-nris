@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useProtectedRoute } from '../../components/useProtectedRoute'
 
 const CITY_DATA: Record<string, {
   name: string; baseCost: number; match: number; schools: string;
@@ -421,6 +422,9 @@ function PlannerWidget() {
 }
 
 export default function Tools() {
+  const { shouldBlock } = useProtectedRoute()
+  if (shouldBlock) return null
+
   return (
     <>
       {/* HEADER */}
