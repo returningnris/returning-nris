@@ -5,25 +5,59 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
-// ─── THEME ────────────────────────────────────────────────────────────────────
-
 const T = {
-  bg: '#F8F5F0',
+  bg: '#F6F3EE',
   white: '#FFFFFF',
-  ink: '#1A1208',
-  muted: '#6B5E50',
-  soft: '#B5A898',
-  border: '#E5E1DA',
-  saffron: '#FF9933',
-  saffronLight: '#FFF3E6',
-  saffronBorder: 'rgba(255,153,51,0.25)',
-  green: '#138808',
-  greenLight: '#E8F5E8',
-  navy: '#000080',
-  navyLight: '#EEF2FF',
+  ink: '#16110A',
+  muted: '#6F6458',
+  soft: '#A99C8D',
+  border: 'rgba(26,18,8,0.08)',
+  line: '#E7E0D8',
+  saffron: '#FF8F2A',
+  saffronDeep: '#F07A0A',
+  saffronLight: '#FFF4E9',
+  saffronBorder: 'rgba(255,143,42,0.24)',
+  navy: '#0F2747',
+  navyLight: '#EEF4FF',
+  green: '#177245',
+  greenLight: '#EBF8F0',
   red: '#C0392B',
   redLight: '#FCEBEB',
-  heroGrad: 'radial-gradient(ellipse 70% 55% at 50% 10%, rgba(255,153,51,0.1) 0%, transparent 65%), radial-gradient(ellipse 45% 45% at 15% 80%, rgba(19,136,8,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 85% 75%, rgba(0,0,128,0.05) 0%, transparent 60%)',
+  heroGrad:
+    'radial-gradient(ellipse 75% 60% at 8% 12%, rgba(255,143,42,0.14) 0%, transparent 55%), radial-gradient(ellipse 65% 55% at 92% 8%, rgba(15,39,71,0.08) 0%, transparent 58%), linear-gradient(180deg, #F8F5F0 0%, #F6F3EE 100%)',
+}
+
+function normalizeSignInError(message: string) {
+  const lower = message.toLowerCase()
+
+  if (lower.includes('email not confirmed')) {
+    return 'Please confirm your email first. Open the verification email, then sign in here.'
+  }
+
+  if (lower.includes('invalid login credentials') || lower.includes('invalid_credentials')) {
+    return 'That email or password does not match our records. Try again or reset your password.'
+  }
+
+  if (lower.includes('network') || lower.includes('fetch')) {
+    return 'We could not reach the sign-in service. Please try again in a moment.'
+  }
+
+  return 'We could not sign you in right now. Please try again.'
+}
+
+function fieldStyle() {
+  return {
+    width: '100%',
+    padding: '13px 14px',
+    background: 'rgba(255,255,255,0.9)',
+    border: `1px solid ${T.line}`,
+    borderRadius: '14px',
+    color: T.ink,
+    fontFamily: 'DM Sans, sans-serif',
+    fontSize: '14px',
+    outline: 'none',
+    boxSizing: 'border-box' as const,
+  }
 }
 
 function AuthPageContent() {
@@ -31,314 +65,550 @@ function AuthPageContent() {
   const searchParams = useSearchParams()
   const requestedMode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin'
   const nextPath = searchParams.get('next') || '/'
-  const [mode, setMode] = useState<'signin' | 'signup'>(requestedMode)
-  const [formData, setFormData] = useState({
+
+  const [signInData, setSignInData] = useState({ email: '', password: '' })
+  const [signUpData, setSignUpData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
   })
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [signInError, setSignInError] = useState('')
+  const [signUpError, setSignUpError] = useState('')
+  const [signUpSuccess, setSignUpSuccess] = useState('')
+  const [signInLoading, setSignInLoading] = useState(false)
+  const [signUpLoading, setSignUpLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSignInSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError('')
-    setSuccess('')
+    setSignInError('')
 
-    // Validation
-    if (!formData.email || !formData.email.includes('@')) {
-      setError('Please enter a valid email address')
-      return
-    }
-    if (!formData.password || formData.password.length < 8) {
-      setError('Password must be at least 8 characters')
+    if (!signInData.email || !signInData.email.includes('@')) {
+      setSignInError('Please enter a valid email address.')
       return
     }
 
-    if (mode === 'signup') {
-      if (!formData.name.trim()) {
-        setError('Please enter your name')
-        return
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match')
-        return
-      }
+    if (!signInData.password || signInData.password.length < 8) {
+      setSignInError('Password must be at least 8 characters.')
+      return
     }
 
-    // Only set loading AFTER validation passes
-    setLoading(true)
+    setSignInLoading(true)
 
     try {
-      if (mode === 'signup') {
-        const signUpResponse = await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            next: nextPath,
-          }),
-        })
+      const { error } = await supabase.auth.signInWithPassword({
+        email: signInData.email.trim(),
+        password: signInData.password,
+      })
 
-        const signUpPayload = await signUpResponse.json()
-
-        if (!signUpResponse.ok) {
-          setError(signUpPayload.error || 'We could not create your account right now.')
-          setLoading(false)
-          return
-        }
-
-        setSuccess('Account created. Check your email and click the verification link. It takes about 30 seconds, and your answers and results will be saved to your profile so you can access them anytime.')
-      } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email.trim(),
-          password: formData.password,
-        })
-
-        if (signInError) {
-          if (signInError.message.toLowerCase().includes('email not confirmed')) {
-            setError('Please confirm your email first. Check your inbox, click the verification link, then sign in.')
-          } else {
-            setError(signInError.message)
-          }
-          setLoading(false)
-          return
-        }
-
-        router.push(nextPath)
-        router.refresh()
+      if (error) {
+        setSignInError(normalizeSignInError(error.message))
         return
       }
+
+      router.push(nextPath)
+      router.refresh()
     } catch {
-      setError('Something went wrong. Please try again.')
+      setSignInError('We could not sign you in right now. Please try again.')
     } finally {
-      setLoading(false)
+      setSignInLoading(false)
+    }
+  }
+
+  async function handleSignUpSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSignUpError('')
+    setSignUpSuccess('')
+
+    if (!signUpData.name.trim()) {
+      setSignUpError('Please enter your name.')
+      return
+    }
+
+    if (!signUpData.email || !signUpData.email.includes('@')) {
+      setSignUpError('Please enter a valid email address.')
+      return
+    }
+
+    if (!signUpData.password || signUpData.password.length < 8) {
+      setSignUpError('Password must be at least 8 characters.')
+      return
+    }
+
+    if (signUpData.password !== signUpData.confirmPassword) {
+      setSignUpError('Passwords do not match.')
+      return
+    }
+
+    setSignUpLoading(true)
+
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: signUpData.name.trim(),
+          email: signUpData.email.trim(),
+          password: signUpData.password,
+          next: nextPath,
+        }),
+      })
+
+      let payload: { error?: string } | null = null
+      try {
+        payload = await response.json()
+      } catch {
+        payload = null
+      }
+
+      if (!response.ok) {
+        setSignUpError(payload?.error || 'We could not create your account right now.')
+        return
+      }
+
+      setSignUpSuccess(
+        'Check your inbox, confirm your email, and you will come back signed in with your planning data attached to your profile.'
+      )
+    } catch {
+      setSignUpError('We could not create your account right now. Please try again.')
+    } finally {
+      setSignUpLoading(false)
     }
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', overflowY: 'auto' }}>
-      <div style={{ maxWidth: '480px', width: '100%', marginTop: 'auto', marginBottom: 'auto' }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center' as const, marginBottom: '2rem' }}>
-          <Link href="/" style={{ display: 'inline-block', marginBottom: '1.5rem', textDecoration: 'none' }}>
-            <div style={{ fontSize: '2rem', fontWeight: 700, color: T.ink }}>
-              <span style={{ color: T.saffron }}>🇮🇳</span> Back2India
+    <div
+      style={{
+        minHeight: '100vh',
+        background: T.bg,
+        backgroundImage: T.heroGrad,
+        fontFamily: 'DM Sans, sans-serif',
+        padding: 'clamp(20px, 3vw, 32px)',
+      }}
+    >
+      <div
+        className="auth-shell"
+        style={{
+          maxWidth: '1240px',
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1.05fr) minmax(540px, 1fr)',
+          gap: '28px',
+          alignItems: 'center',
+          minHeight: 'calc(100vh - 64px)',
+        }}
+      >
+        <section style={{ padding: '18px 6px 18px 6px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '13px',
+                background: 'linear-gradient(135deg, rgba(255,143,42,0.16), rgba(15,39,71,0.12))',
+                border: `1px solid ${T.border}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: T.saffronDeep,
+                fontSize: '18px',
+                fontWeight: 700,
+              }}
+            >
+              R
             </div>
-          </Link>
-          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2rem', color: T.ink, marginBottom: '.5rem' }}>
-            {mode === 'signin' ? 'Welcome back' : 'Create your account'}
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: T.ink }}>
+              ReturningNRIs
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '7px 12px',
+              borderRadius: '999px',
+              background: 'rgba(255,255,255,0.7)',
+              border: `1px solid ${T.border}`,
+              color: T.muted,
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              marginBottom: '20px',
+            }}
+          >
+            Account access
+          </div>
+
+          <h1
+            style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontSize: 'clamp(2.9rem, 5vw, 5.1rem)',
+              lineHeight: 0.95,
+              letterSpacing: '-0.04em',
+              color: T.ink,
+              margin: '0 0 18px',
+              maxWidth: '11ch',
+            }}
+          >
+            Sign in or create your account.
           </h1>
-          <p style={{ fontSize: '.95rem', color: T.muted, lineHeight: 1.6 }}>
-            {mode === 'signin' 
-              ? 'Sign in to access your readiness assessment and journey progress' 
-              : 'It takes about 30 seconds to get started. Create your account once, save your answers and results to your profile, and access them anytime.'}
-          </p>
-        </div>
 
-        {/* Auth Form */}
-        <form onSubmit={handleSubmit} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '20px', padding: '2rem', boxShadow: '0 8px 32px rgba(0,0,0,0.06)', marginBottom: '1.5rem' }}>
-          {/* Sign Up Fields */}
-          {mode === 'signup' && (
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ fontSize: '12px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: '6px' }}>
-                Name *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Rahul Sharma"
-                style={{
-                  width: '100%',
-                  padding: '11px 12px',
-                  background: T.bg,
-                  border: `1.5px solid ${T.border}`,
-                  borderRadius: '10px',
-                  color: T.ink,
-                  fontFamily: 'DM Sans, sans-serif',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box' as const,
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = T.saffron}
-                onBlur={(e) => e.currentTarget.style.borderColor = T.border}
-              />
-            </div>
-          )}
-
-          {/* Email */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: '6px' }}>
-              Email Address *
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="you@example.com"
-              style={{
-                width: '100%',
-                padding: '11px 12px',
-                background: T.bg,
-                border: `1.5px solid ${T.border}`,
-                borderRadius: '10px',
-                color: T.ink,
-                fontFamily: 'DM Sans, sans-serif',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box' as const,
-              }}
-              onFocus={(e) => e.currentTarget.style.borderColor = T.saffron}
-              onBlur={(e) => e.currentTarget.style.borderColor = T.border}
-            />
-          </div>
-
-          {/* Password */}
-          <div style={{ marginBottom: mode === 'signup' ? '1rem' : '1.5rem' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: '6px' }}>
-              Password *
-            </label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder="Minimum 8 characters"
-              style={{
-                width: '100%',
-                padding: '11px 12px',
-                background: T.bg,
-                border: `1.5px solid ${T.border}`,
-                borderRadius: '10px',
-                color: T.ink,
-                fontFamily: 'DM Sans, sans-serif',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box' as const,
-              }}
-              onFocus={(e) => e.currentTarget.style.borderColor = T.saffron}
-              onBlur={(e) => e.currentTarget.style.borderColor = T.border}
-            />
-          </div>
-
-          {mode === 'signin' && (
-            <div style={{ textAlign: 'right' as const, marginTop: '-0.75rem', marginBottom: '1.5rem' }}>
-              <Link href="/auth/forgot-password" style={{ fontSize: '12px', color: T.saffron, textDecoration: 'none', fontWeight: 600 }}>
-                Forgot password?
-              </Link>
-            </div>
-          )}
-
-          {/* Confirm Password (Sign Up only) */}
-          {mode === 'signup' && (
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ fontSize: '12px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: '6px' }}>
-                Confirm Password *
-              </label>
-              <input
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                placeholder="Re-enter your password"
-                style={{
-                  width: '100%',
-                  padding: '11px 12px',
-                  background: T.bg,
-                  border: `1.5px solid ${T.border}`,
-                  borderRadius: '10px',
-                  color: T.ink,
-                  fontFamily: 'DM Sans, sans-serif',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box' as const,
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = T.saffron}
-                onBlur={(e) => e.currentTarget.style.borderColor = T.border}
-              />
-            </div>
-          )}
-
-          {/* Error Message */}
-          {error && (
-            <div style={{ padding: '.875rem', background: T.redLight, border: `1px solid ${T.red}`, borderRadius: '8px', marginBottom: '1rem' }}>
-              <p style={{ fontSize: '13px', color: T.red, margin: 0 }}>{error}</p>
-            </div>
-          )}
-
-          {success && (
-            <div style={{ padding: '.875rem', background: T.greenLight, border: `1px solid ${T.green}`, borderRadius: '8px', marginBottom: '1rem' }}>
-              <p style={{ fontSize: '13px', color: T.green, margin: 0 }}>{success}</p>
-            </div>
-          )}
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
+          <p
             style={{
-              width: '100%',
-              padding: '13px',
-              background: loading ? 'rgba(255,153,51,0.5)' : T.saffron,
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '15px',
-              fontWeight: 600,
-              color: '#fff',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
-              transition: 'all .15s',
-              boxShadow: loading ? 'none' : '0 4px 16px rgba(255,153,51,0.4)',
+              fontSize: '1.05rem',
+              lineHeight: 1.85,
+              color: T.muted,
+              margin: '0 0 28px',
+              maxWidth: '58ch',
             }}
           >
-            {loading ? (mode === 'signup' ? 'Creating account...' : 'Signing in...') : (mode === 'signup' ? 'Create Account' : 'Sign In')}
-          </button>
-
-          {/* Privacy Note */}
-          {mode === 'signup' && (
-            <p style={{ fontSize: '11px', color: T.soft, textAlign: 'center' as const, marginTop: '1rem', marginBottom: 0 }}>
-              🔒 We never sell or share your information.
-            </p>
-          )}
-        </form>
-
-        {/* Switch Mode */}
-        <div style={{ textAlign: 'center' as const }}>
-          <p style={{ fontSize: '14px', color: T.muted, marginBottom: '.5rem' }}>
-            {mode === 'signin' ? "Don't have an account?" : 'Already have an account?'}
+            Save your readiness assessment, return to your journey anytime, and keep your move-back planning tied to one clean profile.
           </p>
-          <button
-            onClick={() => {
-              setMode(mode === 'signin' ? 'signup' : 'signin')
-              setError('')
-              setSuccess('')
-              setFormData({ name: '', email: '', password: '', confirmPassword: '' })
-            }}
+
+          <div
             style={{
-              background: 'none',
-              border: 'none',
-              color: T.saffron,
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
-              textDecoration: 'underline',
+              display: 'grid',
+              gap: '14px',
+              maxWidth: '560px',
             }}
           >
-            {mode === 'signin' ? 'Create an account' : 'Sign in instead'}
-          </button>
-        </div>
+            {[
+              'Your saved readiness report stays attached to your account.',
+              'Returning users can pick up exactly where they left off.',
+              'Verification, sign in, and password reset all happen in one flow.',
+            ].map((item) => (
+              <div key={item} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <div
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '999px',
+                    background: T.white,
+                    border: `1px solid ${T.border}`,
+                    color: T.saffronDeep,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: '2px',
+                  }}
+                >
+                  +
+                </div>
+                <div style={{ color: T.ink, fontSize: '15px', lineHeight: 1.7 }}>{item}</div>
+              </div>
+            ))}
+          </div>
 
-        {/* Back to Home */}
-        <div style={{ textAlign: 'center' as const, marginTop: '2rem' }}>
-          <Link href="/" style={{ fontSize: '13px', color: T.muted, textDecoration: 'none' }}>
-            ← Back to home
-          </Link>
-        </div>
+          <div
+            style={{
+              marginTop: '34px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+              gap: '14px',
+              maxWidth: '620px',
+            }}
+            className="auth-stats"
+          >
+            {[
+              { value: '30 sec', label: 'typical setup time' },
+              { value: 'Private', label: 'profile-based access' },
+              { value: 'Anytime', label: 'resume your planning' },
+            ].map((item) => (
+              <div
+                key={item.label}
+                style={{
+                  background: 'rgba(255,255,255,0.62)',
+                  border: `1px solid ${T.border}`,
+                  borderRadius: '18px',
+                  padding: '16px 18px',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.5rem', color: T.ink, marginBottom: '4px' }}>{item.value}</div>
+                <div style={{ fontSize: '12px', lineHeight: 1.6, color: T.muted }}>{item.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section
+          style={{
+            background: 'rgba(255,255,255,0.72)',
+            border: `1px solid ${T.border}`,
+            borderRadius: '32px',
+            padding: '18px',
+            boxShadow: '0 20px 60px rgba(24,18,12,0.08)',
+            backdropFilter: 'blur(18px)',
+          }}
+        >
+          <div
+            className="auth-card-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '16px',
+            }}
+          >
+            <form
+              onSubmit={handleSignInSubmit}
+              style={{
+                background: T.white,
+                border: `1px solid ${requestedMode === 'signin' ? T.saffronBorder : T.border}`,
+                borderRadius: '24px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '100%',
+              }}
+            >
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: T.navy,
+                  background: T.navyLight,
+                  borderRadius: '999px',
+                  padding: '6px 11px',
+                  alignSelf: 'flex-start',
+                  marginBottom: '18px',
+                }}
+              >
+                Sign in
+              </div>
+
+              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2rem', lineHeight: 1.02, color: T.ink, margin: '0 0 10px' }}>
+                Welcome back
+              </h2>
+              <p style={{ color: T.muted, fontSize: '14px', lineHeight: 1.7, margin: '0 0 22px' }}>
+                Access your saved report and continue your return planning.
+              </p>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={signInData.email}
+                  onChange={(e) => setSignInData((prev) => ({ ...prev, email: e.target.value }))}
+                  placeholder="you@example.com"
+                  style={fieldStyle()}
+                />
+              </div>
+
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={signInData.password}
+                  onChange={(e) => setSignInData((prev) => ({ ...prev, password: e.target.value }))}
+                  placeholder="Enter your password"
+                  style={fieldStyle()}
+                />
+              </div>
+
+              <div style={{ textAlign: 'right', marginBottom: '16px' }}>
+                <Link href="/auth/forgot-password" style={{ color: T.saffronDeep, fontSize: '12px', fontWeight: 700, textDecoration: 'none' }}>
+                  Forgot password?
+                </Link>
+              </div>
+
+              {signInError && (
+                <div style={{ padding: '12px 13px', background: T.redLight, border: `1px solid ${T.red}`, borderRadius: '14px', marginBottom: '14px' }}>
+                  <p style={{ margin: 0, color: T.red, fontSize: '13px', lineHeight: 1.6 }}>{signInError}</p>
+                </div>
+              )}
+
+              {!signInError && (
+                <div style={{ minHeight: '66px', marginBottom: '14px' }} />
+              )}
+
+              <div style={{ marginTop: 'auto' }}>
+                <button
+                  type="submit"
+                  disabled={signInLoading}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    background: signInLoading ? 'rgba(15,39,71,0.42)' : T.navy,
+                    color: '#fff',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    cursor: signInLoading ? 'not-allowed' : 'pointer',
+                    fontFamily: 'DM Sans, sans-serif',
+                    boxShadow: signInLoading ? 'none' : '0 12px 28px rgba(15,39,71,0.18)',
+                  }}
+                >
+                  {signInLoading ? 'Signing you in...' : 'Sign in'}
+                </button>
+
+                <div style={{ margin: '14px 0 0', minHeight: '58px' }} />
+              </div>
+            </form>
+
+            <form
+              onSubmit={handleSignUpSubmit}
+              style={{
+                background: T.white,
+                border: `1px solid ${requestedMode === 'signup' ? T.saffronBorder : T.border}`,
+                borderRadius: '24px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '100%',
+              }}
+            >
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: T.green,
+                  background: T.greenLight,
+                  borderRadius: '999px',
+                  padding: '6px 11px',
+                  alignSelf: 'flex-start',
+                  marginBottom: '18px',
+                }}
+              >
+                Create account
+              </div>
+
+              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2rem', lineHeight: 1.02, color: T.ink, margin: '0 0 10px' }}>
+                Start here
+              </h2>
+              <p style={{ color: T.muted, fontSize: '14px', lineHeight: 1.7, margin: '0 0 22px' }}>
+                Set up your account once and keep your planning connected to your profile.
+              </p>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                  Full name
+                </label>
+                <input
+                  type="text"
+                  value={signUpData.name}
+                  onChange={(e) => setSignUpData((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="Rahul Sharma"
+                  style={fieldStyle()}
+                />
+              </div>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={signUpData.email}
+                  onChange={(e) => setSignUpData((prev) => ({ ...prev, email: e.target.value }))}
+                  placeholder="you@example.com"
+                  style={fieldStyle()}
+                />
+              </div>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={signUpData.password}
+                  onChange={(e) => setSignUpData((prev) => ({ ...prev, password: e.target.value }))}
+                  placeholder="Minimum 8 characters"
+                  style={fieldStyle()}
+                />
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                  Confirm password
+                </label>
+                <input
+                  type="password"
+                  value={signUpData.confirmPassword}
+                  onChange={(e) => setSignUpData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                  placeholder="Re-enter your password"
+                  style={fieldStyle()}
+                />
+              </div>
+
+              {signUpError && (
+                <div style={{ padding: '12px 13px', background: T.redLight, border: `1px solid ${T.red}`, borderRadius: '14px', marginBottom: '14px' }}>
+                  <p style={{ margin: 0, color: T.red, fontSize: '13px', lineHeight: 1.6 }}>{signUpError}</p>
+                </div>
+              )}
+
+              {signUpSuccess && (
+                <div style={{ padding: '12px 13px', background: T.greenLight, border: `1px solid ${T.green}`, borderRadius: '14px', marginBottom: '14px' }}>
+                  <p style={{ margin: 0, color: T.green, fontSize: '13px', lineHeight: 1.6 }}>{signUpSuccess}</p>
+                </div>
+              )}
+
+              <div style={{ marginTop: 'auto' }}>
+                <button
+                  type="submit"
+                  disabled={signUpLoading}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    background: signUpLoading ? 'rgba(255,143,42,0.45)' : T.saffron,
+                    color: '#fff',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    cursor: signUpLoading ? 'not-allowed' : 'pointer',
+                    fontFamily: 'DM Sans, sans-serif',
+                    boxShadow: signUpLoading ? 'none' : '0 12px 28px rgba(255,143,42,0.2)',
+                  }}
+                >
+                  {signUpLoading ? 'Creating your account...' : 'Create account'}
+                </button>
+
+                <p style={{ margin: '14px 0 0', color: T.soft, fontSize: '11px', lineHeight: 1.6, textAlign: 'center', minHeight: '58px' }}>
+                  Your information stays private and is used only for your ReturningNRIs planning experience.
+                </p>
+              </div>
+            </form>
+          </div>
+        </section>
       </div>
+
+      <style>{`
+        @media (max-width: 1100px) {
+          .auth-shell {
+            grid-template-columns: 1fr !important;
+            min-height: auto !important;
+          }
+        }
+
+        @media (max-width: 760px) {
+          .auth-card-grid,
+          .auth-stats {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }
