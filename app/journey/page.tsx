@@ -1399,9 +1399,11 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
   const postMove = getPostMoveRecommendation(A)
   const visiblePhases = alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]
   const activeTimelinePhase = getActiveTimelinePhase(A.moveDate)
-  const currentPhaseIndex = visiblePhases.includes(state.currentPhase) ? state.currentPhase : Math.max(visiblePhases[0], activeTimelinePhase)
-  const currentPhaseLabel = PHASES[currentPhaseIndex]
-  const currentPhaseTasks = TASKS.filter((task) => task.phase === currentPhaseIndex)
+  const journeyPhaseIndex = visiblePhases.includes(activeTimelinePhase) ? activeTimelinePhase : visiblePhases[0]
+  const selectedPhaseIndex = visiblePhases.includes(state.currentPhase) ? state.currentPhase : journeyPhaseIndex
+  const currentPhaseLabel = PHASES[journeyPhaseIndex]
+  const currentPhaseTasks = TASKS.filter((task) => task.phase === journeyPhaseIndex)
+  const journeyHealthPhases = visiblePhases.filter((phase) => phase <= journeyPhaseIndex)
   const nextTask =
     currentPhaseTasks.find((task) => !effectiveCompletedTasks.has(task.id) && task.priority === 'critical') ||
     currentPhaseTasks.find((task) => !effectiveCompletedTasks.has(task.id)) ||
@@ -1435,13 +1437,13 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
     const previousCustomTasks = new Set(lastSeen?.completedCustomTaskIds || [])
     const completedNow = [...effectiveCompletedTasks].filter((id) => !previousTasks.has(id))
     const customCompletedNow = [...state.completedCustomTaskIds].filter((id) => !previousCustomTasks.has(id))
-    const phaseAdvanced = typeof lastSeen?.phase === 'number' && currentPhaseIndex > lastSeen.phase
+    const phaseAdvanced = typeof lastSeen?.phase === 'number' && journeyPhaseIndex > lastSeen.phase
     return {
       completedNow: [...completedNow, ...customCompletedNow],
       phaseAdvanced,
       lastSeenAt: lastSeen?.at || '',
     }
-  }, [currentPhaseIndex, effectiveCompletedTasks, lastSeen, state.completedCustomTaskIds])
+  }, [effectiveCompletedTasks, journeyPhaseIndex, lastSeen, state.completedCustomTaskIds])
 
   useEffect(() => {
     if (alreadyMoved && state.currentPhase < 3) {
@@ -1459,7 +1461,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
             at: new Date().toISOString(),
             completedTaskIds: [...state.completedTasks],
             completedCustomTaskIds: [...state.completedCustomTaskIds],
-            phase: currentPhaseIndex,
+            phase: journeyPhaseIndex,
           })
         )
       } catch {
@@ -1468,13 +1470,13 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
     }
     window.addEventListener('pagehide', persist)
     return () => window.removeEventListener('pagehide', persist)
-  }, [currentPhaseIndex, state.completedCustomTaskIds, state.completedTasks, userId])
+  }, [journeyPhaseIndex, state.completedCustomTaskIds, state.completedTasks, userId])
 
   return (
     <div style={{ minHeight: '100vh', background: T.hero }}>
       <style>{`
         .dashboard-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.95fr); gap: 1rem; }
+        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.8fr); gap: 0.9rem; align-items: start; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; }
         .overview-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; }
         .milestone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; }
@@ -1490,14 +1492,14 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
       <div className="dashboard-shell">
         <div className="hero-grid" style={{ marginBottom: '1rem' }}>
           <SurfaceCard style={{ overflow: 'hidden' }}>
-            <div style={{ padding: '1.5rem', background: T.dark }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 18 }}>
+            <div style={{ padding: '1.15rem 1.2rem', background: T.dark }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 14 }}>
                 <div>
                   <Pill tone="saffron">Back2India dashboard</Pill>
-                  <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.8rem)', lineHeight: 0.98, color: T.white, marginTop: 16, marginBottom: 10 }}>
+                  <h1 style={{ fontSize: 'clamp(1.7rem, 4vw, 3rem)', lineHeight: 0.98, color: T.white, marginTop: 12, marginBottom: 8 }}>
                     {state.firstName ? `${state.firstName}'s journey` : 'Your journey'}
                   </h1>
-                  <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, maxWidth: 700 }}>
+                  <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, maxWidth: 620 }}>
                     {alreadyMoved
                       ? 'The move has happened. The journey now focuses on settling in, sequencing the first year well, and reducing post-move friction.'
                       : 'Your retained relocation flow from decision through arrival and the first year back in India.'}
@@ -1506,7 +1508,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
 
                 <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                   <LabeledMetric label="Journey" value={`${pct}%`} tone="saffron" />
-                  <LabeledMetric label="Phase" value={`${currentPhaseIndex + 1}`} tone="navy" />
+                  <LabeledMetric label="Phase" value={`${journeyPhaseIndex + 1}`} tone="navy" />
                   <LabeledMetric label="Milestones" value={`${completedMsCount}/${MILESTONES.length}`} tone="green" />
                 </div>
               </div>
@@ -1514,7 +1516,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
               <div className="stats-grid">
                 {[
                   { label: 'Current phase', value: `${currentPhaseLabel}` },
-                  { label: 'When', value: PHASE_WINDOWS[currentPhaseIndex] },
+                  { label: 'When', value: PHASE_WINDOWS[journeyPhaseIndex] },
                   { label: 'Next best action', value: nextTask ? nextTask.title : 'Maintain momentum' },
                   { label: 'Target move', value: formatMoveDate(A.moveDate) },
                 ].map((item) => (
@@ -1537,18 +1539,18 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
             </div>
           </SurfaceCard>
 
-          <SurfaceCard style={{ padding: '1.35rem' }}>
+          <SurfaceCard style={{ padding: '1.05rem 1.1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                   Next best action
                 </div>
-                <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 6 }}>{nextTask ? nextTask.title : alreadyMoved ? postMove.title : 'Stay on the current path'}</h2>
+                <h2 style={{ fontSize: '1.15rem', color: T.ink, marginBottom: 6 }}>{nextTask ? nextTask.title : alreadyMoved ? postMove.title : 'Stay on the current path'}</h2>
               </div>
               {nextTask?.priority === 'critical' ? <Pill tone="saffron">Critical now</Pill> : <Pill tone="navy">Guided flow</Pill>}
             </div>
 
-            <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.75, marginBottom: 16 }}>
+            <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 14 }}>
               {nextTask
                 ? nextTask.desc
                 : alreadyMoved
@@ -1670,20 +1672,19 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                     </div>
                     <h2 style={{ fontSize: '1.35rem', color: T.ink }}>Progress through the relocation timeline</h2>
                   </div>
-                  <Pill tone="green">{pct}% complete</Pill>
                 </div>
 
                 <div style={{ display: 'grid', gap: 12 }}>
-                  {visiblePhases.map((phase) => {
+                  {journeyHealthPhases.map((phase) => {
                     const stats = phaseTaskStats(phase, effectiveCompletedTasks, state.customTasks, state.completedCustomTaskIds)
                     return (
                       <div key={phase}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
                           <span style={{ color: T.muted }}>{PHASES[phase]} • {PHASE_WINDOWS[phase]}</span>
-                          <strong style={{ color: phase === currentPhaseIndex ? T.saffron : T.green }}>{stats.done}/{stats.total}</strong>
+                          <strong style={{ color: phase === journeyPhaseIndex ? T.saffron : T.green }}>{stats.done}/{stats.total}</strong>
                         </div>
                         <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
-                          <div style={{ width: `${stats.pct}%`, height: '100%', background: phase === currentPhaseIndex ? T.saffron : T.green }} />
+                          <div style={{ width: `${stats.pct}%`, height: '100%', background: phase === journeyPhaseIndex ? T.saffron : T.green }} />
                         </div>
                       </div>
                     )
@@ -1806,7 +1807,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
               <div style={{ display: 'grid', gap: 10, gridTemplateColumns: `repeat(${alreadyMoved ? 2 : 5}, minmax(0, 1fr))` }}>
                 {(alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]).map((phase) => {
                   const stats = phaseTaskStats(phase, effectiveCompletedTasks, state.customTasks, state.completedCustomTaskIds)
-                  const active = state.currentPhase === phase
+                  const active = selectedPhaseIndex === phase
                   const phaseStatus = getPhaseTimeStatus(phase, activeTimelinePhase)
                   return (
                     <button
@@ -1837,7 +1838,7 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
             </SurfaceCard>
 
             {(() => {
-              const phase = currentPhaseIndex
+              const phase = selectedPhaseIndex
               const tasks = TASKS.filter((task) => task.phase === phase)
               const customTasks = customTasksByPhase.get(phase) || []
               const done =
@@ -1922,7 +1923,6 @@ function JourneyDashboard({ state, dispatch, userId }: { state: JourneyState; di
                                 {task.title}
                               </div>
                               {task.priority === 'critical' ? <Pill tone="saffron">Critical</Pill> : null}
-                              {!alreadyMoved && task.isScoreImpact ? <Pill tone="navy">Score impact</Pill> : null}
                             </div>
                             <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.75 }}>{task.desc}</div>
                           </div>
@@ -2094,18 +2094,24 @@ export default function JourneyPage() {
           const raw = window.localStorage.getItem(`journey:state:${user.id}`)
           if (raw) {
             const parsed = JSON.parse(raw) as {
+              answers?: Partial<Answers>
               completedTaskIds?: string[]
               completedCustomTaskIds?: string[]
               manualMilestoneIds?: string[]
               customTasks?: CustomTask[]
               currentPhase?: number
+              step?: JourneyState['step']
+              editingProfile?: boolean
             }
             persisted = {
+              answers: parsed.answers || {},
               completedTasks: new Set(parsed.completedTaskIds || []),
               completedCustomTaskIds: new Set(parsed.completedCustomTaskIds || []),
               manualMilestones: new Set(parsed.manualMilestoneIds || []),
               customTasks: parsed.customTasks || [],
               currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : hasSavedReadiness ? 0 : 0,
+              step: parsed.step,
+              editingProfile: parsed.editingProfile,
             }
           }
         } catch {
@@ -2121,10 +2127,13 @@ export default function JourneyPage() {
         type: 'LOAD_SAVED',
         payload: {
           firstName: user.firstName || '',
-          answers: savedAnswers,
-          step: hasSavedReadiness ? 'journey' : 'profile',
+          answers: { ...savedAnswers, ...(persisted.answers || {}) },
+          step: persisted.step ?? (hasSavedReadiness ? 'journey' : 'profile'),
+          editingProfile: persisted.editingProfile ?? false,
           completedTasks: persisted.completedTasks,
+          completedCustomTaskIds: persisted.completedCustomTaskIds,
           manualMilestones: persisted.manualMilestones,
+          customTasks: persisted.customTasks,
           currentPhase: persisted.currentPhase,
         },
       })
@@ -2144,17 +2153,20 @@ export default function JourneyPage() {
       window.localStorage.setItem(
         `journey:state:${user.id}`,
         JSON.stringify({
+            answers: state.answers,
             completedTaskIds: [...state.completedTasks],
             completedCustomTaskIds: [...state.completedCustomTaskIds],
             manualMilestoneIds: [...state.manualMilestones],
             customTasks: state.customTasks,
             currentPhase: state.currentPhase,
+            step: state.step,
+            editingProfile: state.editingProfile,
           })
         )
     } catch {
       return
     }
-  }, [state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.manualMilestones, user?.id])
+  }, [state.answers, state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.editingProfile, state.manualMilestones, state.step, user?.id])
 
   if (shouldBlock || loadingSavedJourney) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
