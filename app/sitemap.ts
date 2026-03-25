@@ -17,7 +17,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://www.returningnris.com/citylife', lastModified: new Date() },
     { url: 'https://www.returningnris.com/jobs', lastModified: new Date() },
     { url: 'https://www.returningnris.com/our-story', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/community', lastModified: new Date() },
-   
   ]
 }
