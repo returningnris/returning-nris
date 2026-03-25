@@ -993,6 +993,34 @@ export default function Planner() {
       display: grid;
       gap: 1rem;
     }
+    .planner-result-shell {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    .planner-result-hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.8fr);
+      gap: 0.9rem;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+    .planner-result-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.9rem;
+    }
+    .planner-result-overview-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .planner-result-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
     .planner-option-grid {
       display: grid;
       gap: 0.7rem;
@@ -1001,6 +1029,14 @@ export default function Planner() {
     @media (max-width: 980px) {
       .planner-grid {
         grid-template-columns: 1fr;
+      }
+      .planner-result-hero-grid,
+      .planner-result-overview-grid,
+      .planner-result-cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .planner-result-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       .planner-sticky-panel {
         position: static;
@@ -1027,6 +1063,9 @@ export default function Planner() {
       .planner-shell {
         padding: 1rem 0.9rem 2rem;
       }
+      .planner-result-shell {
+        padding: 1rem 0.9rem 2rem;
+      }
       .planner-score-grid,
       .planner-financial-grid,
       .planner-sim-grid {
@@ -1038,6 +1077,9 @@ export default function Planner() {
       .planner-journey-row {
         flex-direction: column !important;
         align-items: flex-start !important;
+      }
+      .planner-result-stats-grid {
+        grid-template-columns: 1fr !important;
       }
       .planner-section-card,
       .planner-question-card,
@@ -1098,139 +1140,316 @@ export default function Planner() {
   // ── RESULT ──
   if (result && user) {
     const r = result
+    const scoreBreakdown = [
+      { label: 'Financial', s: r.score.financial, max: 40, c: T.saffron, note: 'Buffer, runway, and tax timing' },
+      { label: 'Life Complexity', s: r.score.lifeComplexity, max: 25, c: '#7C5CBF', note: 'Family, housing, and move friction' },
+      { label: 'Career', s: r.score.career, max: 20, c: T.green, note: 'Income continuity after the move' },
+      { label: 'Planning', s: r.score.planning, max: 20, c: T.navy, note: 'City clarity, RNOR, and timing' },
+    ]
+    const topRisk = r.risks[0]
+    const readinessLabel =
+      r.score.total >= 80 ? 'Execution window open' : r.score.total >= 60 ? 'Close the remaining gaps' : 'Foundation needs work'
+    const nextMove = r.recommendation.actions[0] || 'Keep refining the move plan before you commit.'
+
     return (
       <div className="planner-page" style={{ background: T.bg, backgroundImage: T.heroGrad, minHeight: '100vh', fontFamily: 'DM Sans, sans-serif' }} ref={reportRef}>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}} ${responsiveStyles}`}</style>
 
-        {/* SCORE HEADER */}
-        <div className="planner-result-header" style={{ padding: '4rem 2rem 2.5rem', textAlign: 'center', maxWidth: '860px', margin: '0 auto' }}>
-          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.8rem,4vw,2.6rem)', color: T.ink, marginBottom: '0.5rem', lineHeight: 1.2 }}>
-            {user?.firstName || 'Hi'}, <em style={{ fontStyle: 'italic', color: T.saffron }}>{r.headline}</em>
-          </h1>
-          <p style={{ color: T.muted, fontSize: '1rem', marginBottom: '2rem' }}>{r.subheadline}</p>
-
-          {/* Score + breakdown cards */}
-          <div className="planner-score-grid" style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: '1rem', maxWidth: '700px', margin: '0 auto' }}>
-            <div className="planner-score-card" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '18px', padding: '1.5rem', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-              <div className="planner-score-total" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '3.5rem', color: r.statusColor, lineHeight: 1 }}>{r.score.total}</div>
-              <div style={{ fontSize: '12px', color: T.soft, margin: '4px 0 10px' }}>out of 100</div>
-              <div style={{ background: r.statusBg, color: r.statusColor, fontSize: '11px', fontWeight: 600, padding: '5px 12px', borderRadius: '100px', display: 'inline-block' }}>{r.status}</div>
-            </div>
-            <div className="planner-score-card" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '18px', padding: '1.25rem 1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-              {[{ label: 'Financial', s: r.score.financial, max: 40, c: T.saffron }, { label: 'Life Complexity', s: r.score.lifeComplexity, max: 25, c: '#7C5CBF' }, { label: 'Career', s: r.score.career, max: 20, c: T.green }, { label: 'Planning', s: r.score.planning, max: 20, c: T.navy }].map(x => (
-                <div key={x.label} style={{ marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '12px', color: T.muted }}>{x.label}</span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: x.c }}>{x.s}/{x.max}</span>
+        <div className="planner-result-shell">
+          <div className="planner-result-hero-grid">
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 26, overflow: 'hidden', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
+              <div style={{ padding: '1.2rem 1.25rem', background: '#20160f' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 14 }}>
+                  <div>
+                    <div className="planner-result-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '999px', padding: '0.45rem 0.85rem', marginBottom: '1rem' }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: T.saffron }} />
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                        Readiness dashboard
+                      </span>
+                    </div>
+                    <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.9rem, 4vw, 3rem)', lineHeight: 0.98, color: T.white, marginBottom: 8 }}>
+                      {user?.firstName ? `${user.firstName}'s readiness` : 'Your readiness'}
+                    </h1>
+                    <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, maxWidth: 620 }}>
+                      {r.subheadline}
+                    </p>
                   </div>
-                  <div style={{ height: '5px', background: '#EDE9E0', borderRadius: '100px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', background: x.c, width: Math.round((x.s / x.max) * 100) + '%', borderRadius: '100px' }} />
+
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                    <div style={{ minWidth: 92 }}>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Score</div>
+                      <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.4rem', color: '#fff', lineHeight: 1 }}>{r.score.total}</div>
+                    </div>
+                    <div style={{ minWidth: 92 }}>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Status</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{r.status}</div>
+                    </div>
+                    <div style={{ minWidth: 92 }}>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>City</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{r.cityName}</div>
+                    </div>
                   </div>
                 </div>
-              ))}
+
+                <div className="planner-result-stats-grid">
+                  {[
+                    { label: 'Readiness', value: readinessLabel },
+                    { label: 'Financial runway', value: r.financial.runway },
+                    { label: 'Top risk count', value: `${r.risks.length} active` },
+                    { label: 'Next move', value: nextMove },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      style={{
+                        padding: '1rem',
+                        borderRadius: 18,
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                      }}
+                    >
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: T.white, lineHeight: 1.45 }}>{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gap: '0.9rem' }}>
+              <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 22, padding: '1.05rem 1.1rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      Next best action
+                    </div>
+                    <h2 style={{ fontSize: '1.15rem', color: T.ink, marginBottom: 6 }}>{topRisk ? topRisk.title : r.recommendation.verdict}</h2>
+                  </div>
+                  <div style={{ background: r.statusBg, color: r.statusColor, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 999, alignSelf: 'flex-start' }}>
+                    {r.status}
+                  </div>
+                </div>
+
+                <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 14 }}>
+                  {topRisk ? topRisk.detail : r.recommendation.directTalk}
+                </p>
+
+                <div
+                  style={{
+                    padding: '1rem',
+                    borderRadius: 18,
+                    background: T.saffronLight,
+                    border: `1px solid ${T.saffronBorder}`,
+                  }}
+                >
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#8d5c22', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                    Why this matters
+                  </div>
+                  <div style={{ fontSize: 14, color: '#8d5c22', lineHeight: 1.75 }}>
+                    {nextMove}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gap: 10 }}>
+                <Link
+                  href="/journey"
+                  className="planner-journey-link"
+                  style={{
+                    display: 'inline-flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '1rem 1.15rem',
+                    background: T.green,
+                    color: '#fff',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    borderRadius: 999,
+                    textDecoration: 'none',
+                  }}
+                >
+                  Start Journey with Saved Profile
+                </Link>
+
+                <button
+                  onClick={restart}
+                  style={{
+                    width: '100%',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    padding: '1rem 1.15rem',
+                    borderRadius: 999,
+                    border: `1px solid ${T.saffronBorder}`,
+                    background: 'linear-gradient(180deg, #FFF8F0 0%, #FFF2E2 100%)',
+                    color: T.ink,
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: 'DM Sans, sans-serif',
+                  }}
+                >
+                  <span style={{ fontSize: '16px', lineHeight: 1 }}>??</span>
+                  <span>Update Milestone Changes</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="planner-result-content" style={{ maxWidth: '860px', margin: '0 auto', padding: '0 2rem 3rem' }}>
-
-          {/* Financial snapshot */}
-          <div className="planner-financial-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            {[
-              { label: 'India monthly cost', val: r.financial.monthlyCost, sub: r.cityName, color: T.ink },
-              { label: 'Financial runway', val: r.financial.runway, sub: 'on savings alone', color: r.financial.runwayMonths >= 18 ? T.green : '#CC7A00' },
-              { label: 'RNOR tax saving', val: r.financial.rnorSaving, sub: 'if claimed correctly', color: T.saffron },
-            ].map(s => (
-              <div key={s.label} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '14px', padding: '1rem 1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                <div style={{ fontSize: '10px', color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>{s.label}</div>
-                <div className="planner-financial-value" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.4rem', color: s.color, marginBottom: '2px' }}>{s.val}</div>
-                <div style={{ fontSize: '11px', color: T.soft }}>{s.sub}</div>
+          <div className="planner-result-overview-grid">
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.35rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                    Readiness health
+                  </div>
+                  <h2 style={{ fontSize: '1.35rem', color: T.ink }}>Where your score is strong and where it is fragile</h2>
+                </div>
               </div>
-            ))}
-          </div>
 
-          {/* Recommendation */}
-          <div style={{ background: r.recommendation.bg, border: `1.5px solid ${r.recommendation.border}`, borderRadius: '16px', overflow: 'hidden', marginBottom: '0.75rem' }}>
-            <div style={{ padding: '1.5rem' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Our Recommendation</div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gap: 14 }}>
+                {scoreBreakdown.map((item) => (
+                  <div key={item.label}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{item.label}</div>
+                        <div style={{ fontSize: 12, color: T.muted }}>{item.note}</div>
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: item.c }}>{item.s}/{item.max}</div>
+                    </div>
+                    <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
+                      <div style={{ width: `${Math.round((item.s / item.max) * 100)}%`, height: '100%', background: item.c }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ background: r.recommendation.bg, border: `1.5px solid ${r.recommendation.border}`, borderRadius: 24, padding: '1.35rem' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: r.recommendation.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                Recommendation
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
                 <span style={{ fontSize: '1.75rem', flexShrink: 0, lineHeight: 1 }}>{r.recommendation.icon}</span>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.2rem', color: r.recommendation.color, lineHeight: 1.35, fontWeight: 400 }}>{r.recommendation.verdict}</div>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.25rem', color: r.recommendation.color, lineHeight: 1.35 }}>
+                  {r.recommendation.verdict}
+                </div>
               </div>
-              <p style={{ fontSize: '14px', color: r.recommendation.color, lineHeight: 1.75, margin: '0 0 1.25rem 0', opacity: 0.9 }}>{r.recommendation.directTalk}</p>
-              <div style={{ borderTop: `1px solid ${r.recommendation.border}`, paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {r.recommendation.actions.map((a, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                    <span style={{ color: r.recommendation.color, fontSize: '12px', lineHeight: '20px', flexShrink: 0, fontWeight: 700 }}>→</span>
-                    <span style={{ fontSize: '13px', color: r.recommendation.color, lineHeight: 1.6, opacity: 0.88 }}>{a}</span>
+              <p style={{ fontSize: 14, color: r.recommendation.color, lineHeight: 1.75, margin: '0 0 1rem 0', opacity: 0.92 }}>
+                {r.recommendation.directTalk}
+              </p>
+              <div style={{ display: 'grid', gap: 10 }}>
+                {r.recommendation.actions.map((action, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '26px minmax(0, 1fr)',
+                      gap: 12,
+                      alignItems: 'start',
+                      padding: '0.95rem',
+                      borderRadius: 18,
+                      background: 'rgba(255,255,255,0.35)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: '50%',
+                        background: r.recommendation.color,
+                        color: '#fff',
+                        display: 'grid',
+                        placeItems: 'center',
+                        fontSize: 12,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    <div style={{ fontSize: 14, color: r.recommendation.color, lineHeight: 1.7 }}>{action}</div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Ready to Start Journey Card */}
-          <div className="planner-journey-card" style={{ background: T.white, borderRadius: '16px', padding: '2rem', border: `1px solid ${T.border}`, marginBottom: '1.5rem' }}>
-            <div className="planner-journey-row" style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '1.5rem' }}>
-              <span style={{ fontSize: '32px' }}>🚀</span>
-              <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: T.ink, marginBottom: '8px', margin: 0 }}>
-                  Ready to start your move?
-                </h3>
-                <p style={{ fontSize: '14px', color: T.muted, margin: 0, lineHeight: 1.6 }}>
-                  When you&apos;re ready to begin your Back2India Journey, your saved answers will automatically pre-fill the setup form. Start tracking your progress with personalized tasks and milestones.
-                </p>
+          <div className="planner-result-cards-grid">
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.35rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                Financial snapshot
+              </div>
+              <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 14 }}>What the move looks like financially right now</h2>
+              <div style={{ display: 'grid', gap: 12 }}>
+                {[
+                  { label: 'India monthly cost', val: r.financial.monthlyCost, sub: r.cityName, color: T.ink },
+                  { label: 'Financial runway', val: r.financial.runway, sub: 'on savings alone', color: r.financial.runwayMonths >= 18 ? T.green : '#CC7A00' },
+                  { label: 'RNOR tax saving', val: r.financial.rnorSaving, sub: 'if claimed correctly', color: T.saffron },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    style={{
+                      padding: '1rem',
+                      borderRadius: 18,
+                      background: 'rgba(29,22,15,0.03)',
+                      border: `1px solid ${T.border}`,
+                    }}
+                  >
+                    <div style={{ fontSize: 11, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{item.label}</div>
+                    <div className="planner-financial-value" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.45rem', color: item.color, marginBottom: 3 }}>{item.val}</div>
+                    <div style={{ fontSize: 12, color: T.muted }}>{item.sub}</div>
+                  </div>
+                ))}
               </div>
             </div>
-            <Link
-              href="/journey"
-              className="planner-journey-link"
-              style={{
-                display: 'inline-block',
-                padding: '1rem 2rem',
-                background: T.green,
-                color: '#fff',
-                fontSize: '15px',
-                fontWeight: 600,
-                borderRadius: '10px',
-                textDecoration: 'none',
-                transition: 'all .15s',
-              }}
-            >
-              Start Journey with Saved Profile →
-            </Link>
-          </div>
 
-          <button
-            onClick={restart}
-            style={{
-              width: '100%',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              padding: '1rem 1.2rem',
-              marginTop: '0.5rem',
-              borderRadius: '14px',
-              border: `1px solid ${T.saffronBorder}`,
-              background: 'linear-gradient(180deg, #FFF8F0 0%, #FFF2E2 100%)',
-              color: T.ink,
-              fontSize: '14px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
-              boxShadow: '0 10px 24px rgba(255,153,51,0.12)',
-            }}
-          >
-            <span style={{ fontSize: '16px', lineHeight: 1 }}>✏️</span>
-            <span>Update Milestone Changes</span>
-          </button>
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.35rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                    Top risks
+                  </div>
+                  <h2 style={{ fontSize: '1.35rem', color: T.ink }}>The issues most likely to slow or break the move</h2>
+                </div>
+                <div style={{ background: T.bg, color: T.muted, fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 999 }}>
+                  {r.risks.length} flagged
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gap: 12 }}>
+                {r.risks.map((risk, index) => {
+                  const tone = risk.level === 'high' ? { bg: '#FCEBEB', border: 'rgba(192,57,43,0.18)', color: '#C0392B' } : risk.level === 'medium' ? { bg: T.saffronLight, border: T.saffronBorder, color: '#CC7A00' } : { bg: T.greenLight, border: 'rgba(19,136,8,0.18)', color: T.green }
+                  return (
+                    <div
+                      key={risk.title}
+                      style={{
+                        padding: '1rem',
+                        borderRadius: 18,
+                        background: tone.bg,
+                        border: `1px solid ${tone.border}`,
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{risk.title}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: tone.color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                          {risk.level} {index === 0 ? 'priority' : ''}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 13, color: T.muted, lineHeight: 1.7, marginBottom: 10 }}>{risk.detail}</div>
+                      <div style={{ fontSize: 13, color: tone.color, lineHeight: 1.7, fontWeight: 600 }}>{risk.action}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )
   }
 
-  // ── QUESTIONNAIRE ──
   return (
     <div className="planner-page" style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif' }}>
       <style>{`select option { background: #fff; color: ${T.ink}; } select:focus { box-shadow: 0 0 0 3px ${T.saffronBorder}; } ${responsiveStyles}`}</style>
