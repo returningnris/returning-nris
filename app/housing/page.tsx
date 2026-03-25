@@ -111,24 +111,27 @@ export default function HousingFinder() {
   const { shouldBlock } = useProtectedRoute()
 
   const [answers, setAnswers] = useState<Partial<Inputs>>({})
-  const [currentStep, setCurrentStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<Neighbourhood[] | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
 
-  const step = STEPS[currentStep]
-  const progress = Math.round((currentStep / STEPS.length) * 100)
-  const sectionColors: Record<string, string> = { 'Search': '#FF9933', 'Your Needs': '#138808' }
+  const answered = STEPS.filter((step) => Boolean(answers[step.key as keyof Inputs])).length
+  const progress = Math.round((answered / STEPS.length) * 100)
   if (shouldBlock) return null
 
-  function pick(key: string, val: string) {
-    const next = { ...answers, [key]: val }
-    setAnswers(next)
-    if (currentStep < STEPS.length - 1) setTimeout(() => setCurrentStep(s => s + 1), 280)
-    else { setLoading(true); setTimeout(() => { setResult(matchNeighbourhoods(next as Inputs)); setLoading(false) }, 1400) }
+  function setAnswer(key: string, val: string) {
+    setAnswers((prev) => ({ ...prev, [key]: val }))
   }
 
-  function restart() { setAnswers({}); setCurrentStep(0); setResult(null); setLoading(false); setExpanded(null) }
+  function handleGenerate() {
+    setLoading(true)
+    setTimeout(() => {
+      setResult(matchNeighbourhoods(answers as Inputs))
+      setLoading(false)
+    }, 1400)
+  }
+
+  function restart() { setAnswers({}); setResult(null); setLoading(false); setExpanded(null) }
 
   const ratingBar = (val: number, color: string) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -291,48 +294,63 @@ export default function HousingFinder() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1A1208', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '3rem 2rem 2rem', textAlign: 'center' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,153,51,0.15)', border: '0.5px solid rgba(255,153,51,0.3)', borderRadius: '100px', padding: '5px 14px', marginBottom: '1rem' }}>
-          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF9933' }} />
-          <span style={{ fontSize: '11px', fontWeight: 500, color: '#FF9933', letterSpacing: '0.08em' }}>Rental & Housing Finder · Free · {STEPS.length} questions</span>
-        </div>
-        <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.8rem,4vw,2.5rem)', color: '#fff', marginBottom: '0.5rem' }}>Find your neighbourhood in India</h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.95rem' }}>NRI-curated neighbourhoods with rent ranges, safety ratings, school proximity, and insider agent tips.</p>
-      </div>
-      <div style={{ padding: '0 2rem', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Question {currentStep + 1} of {STEPS.length}</span>
-          <span style={{ fontSize: '12px', color: '#FF9933', fontWeight: 500 }}>{progress}% complete</span>
-        </div>
-        <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '100px', overflow: 'hidden', marginBottom: '2rem' }}>
-          <div style={{ height: '100%', background: '#FF9933', borderRadius: '100px', width: progress + '%', transition: 'width 0.4s ease' }} />
-        </div>
-      </div>
-      {step && (
-        <div style={{ flex: 1, padding: '0 2rem 4rem', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '2rem', border: '0.5px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '1.25rem' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: sectionColors[step.section] || '#FF9933' }} />
-              <span style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{step.section}</span>
+    <div style={{ minHeight: '100vh', background: '#F8F5F0', backgroundImage: 'radial-gradient(ellipse 70% 55% at 50% 10%, rgba(255,153,51,0.1) 0%, transparent 65%), radial-gradient(ellipse 45% 45% at 15% 80%, rgba(19,136,8,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 85% 75%, rgba(0,0,128,0.05) 0%, transparent 60%)', fontFamily: 'DM Sans, sans-serif' }}>
+      <style>{`
+        .housing-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+        .housing-grid { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+        .housing-sticky { position: sticky; top: 96px; }
+        .housing-stack { display: grid; gap: 1rem; }
+        .housing-option-grid { display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+        @media (max-width: 980px) {
+          .housing-grid { grid-template-columns: 1fr; }
+          .housing-sticky { position: static; }
+        }
+        @media (max-width: 767px) {
+          .housing-shell { padding: 1rem 0.9rem 2rem; }
+          .housing-option-grid { grid-template-columns: 1fr !important; }
+          .housing-question-label { flex-direction: column !important; align-items: flex-start !important; }
+        }
+      `}</style>
+
+      <div className="housing-shell">
+        <div className="housing-grid">
+          <div className="housing-sticky">
+            <div style={{ overflow: 'hidden', borderRadius: 24, boxShadow: '0 22px 48px rgba(29,22,15,0.06)', background: '#FFFFFF', border: '1px solid #E5E1DA' }}>
+              <div style={{ padding: '1.4rem 1.4rem 1rem', background: '#20160f' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '999px', padding: '0.45rem 0.85rem', marginBottom: '1rem' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF9933' }} />
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Rental & Housing Finder</span>
+                </div>
+                <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(2.2rem,5vw,4.2rem)', lineHeight: 0.98, color: '#fff', marginBottom: '.9rem' }}>Find your India home with <em style={{ fontStyle: 'italic', color: '#FF9933' }}>more confidence.</em></h1>
+                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>Answer the same guided questions as the readiness check and we&apos;ll shortlist the right neighbourhoods in one pass.</p>
+              </div>
+              <div style={{ padding: '1.25rem 1.4rem 1.4rem' }}>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#6B5E50', marginBottom: 8 }}>
+                    <span>Assessment progress</span>
+                    <span style={{ fontWeight: 700 }}>{progress}%</span>
+                  </div>
+                  <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
+                    <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #f08a24 0%, #f3a44f 100%)' }} />
+                  </div>
+                </div>
+                {[{ title: 'What you?ll get', body: 'Neighbourhood matches, rent context, school and hospital signals, plus practical rental tips.' }, { title: 'Your progress', body: answered === STEPS.length ? 'Everything is filled in and ready for your housing report.' : `${answered} of ${STEPS.length} questions answered. ${STEPS.length - answered} left before you can generate your report.` }, { title: 'How to answer', body: 'Pick the options that best match your move timing, budget, and family setup. You can change answers anytime before generating.' }].map((item) => <div key={item.title} style={{ background: '#FFFFFF', border: '1px solid #E5E1DA', borderRadius: 18, padding: '1rem 1rem 0.95rem', marginBottom: 12 }}><div style={{ fontSize: 12, fontWeight: 700, color: '#B5A898', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{item.title}</div><div style={{ fontSize: 14, color: '#6B5E50', lineHeight: 1.65 }}>{item.body}</div></div>)}
+              </div>
             </div>
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.4rem', color: '#fff', marginBottom: '6px' }}>{step.q}</h2>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', marginBottom: '1.5rem' }}>{step.hint}</p>
-            <div style={{ display: 'grid', gridTemplateColumns: step.opts.length <= 3 ? '1fr' : '1fr 1fr', gap: '10px' }}>
-              {step.opts.map(opt => {
-                const sel = answers[step.key as keyof Inputs] === opt.k
-                return (
-                  <button key={opt.k} onClick={() => pick(step.key, opt.k)} style={{ padding: '14px 18px', borderRadius: '14px', border: sel ? '2px solid #FF9933' : '1px solid rgba(255,255,255,0.1)', background: sel ? 'rgba(255,153,51,0.12)' : 'rgba(255,255,255,0.04)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', textAlign: 'left', transition: 'all 0.18s' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 500, color: '#fff', marginBottom: '3px' }}>{opt.label}</div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{opt.sub}</div>
-                  </button>
-                )
-              })}
+          </div>
+
+          <div className="housing-stack">
+            <div style={{ background: '#FFFFFF', border: '1px solid #E5E1DA', borderRadius: 24, padding: '1.25rem 1.3rem', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#FFFFFF', border: '1px solid rgba(255,153,51,0.25)', borderRadius: 100, padding: '5px 14px', marginBottom: '1rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#FF9933' }} /><span style={{ fontSize: 11, fontWeight: 500, color: '#6B5E50', letterSpacing: '0.06em' }}>Rental & Housing Finder ? Free ? {STEPS.length} questions</span></div>
+              <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', color: '#1A1208', marginBottom: '0.6rem' }}>Find the right neighbourhood for your move</h2>
+              <p style={{ fontSize: 15, color: '#6B5E50', lineHeight: 1.8 }}>Move through the questions below and we?ll turn your answers into a clear neighbourhood shortlist and housing strategy.</p>
             </div>
-            {currentStep > 0 && <button onClick={() => setCurrentStep(s => s - 1)} style={{ marginTop: '1.5rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>← Back</button>}
+
+            {STEPS.map((step, index) => <div key={step.key} style={{ background: '#FFFFFF', border: '1px solid #E5E1DA', borderRadius: 24, padding: '1.2rem', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}><div className="housing-question-label" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}><div><div style={{ fontSize: 12, fontWeight: 700, color: '#B5A898', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{step.section}</div><h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: '#1A1208', fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4 }}>{index + 1}. {step.q}</h3><p style={{ fontSize: 13, color: '#6B5E50', lineHeight: 1.65 }}>{step.hint}</p></div>{answers[step.key as keyof Inputs] ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.42rem 0.8rem', borderRadius: 999, background: '#E8F5E8', color: '#138808', fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Set</span> : null}</div><div className="housing-option-grid">{step.opts.map((opt) => { const sel = answers[step.key as keyof Inputs] === opt.k; return <button key={opt.k} type="button" onClick={() => setAnswer(step.key, opt.k)} style={{ textAlign: 'left', padding: '1rem 1rem 0.95rem', borderRadius: 18, border: `1.5px solid ${sel ? '#FF9933' : '#E5E1DA'}`, background: sel ? '#FFF3E6' : '#FFFFFF', boxShadow: sel ? '0 10px 24px rgba(255,153,51,0.14)' : 'none', transition: 'all .18s ease', fontFamily: 'DM Sans, sans-serif', cursor: 'pointer' }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><div><div style={{ fontSize: 14, fontWeight: 700, color: '#1A1208', lineHeight: 1.45 }}>{opt.label}</div><div style={{ marginTop: 6, fontSize: 12, color: '#6B5E50', lineHeight: 1.5 }}>{opt.sub}</div></div><div style={{ width: 18, height: 18, borderRadius: '50%', border: `1.5px solid ${sel ? '#FF9933' : '#E5E1DA'}`, background: sel ? '#FF9933' : 'transparent', flexShrink: 0, marginTop: 2 }} /></div></button> })}</div></div>)}
+            {answered === STEPS.length ? <button onClick={handleGenerate} style={{ width: '100%', padding: '15px', background: '#FF9933', color: '#fff', border: 'none', borderRadius: '12px', fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(255,153,51,0.4)' }}>Generate My Housing Report ?</button> : <div style={{ background: '#FFFFFF', border: '1px solid #E5E1DA', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}><div style={{ fontSize: '1.25rem' }}>??</div><div><div style={{ fontSize: '13px', color: '#6B5E50' }}>Answer all {STEPS.length} questions to generate your report</div><div style={{ fontSize: '11px', color: '#B5A898', marginTop: '2px' }}>{STEPS.length - answered} question{STEPS.length - answered !== 1 ? 's' : ''} remaining</div></div></div>}
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
