@@ -380,9 +380,7 @@ function AuthPageContent() {
               <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2rem', lineHeight: 1.02, color: T.ink, margin: '0 0 10px' }}>
                 Welcome back
               </h2>
-              <p style={{ color: T.muted, fontSize: '14px', lineHeight: 1.7, margin: '0 0 22px' }}>
-                Access your saved report and continue your return planning.
-              </p>
+
 
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
@@ -486,9 +484,7 @@ function AuthPageContent() {
               <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2rem', lineHeight: 1.02, color: T.ink, margin: '0 0 10px' }}>
                 Start here
               </h2>
-              <p style={{ color: T.muted, fontSize: '14px', lineHeight: 1.7, margin: '0 0 22px' }}>
-                Set up your account once and keep your planning connected to your profile.
-              </p>
+          
 
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
@@ -575,9 +571,7 @@ function AuthPageContent() {
                   {signUpLoading ? 'Creating your account...' : 'Create account'}
                 </button>
 
-                <p style={{ margin: '14px 0 0', color: T.soft, fontSize: '11px', lineHeight: 1.6, textAlign: 'center', minHeight: '58px' }}>
-                  Your information stays private and is used only for your ReturningNRIs planning experience.
-                </p>
+               
               </div>
             </form>
           </div>
