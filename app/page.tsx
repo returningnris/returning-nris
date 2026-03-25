@@ -1,164 +1,489 @@
 import Link from 'next/link'
 
+const PLATFORM_PILLARS = [
+  {
+    label: 'Readiness Check',
+    title: 'Know where you stand before you move.',
+    body: 'Assess income readiness, RNOR timing, city clarity, family complexity, and housing preparation in one guided flow.',
+    href: '/planner',
+    cta: 'Open Readiness Check',
+  },
+  {
+    label: 'Journey Tracker',
+    title: 'Turn a big move into a managed program.',
+    body: 'Move from decision to arrival and year one with phased tasks, milestone tracking, and a clear next-best action.',
+    href: '/journey',
+    cta: 'Open Journey Tracker',
+  },
+  {
+    label: 'Tools + Resources',
+    title: 'Go deeper with specialist tools and guides.',
+    body: 'Use RNOR, city, school, housing, healthcare, and career tools alongside practical returning-NRI articles.',
+    href: '/Tools',
+    cta: 'Explore Tools',
+  },
+]
+
+const FEATURE_SURFACES = [
+  ['RNOR planning', 'Protect the tax window most NRIs miss'],
+  ['City and cost fit', 'Compare where life actually works'],
+  ['Schools and family timing', 'Reduce the hardest move friction'],
+  ['Housing and landing setup', 'Stabilize the first 90 days'],
+]
+
+const TOOL_CARDS = [
+  ['RNOR Calculator', 'Model your tax timing before you become India-resident.', '/rnor'],
+  ['City Match', 'Shortlist cities using cost, lifestyle, and practical tradeoffs.', '/city'],
+  ['Schools Finder', 'Compare international and local school options by move timing.', '/schools'],
+  ['Housing Finder', 'Start with neighborhoods and rental direction before landing.', '/housing'],
+  ['Healthcare Guide', 'Map hospitals, insurance, and care decisions early.', '/healthcare'],
+  ['Resource Guide', 'Read grounded guides built specifically for returning NRIs.', '/resources'],
+]
+
 export default function Home() {
   return (
     <>
-      {/* HERO */}
-      <section style={{
-        background: 'linear-gradient(180deg, #FFF8F2 0%, #FFFFFF 100%)',
-        padding: '6rem 2rem 5rem',
-        textAlign: 'center',
-      }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <style>{`
+        .home-shell {
+          max-width: 1240px;
+          margin: 0 auto;
+          padding: 0 1.25rem;
+        }
+        .home-hero {
+          background:
+            radial-gradient(circle at top left, rgba(240,138,36,0.16), transparent 34%),
+            radial-gradient(circle at 82% 18%, rgba(23,117,58,0.14), transparent 26%),
+            linear-gradient(180deg, #fffaf3 0%, #f5efe6 56%, #f2eadf 100%);
+          padding: 3rem 0 4.5rem;
+        }
+        .home-hero-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+          gap: 1rem;
+          align-items: stretch;
+        }
+        .home-platform-grid,
+        .home-tool-grid {
+          display: grid;
+          gap: 1rem;
+        }
+        .home-platform-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .home-tool-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .home-proof-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 0.9rem;
+        }
+        @media (max-width: 1100px) {
+          .home-hero-grid,
+          .home-platform-grid,
+          .home-tool-grid,
+          .home-proof-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+        @media (max-width: 767px) {
+          .home-shell {
+            padding: 0 1rem;
+          }
+          .home-hero {
+            padding: 1.5rem 0 3rem;
+          }
+          .home-hero-grid,
+          .home-platform-grid,
+          .home-tool-grid,
+          .home-proof-grid {
+            grid-template-columns: 1fr;
+          }
+          .home-cta-row {
+            flex-direction: column;
+            align-items: stretch !important;
+          }
+          .home-cta-row a {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
 
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: 'rgba(255,153,51,0.1)', border: '0.5px solid rgba(255,153,51,0.3)',
-            borderRadius: '100px', padding: '5px 14px', marginBottom: '1.5rem',
-          }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF9933' }}/>
-            <span style={{ fontSize: '11px', fontWeight: 500, color: '#FF9933', letterSpacing: '0.08em' }}>
-              All tools, Free Forever 
-            </span>
-          </div>
+      <section className="home-hero">
+        <div className="home-shell">
+          <div className="home-hero-grid">
+            <div
+              style={{
+                background: '#fffdf9',
+                border: '1px solid rgba(29,22,15,0.10)',
+                borderRadius: 28,
+                boxShadow: '0 22px 48px rgba(29,22,15,0.06)',
+                padding: '2rem',
+              }}
+            >
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: 999,
+                  background: '#fff1de',
+                  color: '#8d5c22',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  marginBottom: '1rem',
+                }}
+              >
+                Platform for returning NRIs
+              </div>
 
-          <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', marginBottom: '1.25rem', color: 'var(--ink)' }}>
-            Stop losing <em style={{ fontStyle: 'italic', color: 'var(--saffron)' }}>₹20–40L</em> to mistakes<br />
-            NRIs make before they move back
-          </h1>
+              <h1
+                style={{
+                  fontSize: 'clamp(2.5rem, 5.4vw, 5rem)',
+                  lineHeight: 0.96,
+                  color: '#1d160f',
+                  marginBottom: '1rem',
+                }}
+              >
+                The operating system for your move back to India.
+              </h1>
 
-          <p style={{ fontSize: '1.1rem', color: 'var(--ink-muted)', fontWeight: 300, lineHeight: 1.75, marginBottom: '2rem', maxWidth: '540px', margin: '0 auto 2rem' }}>
-            In 10 minutes, get a personalised plan — your exact RNOR tax window, the right city for your family, and a step-by-step checklist.
-          </p>
+              <p
+                style={{
+                  fontSize: 18,
+                  color: '#665848',
+                  lineHeight: 1.8,
+                  maxWidth: 680,
+                  marginBottom: '1.5rem',
+                }}
+              >
+                ReturningNRIs is not a single calculator or checklist. It is a guided platform that helps returning NRIs assess readiness, plan the move, track the journey, and use specialist tools across tax, city choice, schools, housing, healthcare, career, and settling in.
+              </p>
 
-   <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
-                        <Link href="/planner" className="btn-primary">
-              Check Your Readiness →
-            </Link>
-          </div>
+              <div className="home-cta-row" style={{ display: 'flex', gap: '0.85rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
+                <Link href="/planner" className="btn-primary">
+                  Start Readiness Check
+                </Link>
+                <Link href="/journey" className="btn-ghost">
+                  View Journey Tracker
+                </Link>
+              </div>
 
-          
-        </div>
-
-        {/* STAT CARDS */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1rem', maxWidth: '800px', margin: '3rem auto 0',
-        }}>
-          {[
-            { num: '₹20–40L', label: 'Tax NRIs lose by missing the RNOR window', tag: 'Avoid this mistake', color: 'var(--saffron)' },
-            { num: '10 min', label: 'To get your personalised plan vs 9 months DIY', tag: 'Time saved', color: 'var(--navy)' },
-            { num: '0 regrets', label: 'The goal — every tool built to eliminate mistakes', tag: 'The outcome', color: 'var(--green)' },
-          ].map((s) => (
-            <div key={s.num} className="card" style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '1.8rem', fontWeight: 500, color: s.color, marginBottom: '0.5rem' }}>{s.num}</div>
-              <div style={{ fontSize: '0.82rem', color: 'var(--ink-muted)', lineHeight: 1.5, marginBottom: '0.75rem' }}>{s.label}</div>
-              <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '100px', background: 'var(--india-white)', color: 'var(--ink-soft)' }}>
-                {s.tag}
-              </span>
+              <div className="home-proof-grid">
+                {[
+                  ['Readiness first', 'Get clear before making expensive timing mistakes.'],
+                  ['Journey managed', 'Track phases, tasks, and milestones through year one.'],
+                  ['Specialist tools', 'Use focused tools when you need depth, not guesswork.'],
+                  ['Built for NRIs', 'Everything is shaped around real returning-NRI decisions.'],
+                ].map(([title, body]) => (
+                  <div
+                    key={title}
+                    style={{
+                      padding: '1rem',
+                      borderRadius: 20,
+                      background: 'rgba(29,22,15,0.03)',
+                      border: '1px solid rgba(29,22,15,0.08)',
+                    }}
+                  >
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      {title}
+                    </div>
+                    <div style={{ fontSize: 14, color: '#665848', lineHeight: 1.7 }}>{body}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #20160f 0%, #302117 46%, #173e2c 100%)',
+                borderRadius: 28,
+                boxShadow: '0 22px 48px rgba(29,22,15,0.08)',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ padding: '1.6rem 1.55rem 1.2rem' }}>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 7,
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: 999,
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: 'rgba(255,255,255,0.76)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  Platform view
+                </div>
+
+                <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', lineHeight: 1.02, color: '#fff', marginBottom: '0.8rem' }}>
+                  One platform, three core surfaces.
+                </h2>
+
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.72)', lineHeight: 1.75, marginBottom: '1.25rem' }}>
+                  Start with Readiness Check, move into the Journey Tracker, and go deeper with targeted tools and resources when specific decisions need detail.
+                </p>
+
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {PLATFORM_PILLARS.map((pillar) => (
+                    <Link
+                      key={pillar.title}
+                      href={pillar.href}
+                      style={{
+                        display: 'block',
+                        padding: '1rem',
+                        borderRadius: 20,
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#f3a44f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                        {pillar.label}
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{pillar.title}</div>
+                      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, marginBottom: 10 }}>{pillar.body}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{pillar.cta} →</div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* SOCIAL PROOF */}
-      <div style={{
-        borderTop: '0.5px solid var(--border)', borderBottom: '0.5px solid var(--border)',
-        padding: '1.25rem 2rem', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', gap: '2rem', flexWrap: 'wrap',
-        background: 'var(--white)',
-      }}>
-        <span style={{ fontSize: '0.8rem', color: 'var(--ink-soft)' }}>NRIs from</span>
-        {['USA', 'UK', 'Canada', 'Australia', 'Singapore', 'UAE'].map(c => (
-          <span key={c} style={{
-            fontSize: '0.8rem', fontWeight: 500, padding: '4px 12px',
-            borderRadius: '100px', border: '0.5px solid var(--border)',
-            color: 'var(--ink-muted)',
-          }}>{c}</span>
-        ))}
-    
-      </div>
-
-      {/* MISTAKES SECTION */}
-      <section style={{ background: '#1A1208', padding: '5rem 2rem' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div className="section-label">Common NRI mistakes</div>
-            <h2 style={{ color: '#fff', fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', marginBottom: '0.75rem' }}>
-              Most NRIs get this wrong
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.45)', maxWidth: '480px', margin: '0 auto' }}>
-              Five expensive, avoidable mistakes — and the regret that follows.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2.5rem' }}>
+      <section style={{ background: '#fffdf9', padding: '0 0 4.5rem' }}>
+        <div className="home-shell">
+          <div
+            style={{
+              display: 'grid',
+              gap: '1rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              marginTop: '-1.5rem',
+            }}
+          >
             {[
-              { title: 'Missing the RNOR tax window — ₹20–40L down the drain', desc: "Most NRIs don't know they have a 2–3 year window where foreign income is tax-free in India. They arrive, start filing as residents, and lose lakhs they legally didn't have to pay.", color: '#E24B4A' },
-              { title: 'Choosing a city based on vibes, not data', desc: '"We always imagined Hyderabad" — but after 6 months, the commute kills quality of life and the cost of living is double what they expected.', color: '#BA7517' },
-              { title: 'Leaving school admissions too late', desc: 'Good schools in Hyderabad and Bangalore fill up 12–18 months in advance. Families who start researching after they arrive scramble and compromise.', color: '#E24B4A' },
-              { title: 'Wrong timing — moving at the worst financial moment', desc: 'RSUs vesting, 401(k) penalties, lease break fees, and an unplanned India property purchase all hitting in the same 90-day window.', color: '#BA7517' },
-              { title: 'Not getting the family aligned before the move', desc: "The logistics are fixable. The family friction — if it surprises you at the last minute — is what unravels moves.", color: '#E24B4A' },
-            ].map((m, i) => (
-              <div key={i} style={{
-                background: `rgba(${m.color === '#E24B4A' ? '226,75,74' : '186,117,23'},0.08)`,
-                border: `0.5px solid rgba(${m.color === '#E24B4A' ? '226,75,74' : '186,117,23'},0.2)`,
-                borderRadius: '16px', padding: '1.25rem 1.5rem',
-              }}>
-                <div style={{ fontWeight: 500, color: '#fff', marginBottom: '4px', fontSize: '15px' }}>{m.title}</div>
-                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>{m.desc}</div>
+              ['Decision quality', 'Assess readiness before booking flights or making tax moves.'],
+              ['Program structure', 'Track the move as phases, not scattered to-dos.'],
+              ['Decision support', 'Use purpose-built tools for the hard questions.'],
+            ].map(([title, body]) => (
+              <div
+                key={title}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid rgba(29,22,15,0.10)',
+                  borderRadius: 24,
+                  padding: '1.25rem',
+                  boxShadow: '0 16px 32px rgba(29,22,15,0.05)',
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                  {title}
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#1d160f', marginBottom: 8 }}>{body}</div>
               </div>
             ))}
           </div>
-
-          <div style={{ textAlign: 'center' }}>
-             <Link href="/planner" className="btn-primary">
-              Avoid these mistakes → Check Your Readiness →
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* TOOLS PREVIEW */}
-      <section style={{ padding: '5rem 2rem', background: 'var(--india-white)' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div className="section-label">What&apos;s Inside</div>
-            <h2 className="section-title">Eight tools. One decision made easy.</h2>
+      <section style={{ background: '#fffdf9', padding: '0 0 5rem' }}>
+        <div className="home-shell">
+          <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto 2.5rem' }}>
+            <div className="section-label">Core Platform</div>
+            <h2 className="section-title">Designed for the full returning-NRI journey, not just one moment.</h2>
             <p className="section-sub" style={{ margin: '0 auto' }}>
-              Every feature exists because a real NRI needed it and couldn&apos;t find it anywhere else.
+              The platform is structured to support the move from early evaluation through landing and the first year back in India.
             </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-            {[
-              { icon: '🗺️', tag: 'Your Plan', title: 'Personalised Return Plan', desc: 'Answer 6 questions. Get your RNOR window, city match, cost estimate, and 3-step action plan instantly.', mvp: true },
-              { icon: '📊', tag: 'Tax', title: 'RNOR Tax Optimizer', desc: 'Calculate your exact tax-free window. What to do with RSUs and 401(k). Which forms to file.', mvp: true },
-              { icon: '🏙️', tag: 'Lifestyle', title: 'City Match + Cost of Living', desc: 'Compare Hyderabad, Bangalore, Pune and more across cost, schools, commute, AQI, and NRI community.', mvp: true },
-              { icon: '🎓', tag: 'Education', title: 'Schools Comparison Tool', desc: 'Compare IB, IGCSE, CBSE schools by fees, admissions timeline, and mid-year entry policy.', mvp: true },
-              { icon: '💼', tag: 'Careers', title: 'Job & Career Transition', desc: 'Tech hiring benchmarks, remote-from-India options, and how to position your US experience.', mvp: false },
-              { icon: '🤝', tag: 'Community', title: 'Peer Community', desc: 'Talk to NRIs who already moved — by city, profession, and family situation.', mvp: false },
-            ].map((tool) => (
-              <div key={tool.title} className="card">
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{tool.icon}</div>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--saffron)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>{tool.tag}</div>
-                <h3 style={{ fontSize: '1rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--ink)' }}>{tool.title}</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', lineHeight: 1.6, marginBottom: '0.75rem' }}>{tool.desc}</p>
-                <span style={{
-                  fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '100px',
-                  background: tool.mvp ? 'var(--green-light)' : 'var(--india-white)',
-                  color: tool.mvp ? 'var(--green)' : 'var(--ink-soft)',
-                }}>
-                  {tool.mvp ? '✓ In MVP' : '⏳ Coming Soon'}
-                </span>
+
+          <div className="home-platform-grid">
+            {PLATFORM_PILLARS.map((pillar) => (
+              <div
+                key={pillar.title}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid rgba(29,22,15,0.10)',
+                  borderRadius: 24,
+                  padding: '1.4rem',
+                  boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#f08a24', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                  {pillar.label}
+                </div>
+                <h3 style={{ fontSize: 22, color: '#1d160f', marginBottom: 10 }}>{pillar.title}</h3>
+                <p style={{ fontSize: 15, color: '#665848', lineHeight: 1.8, marginBottom: 18 }}>{pillar.body}</p>
+                <Link href={pillar.href} className="btn-ghost">
+                  {pillar.cta}
+                </Link>
               </div>
             ))}
-          </div>
-          <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-            <Link href="/Tools" className="btn-ghost">See all tools →</Link>
           </div>
         </div>
       </section>
 
+      <section style={{ background: '#f7f1e8', padding: '5rem 0' }}>
+        <div className="home-shell">
+          <div
+            style={{
+              background: '#ffffff',
+              border: '1px solid rgba(29,22,15,0.10)',
+              borderRadius: 28,
+              overflow: 'hidden',
+              boxShadow: '0 22px 48px rgba(29,22,15,0.06)',
+            }}
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(0, 0.95fr) minmax(0, 1.05fr)',
+                gap: '0',
+              }}
+            >
+              <div style={{ padding: '1.8rem', background: 'linear-gradient(180deg, #fffaf3 0%, #fff5ea 100%)' }}>
+                <div className="section-label">Platform Scope</div>
+                <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)', lineHeight: 1.02, color: '#1d160f', marginBottom: '1rem' }}>
+                  Sophisticated enough for the hard decisions.
+                </h2>
+                <p style={{ fontSize: 16, color: '#665848', lineHeight: 1.85, marginBottom: '1.25rem' }}>
+                  ReturningNRIs is built for the decisions that usually get fragmented across spreadsheets, advisors, WhatsApp groups, and late-night searches. The product experience brings them into one clean operating layer.
+                </p>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {[
+                    'Readiness assessment before the move',
+                    'Phase-based journey management after the decision',
+                    'Specialist tools for tax, city, schools, housing, healthcare, and careers',
+                    'Guides and resources that support deeper research',
+                  ].map((item) => (
+                    <div key={item} style={{ display: 'grid', gridTemplateColumns: '18px minmax(0, 1fr)', gap: 10, alignItems: 'start' }}>
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#f08a24', marginTop: 4 }} />
+                      <div style={{ fontSize: 15, color: '#665848', lineHeight: 1.75 }}>{item}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ padding: '1.8rem', background: '#fffdf9' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                  What users rely on
+                </div>
+                <div style={{ display: 'grid', gap: 12 }}>
+                  {FEATURE_SURFACES.map(([title, body]) => (
+                    <div
+                      key={title}
+                      style={{
+                        padding: '1rem',
+                        borderRadius: 20,
+                        background: 'rgba(29,22,15,0.03)',
+                        border: '1px solid rgba(29,22,15,0.08)',
+                      }}
+                    >
+                      <div style={{ fontSize: 16, fontWeight: 700, color: '#1d160f', marginBottom: 6 }}>{title}</div>
+                      <div style={{ fontSize: 14, color: '#665848', lineHeight: 1.7 }}>{body}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: '#fffdf9', padding: '5rem 0' }}>
+        <div className="home-shell">
+          <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto 2.5rem' }}>
+            <div className="section-label">Useful Tools And Resources</div>
+            <h2 className="section-title">Specialist surfaces for the decisions that matter most.</h2>
+            <p className="section-sub" style={{ margin: '0 auto' }}>
+              Use the right tool when you need depth, then return to the platform to keep the broader move on track.
+            </p>
+          </div>
+
+          <div className="home-tool-grid">
+            {TOOL_CARDS.map(([title, body, href]) => (
+              <Link
+                key={title}
+                href={href}
+                style={{
+                  display: 'block',
+                  background: '#ffffff',
+                  border: '1px solid rgba(29,22,15,0.10)',
+                  borderRadius: 24,
+                  padding: '1.3rem',
+                  textDecoration: 'none',
+                  boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                  Tool
+                </div>
+                <div style={{ fontSize: 22, color: '#1d160f', marginBottom: 10 }}>{title}</div>
+                <div style={{ fontSize: 15, color: '#665848', lineHeight: 1.8, marginBottom: 14 }}>{body}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1d160f' }}>Open →</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: '#1f1610', padding: '5rem 0' }}>
+        <div className="home-shell">
+          <div
+            style={{
+              maxWidth: 900,
+              margin: '0 auto',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '0.45rem 0.85rem',
+                borderRadius: 999,
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.76)',
+                fontSize: 12,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: '1rem',
+              }}
+            >
+              Start with clarity
+            </div>
+            <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)', lineHeight: 1.02, color: '#fff', marginBottom: '1rem' }}>
+              Start with your readiness. Manage the rest of the journey with confidence.
+            </h2>
+            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.68)', lineHeight: 1.85, maxWidth: 720, margin: '0 auto 1.75rem' }}>
+              Use the Readiness Check to establish where you stand, then continue inside the Journey Tracker and specialist tools as your move plan becomes real.
+            </p>
+            <div className="home-cta-row" style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+              <Link href="/planner" className="btn-primary">
+                Start Readiness Check
+              </Link>
+              <Link href="/resources" className="btn-ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.16)' }}>
+                Browse Resources
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   )
 }
