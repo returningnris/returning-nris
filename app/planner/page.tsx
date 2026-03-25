@@ -114,7 +114,7 @@ export const QUESTIONS: {
   { key: 'kidsAge', section: 'Family', q: "Children's age range?", hint: 'Teenagers face the hardest school transitions', opts: [{ k: 'under5', label: 'Under 5 years' }, { k: '5to12', label: '5–12 years' }, { k: 'teen', label: '13–17 years' }, { k: 'adult', label: '18+ (adults, independent)' }], skipIf: { key: 'hasKids', value: 'no' } },
   { key: 'city', section: "Where You're Going", q: 'Target city in India?', hint: 'City directly affects cost of living and financial runway score', opts: [{ k: 'Hyderabad', label: 'Hyderabad — ₹1.6–2.2L/mo' }, { k: 'Bangalore', label: 'Bangalore — ₹2.2–3.2L/mo' }, { k: 'Pune', label: 'Pune — ₹1.4–2.0L/mo' }, { k: 'Chennai', label: 'Chennai — ₹1.4–2.2L/mo' }, { k: 'Mumbai', label: 'Mumbai — ₹2.5–4.0L/mo' }, { k: 'Other', label: 'Another city (Kochi, Delhi, Vizag…)' }, { k: 'undecided', label: 'Not decided yet' }] },
   { key: 'housing', section: "Where You're Going", q: 'Housing sorted in India?', hint: 'First 90 days are hardest without a home arranged', opts: [{ k: 'owned', label: 'Own a home — ready to move in' }, { k: 'arranged', label: 'Rental arranged remotely' }, { k: 'searching', label: 'Actively searching' }, { k: 'no', label: 'Not started yet' }] },
-  { key: 'timeline', section: 'Timeline', q: 'When are you planning to move?', hint: 'Closer timelines need more urgent action', opts: [{ k: 'within6', label: 'Within 6 months' }, { k: '6to12', label: '6–12 months' }, { k: '1to2', label: '1–2 years' }, { k: 'exploring', label: 'Just exploring — no timeline yet' }] },
+  { key: 'timeline', section: 'Timeline', q: 'When are you planning to move?', hint: 'Closer timelines need more urgent action', opts: [{ k: 'within6', label: 'Within 6 months' }, { k: '6to12', label: '6–12 months' }, { k: '1to2', label: '1–2 years' }] },
   { key: 'knowsRNOR', section: 'Tax Planning', q: 'Aware of RNOR tax status?', hint: 'RNOR can save ₹18–60L — worth planning before you move', opts: [{ k: 'yes_filed', label: 'Yes — already planned with a CA specialist' }, { k: 'yes_aware', label: 'Yes — aware but not planned yet' }, { k: 'partial', label: 'Heard of it, not sure what it means' }, { k: 'no', label: 'No — first time hearing this' }] },
 ]
 
@@ -132,7 +132,7 @@ function getPlannerYearRange(): number[] {
 }
 
 function plannerTimelineFromMoveDate(moveDate: string): Answers['timeline'] {
-  if (!moveDate) return 'exploring'
+  if (!moveDate) return 'within6'
   const now = new Date()
   const [y, mo] = moveDate.split('-').map(Number)
   const target = new Date(y, mo - 1, 1)
@@ -746,7 +746,7 @@ function PlannerTimelinePicker({
   onChange,
 }: {
   value: string
-  onChange: (value: string, timeline: Answers['timeline']) => void
+  onChange: (value: string, timeline: Exclude<Answers['timeline'], 'exploring'>) => void
 }) {
   const selectedYear = value ? Number(value.split('-')[0]) : null
   const selectedMonth = value ? Number(value.split('-')[1]) : null
@@ -824,23 +824,6 @@ function PlannerTimelinePicker({
           })}
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={() => onChange('', 'exploring')}
-        style={{
-          padding: '0.9rem 1rem',
-          borderRadius: 16,
-          border: `1px solid ${T.border}`,
-          background: value ? T.white : 'rgba(29,22,15,0.03)',
-          color: value ? T.muted : T.ink,
-          fontSize: 13,
-          fontWeight: 700,
-          textAlign: 'left',
-        }}
-      >
-        Just exploring for now
-      </button>
     </div>
   )
 }

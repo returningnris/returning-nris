@@ -643,16 +643,23 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
     case 'SET_ANSWER':
       return { ...state, answers: { ...state.answers, [action.key]: action.value } }
     case 'SET_MOVE_DATE': {
+      if (action.value === state.answers.moveDate) {
+        return state
+      }
       const timeline = moveDateToTimeline(action.value)
       const isPast = isMoveDatePast(action.value)
+      const nextAnswers = {
+        ...state.answers,
+        moveDate: action.value,
+        timeline,
+        alreadyMoved: isPast ? state.answers.alreadyMoved || '' : '',
+      }
       return {
         ...state,
-        answers: {
-          ...state.answers,
-          moveDate: action.value,
-          timeline,
-          alreadyMoved: isPast ? state.answers.alreadyMoved || '' : '',
-        },
+        answers: nextAnswers,
+        completedTasks: new Set(),
+        currentPhase: getDefaultJourneyPhase(nextAnswers),
+        lastMilestone: null,
       }
     }
     case 'SET_NAME':
@@ -1153,23 +1160,6 @@ function TimelinePicker({
           })}
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={() => onMoveDate('exploring')}
-        style={{
-          width: '100%',
-          padding: '0.9rem 1rem',
-          borderRadius: 16,
-          border: `1.5px dashed ${value === 'exploring' ? T.saffron : T.borderStrong}`,
-          background: value === 'exploring' ? T.saffronSoft : 'transparent',
-          color: value === 'exploring' ? T.ink : T.muted,
-          fontSize: 14,
-          fontWeight: 700,
-        }}
-      >
-        I am still exploring the timing
-      </button>
 
       {isMoveDatePast(value) ? (
         <div
@@ -2090,8 +2080,6 @@ export default function JourneyPage() {
               manualMilestoneIds?: string[]
               customTasks?: CustomTask[]
               currentPhase?: number
-              step?: JourneyState['step']
-              editingProfile?: boolean
             }
             persisted = {
               answers: parsed.answers || {},
@@ -2100,8 +2088,6 @@ export default function JourneyPage() {
               manualMilestones: new Set(parsed.manualMilestoneIds || []),
               customTasks: parsed.customTasks || [],
               currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : hasSavedReadiness ? 0 : 0,
-              step: parsed.step,
-              editingProfile: parsed.editingProfile,
             }
           }
         } catch {
@@ -2121,8 +2107,8 @@ export default function JourneyPage() {
         payload: {
           firstName: user.firstName || '',
           answers: mergedAnswers,
-          step: persisted.editingProfile ? 'profile' : shouldOpenDashboard ? 'journey' : 'profile',
-          editingProfile: persisted.editingProfile ?? false,
+          step: shouldOpenDashboard ? 'journey' : 'profile',
+          editingProfile: false,
           completedTasks: persisted.completedTasks,
           completedCustomTaskIds: persisted.completedCustomTaskIds,
           manualMilestones: persisted.manualMilestones,
@@ -2152,8 +2138,6 @@ export default function JourneyPage() {
             manualMilestoneIds: [...state.manualMilestones],
             customTasks: state.customTasks,
             currentPhase: state.currentPhase,
-            step: state.step,
-            editingProfile: state.editingProfile,
           })
         )
     } catch {
