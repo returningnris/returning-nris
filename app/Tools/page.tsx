@@ -4,487 +4,215 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useProtectedRoute } from '../../components/useProtectedRoute'
 
-const CITY_DATA: Record<string, {
-  name: string; baseCost: number; match: number; schools: string;
-  jobs: string; matchTag: string; alt: string; costRange: string;
-  airQ: string; traffic: string; nri: string; why: string[]
-}> = {
-  hyd:  { name: 'Hyderabad',   baseCost: 180000, match: 94, schools: 'IB / IGCSE / CBSE', jobs: 'Excellent',  matchTag: 'IT hub',        alt: 'Pune',       costRange: '₹1.6–2.2L/mo', airQ: 'Moderate', traffic: 'Moderate',   nri: 'Very High', why: ['Largest returning NRI community in India', 'Top tech hiring — Google, Microsoft, Amazon HQs', 'IB & IGCSE schools with international curricula'] },
-  blr:  { name: 'Bangalore',   baseCost: 240000, match: 88, schools: 'IB / IGCSE / CBSE', jobs: 'Excellent',  matchTag: 'Startup hub',   alt: 'Hyderabad',  costRange: '₹2.2–3.2L/mo', airQ: 'Moderate', traffic: 'Heavy',      nri: 'Very High', why: ['Best startup ecosystem and tech job market', 'Cosmopolitan culture — easiest adjustment from the West', 'Pleasant climate year-round with no extreme heat'] },
-  mum:  { name: 'Mumbai',      baseCost: 280000, match: 78, schools: 'IB / IGCSE / CBSE', jobs: 'Excellent',  matchTag: 'Financial hub', alt: 'Pune',       costRange: '₹2.5–4.0L/mo', airQ: 'Poor',     traffic: 'Very heavy', nri: 'High',      why: ["India's financial capital — best for finance/media", 'Unmatched social and cultural life', 'Strong international school options in suburbs'] },
-  del:  { name: 'Delhi / NCR', baseCost: 220000, match: 80, schools: 'IB / IGCSE / CBSE', jobs: 'Very Good',  matchTag: 'Capital city',  alt: 'Chandigarh', costRange: '₹1.8–3.0L/mo', airQ: 'Poor',     traffic: 'Heavy',      nri: 'High',      why: ['Best connectivity hub — flights across all of India', 'Strong job market across all sectors', 'Wide range from affordable to luxury neighbourhoods'] },
-  pun:  { name: 'Pune',        baseCost: 160000, match: 89, schools: 'IB / IGCSE / CBSE', jobs: 'Very Good',  matchTag: 'Quality life',  alt: 'Hyderabad',  costRange: '₹1.4–2.0L/mo', airQ: 'Good',     traffic: 'Moderate',   nri: 'High',      why: ['Best quality of life among all Indian metros', 'Lower cost than Mumbai or Bangalore with similar lifestyle', 'Strong education system — universities and international schools'] },
-  che:  { name: 'Chennai',     baseCost: 170000, match: 82, schools: 'IB / ICSE / CBSE',  jobs: 'Good',       matchTag: 'Cultural hub',  alt: 'Bangalore',  costRange: '₹1.4–2.2L/mo', airQ: 'Moderate', traffic: 'Moderate',   nri: 'High',      why: ['Strongest cultural identity — great for Tamil NRIs', 'Growing IT sector and manufacturing base', 'More affordable than Bangalore with good infrastructure'] },
-  kol:  { name: 'Kolkata',     baseCost: 130000, match: 72, schools: 'CBSE / ICSE',       jobs: 'Moderate',   matchTag: 'Most affordable', alt: 'Hyderabad', costRange: '₹1.0–1.6L/mo', airQ: 'Moderate', traffic: 'Moderate',   nri: 'Moderate',  why: ['Most affordable major metro in India', 'Rich cultural life — arts, food, literature', 'Lower stress and a slower, more humane pace of life'] },
-  coc:  { name: 'Kochi',       baseCost: 120000, match: 80, schools: 'CBSE / ICSE / IB',  jobs: 'Good',       matchTag: 'Smart city',    alt: 'Bangalore',  costRange: '₹95K–1.5L/mo',  airQ: 'Good',     traffic: 'Low',        nri: 'Very High', why: ['Highest NRI returnee density — massive returning community', 'Smart city infrastructure, modern metro connectivity', 'Excellent healthcare, high literacy, relaxed coastal lifestyle'] },
-  vjw:  { name: 'Vijayawada',  baseCost: 95000,  match: 78, schools: 'CBSE / ICSE',       jobs: 'Moderate',   matchTag: 'Affordable',    alt: 'Hyderabad',  costRange: '₹75K–1.2L/mo',  airQ: 'Good',     traffic: 'Low',        nri: 'Moderate',  why: ['Most affordable option with modern amenities', 'Fast-developing city with good connectivity to Hyd', 'Strong Telugu community and familiar culture'] },
-  vzg:  { name: 'Vizag',       baseCost: 85000,  match: 75, schools: 'CBSE',              jobs: 'Moderate',   matchTag: 'Coastal gem',   alt: 'Hyderabad',  costRange: '₹65K–1.1L/mo',  airQ: 'Good',     traffic: 'Low',        nri: 'Low',       why: ['Beautiful coastal city with a beach lifestyle', 'Lowest cost of living among all metros listed', 'Clean air, good quality of life, growing IT sector'] },
-  open: { name: 'Hyderabad',   baseCost: 180000, match: 88, schools: 'IB / IGCSE / CBSE', jobs: 'Excellent',  matchTag: 'Recommended',   alt: 'Pune',       costRange: '₹1.6–2.2L/mo', airQ: 'Moderate', traffic: 'Moderate',   nri: 'Very High', why: ['Best default city for most NRI profiles', 'Largest returning NRI community in India', 'Strong tech jobs + IB schools + more affordable than Bangalore'] },
+type State = { country: string; income: string; intent: string; timeline: string; family: string; city: string }
+type Step = { key: keyof State; section: string; q: string; hint: string; opts: { k: string; label: string; sub: string }[] }
+
+const T = {
+  bg: '#F8F5F0', white: '#FFFFFF', ink: '#1A1208', muted: '#6B5E50', soft: '#B5A898', border: '#E5E1DA',
+  saffron: '#FF9933', saffronLight: '#FFF3E6', saffronBorder: 'rgba(255,153,51,0.25)',
+  green: '#138808', greenLight: '#E8F5E8', navy: '#000080', navyLight: '#E8E8FF',
+  heroGrad: 'radial-gradient(ellipse 70% 55% at 50% 10%, rgba(255,153,51,0.1) 0%, transparent 65%), radial-gradient(ellipse 45% 45% at 15% 80%, rgba(19,136,8,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 85% 75%, rgba(0,0,128,0.05) 0%, transparent 60%)',
 }
 
-const STEPS = [
-  {
-    key: 'country', num: 1, q: 'Where are you currently based?', hint: 'Determines RNOR eligibility & tax rules.',
-    opts: [{ k: 'usa', label: 'United States', sub: 'H1-B / Green Card' }, { k: 'uk', label: 'United Kingdom', sub: 'UK residents' }, { k: 'uae', label: 'UAE / Middle East', sub: 'Tax-free base' }, { k: 'canada', label: 'Canada', sub: 'Canadian residents' }, { k: 'other', label: 'Other country', sub: 'Rest of the world' }],
-  },
-  {
-    key: 'income', num: 2, q: 'What is your monthly income?', hint: 'Used to estimate India purchasing power.',
-    opts: [{ k: 'l50', label: 'Under $5,000/mo', sub: '~₹4L/mo' }, { k: 'm100', label: '$5,000–$10,000/mo', sub: '~₹4–8L/mo' }, { k: 'm200', label: '$10,000–$20,000/mo', sub: '~₹8–17L/mo' }, { k: 'h200', label: 'Over $20,000/mo', sub: '~₹17L+/mo' }],
-  },
-  {
-    key: 'intent', num: 3, q: 'What is your return intent?', hint: 'Shapes the tone and urgency of your plan.',
-    opts: [{ k: 'permanent', label: 'Permanently moving back', sub: 'Final decision made' }, { k: 'trial', label: 'Want to try first', sub: '6–12 month test run' }, { k: 'undecided', label: 'Still undecided', sub: 'Weighing options' }, { k: 'remote', label: 'Remote work from India', sub: 'Keep current job' }],
-  },
-  {
-    key: 'timeline', num: 4, q: 'When are you planning to move?', hint: 'Affects your RNOR tax window.',
-    opts: [{ k: 'asap', label: 'Within 6 months', sub: 'Urgent — act now' }, { k: 'year', label: '6–12 months', sub: 'Good runway' }, { k: 'two', label: '1–2 years', sub: 'Comfortable pace' }, { k: 'explore', label: 'Just exploring', sub: 'No rush yet' }],
-  },
-  {
-    key: 'family', num: 5, q: 'Who is making the move?', hint: 'Affects cost and school planning.',
-    opts: [{ k: 'solo', label: 'Just me', sub: 'Solo move' }, { k: 'couple', label: 'Me & spouse', sub: 'No kids' }, { k: 'kids', label: 'Family with kids', sub: 'School planning needed' }, { k: 'parents', label: 'With elderly parents', sub: 'Healthcare priority' }],
-  },
-  {
-    key: 'city', num: 6, q: 'Which city are you considering?', hint: 'Real cost & match data shown.', dropdown: true,
-    opts: [{ k: 'hyd', label: 'Hyderabad' }, { k: 'blr', label: 'Bangalore' }, { k: 'mum', label: 'Mumbai' }, { k: 'del', label: 'Delhi / NCR' }, { k: 'pun', label: 'Pune' }, { k: 'che', label: 'Chennai' }, { k: 'kol', label: 'Kolkata' }, { k: 'coc', label: 'Kochi' }, { k: 'vjw', label: 'Vijayawada' }, { k: 'vzg', label: 'Vizag' }, { k: 'open', label: 'Not sure yet' }],
-  },
+const CITY: Record<string, { name: string; cost: string; base: number; match: number; jobs: string; schools: string; nri: string; reason: string }> = {
+  hyd: { name: 'Hyderabad', cost: 'Rs 1.6-2.2L/mo', base: 180000, match: 94, jobs: 'Excellent', schools: 'IB / IGCSE / CBSE', nri: 'Very High', reason: 'Balanced cost, strong jobs, and the deepest returnee familiarity.' },
+  blr: { name: 'Bangalore', cost: 'Rs 2.2-3.2L/mo', base: 240000, match: 88, jobs: 'Excellent', schools: 'IB / IGCSE / CBSE', nri: 'Very High', reason: 'Best startup and technology density if career upside dominates.' },
+  mum: { name: 'Mumbai', cost: 'Rs 2.5-4.0L/mo', base: 280000, match: 78, jobs: 'Excellent', schools: 'IB / IGCSE / CBSE', nri: 'High', reason: 'Best fit for finance and premium urban networks, but expensive.' },
+  del: { name: 'Delhi / NCR', cost: 'Rs 1.8-3.0L/mo', base: 220000, match: 80, jobs: 'Very Good', schools: 'IB / IGCSE / CBSE', nri: 'High', reason: 'Strong cross-sector jobs and the best connectivity footprint.' },
+  pun: { name: 'Pune', cost: 'Rs 1.4-2.0L/mo', base: 160000, match: 89, jobs: 'Very Good', schools: 'IB / IGCSE / CBSE', nri: 'High', reason: 'Quality-of-life leader with lower burn than larger metros.' },
+  che: { name: 'Chennai', cost: 'Rs 1.4-2.2L/mo', base: 170000, match: 82, jobs: 'Good', schools: 'IB / ICSE / CBSE', nri: 'High', reason: 'Strong cultural fit and affordability for many Tamil families.' },
+  coc: { name: 'Kochi', cost: 'Rs 95K-1.5L/mo', base: 120000, match: 80, jobs: 'Good', schools: 'CBSE / ICSE / IB', nri: 'Very High', reason: 'Relaxed landing option with unusually strong NRI familiarity.' },
+  open: { name: 'Hyderabad', cost: 'Rs 1.6-2.2L/mo', base: 180000, match: 88, jobs: 'Excellent', schools: 'IB / IGCSE / CBSE', nri: 'Very High', reason: 'Default recommendation when you need the safest all-round starting point.' },
+}
+
+const STEPS: Step[] = [
+  { key: 'country', section: 'Current base', q: 'Where are you currently based?', hint: 'Sets the tax and RNOR angle.', opts: [{ k: 'usa', label: 'United States', sub: 'US resident profile' }, { k: 'uk', label: 'United Kingdom', sub: 'UK resident profile' }, { k: 'uae', label: 'UAE / Middle East', sub: 'Tax-free income base' }, { k: 'canada', label: 'Canada', sub: 'Canadian resident profile' }, { k: 'other', label: 'Other country', sub: 'Rest of world' }] },
+  { key: 'income', section: 'Income', q: 'What is your monthly income band?', hint: 'Used to estimate purchasing power.', opts: [{ k: 'l50', label: 'Under $5,000', sub: 'Under Rs 4L/mo' }, { k: 'm100', label: '$5,000-$10,000', sub: 'Rs 4L-8L/mo' }, { k: 'm200', label: '$10,000-$20,000', sub: 'Rs 8L-17L/mo' }, { k: 'h200', label: 'Over $20,000', sub: 'Rs 17L+/mo' }] },
+  { key: 'intent', section: 'Move intent', q: 'What kind of return are you planning?', hint: 'Changes the action sequence.', opts: [{ k: 'permanent', label: 'Permanent move back', sub: 'Decision already made' }, { k: 'trial', label: 'Trial move first', sub: 'Test before committing' }, { k: 'undecided', label: 'Still undecided', sub: 'Researching first' }, { k: 'remote', label: 'Remote work from India', sub: 'Keep current job if possible' }] },
+  { key: 'timeline', section: 'Timeline', q: 'When are you planning to move?', hint: 'Determines urgency and RNOR timing.', opts: [{ k: 'asap', label: 'Within 6 months', sub: 'High urgency' }, { k: 'year', label: '6-12 months', sub: 'Healthy prep window' }, { k: 'two', label: '1-2 years', sub: 'Comfortable pace' }, { k: 'explore', label: 'Just exploring', sub: 'No move date yet' }] },
+  { key: 'family', section: 'Family', q: 'Who is part of the move?', hint: 'Changes cost and complexity.', opts: [{ k: 'solo', label: 'Just me', sub: 'Solo move' }, { k: 'couple', label: 'Me and spouse', sub: 'No kids in plan' }, { k: 'kids', label: 'Family with kids', sub: 'School planning matters' }, { k: 'parents', label: 'With elderly parents', sub: 'Healthcare rises in priority' }] },
+  { key: 'city', section: 'Target city', q: 'Which city are you evaluating?', hint: 'Gives the plan a landing context.', opts: [{ k: 'hyd', label: 'Hyderabad', sub: 'Balanced default' }, { k: 'blr', label: 'Bangalore', sub: 'Jobs and startups' }, { k: 'mum', label: 'Mumbai', sub: 'Finance and premium urban life' }, { k: 'del', label: 'Delhi / NCR', sub: 'Connectivity and cross-sector jobs' }, { k: 'pun', label: 'Pune', sub: 'Quality of life' }, { k: 'che', label: 'Chennai', sub: 'Cultural fit and affordability' }, { k: 'coc', label: 'Kochi', sub: 'Strong returnee familiarity' }, { k: 'open', label: 'Not sure yet', sub: 'Show the default recommendation' }] },
 ]
 
-const INCOME_MULT: Record<string, number> = { l50: 0.8, m100: 1.0, m200: 1.2, h200: 1.5 }
-const CURR_COST: Record<string, string> = { l50: '~$4K/mo', m100: '~$7.5K/mo', m200: '~$15K/mo', h200: '$20K+/mo' }
+const COST_NOW: Record<string, string> = { l50: '~$4K/mo', m100: '~$7.5K/mo', m200: '~$15K/mo', h200: '$20K+/mo' }
 const SAVE_PCT: Record<string, string> = { l50: '~50%', m100: '~60%', m200: '~65%', h200: '~70%' }
-const RNOR_SAVE: Record<string, string> = { l50: '₹10–18L', m100: '₹18–28L', m200: '₹28–40L', h200: '₹40–60L' }
-const COUNTRY_NOTE: Record<string, string> = {
-  usa: 'Your 401(k) and RSU vesting schedule need careful planning before you leave.',
-  uk: 'UK domicile rules may still expose you to UK tax after leaving. Get a cross-border tax opinion.',
-  uae: 'Your UAE income is already tax-free — your RNOR window in India is a pure bonus on top of that.',
-  canada: 'Canada imposes a deemed disposition tax on exit. Factor in departure tax when calculating take-home.',
-  other: "Check your home country's exit tax rules before leaving.",
-}
-const INTENT_INTRO: Record<string, string> = {
-  permanent: "You've made the decision. Here's how to execute it without leaving money on the table.",
-  trial: "Smart approach — a trial run de-risks everything. Here's how to structure it financially.",
-  undecided: "You're doing the right thing by researching first. Here's what your move would actually look like.",
-  remote: "Best of both worlds. A US salary in India is a superpower — here's how to maximise it.",
-}
+const RNOR: Record<string, string> = { l50: 'Rs 10-18L', m100: 'Rs 18-28L', m200: 'Rs 28-40L', h200: 'Rs 40-60L' }
 
-type PlannerState = {
-  country: string; income: string; intent: string; timeline: string; family: string; city: string;
-}
-
-function fmtCost(n: number): string {
-  return n >= 100000 ? '₹' + (n / 100000).toFixed(1) + 'L/mo' : '₹' + Math.round(n / 1000) + 'K/mo'
-}
-
-function compute(S: PlannerState) {
-  const city = CITY_DATA[S.city] || CITY_DATA['hyd']
-  const mult = INCOME_MULT[S.income] || 1
-  const cost = Math.round(city.baseCost * mult / 5000) * 5000
-  let score = 70
-  if (S.intent === 'permanent') score += 8
-  if (S.intent === 'remote') score += 5
-  if (S.intent === 'undecided') score -= 6
-  if (S.timeline === 'two') score += 6
-  if (S.timeline === 'asap') score -= 4
-  if (S.income === 'h200' || S.income === 'm200') score += 4
+function compute(s: State) {
+  const city = CITY[s.city] || CITY.open
+  let score = 70 + (s.intent === 'permanent' ? 8 : 0) + (s.intent === 'remote' ? 5 : 0) - (s.intent === 'undecided' ? 6 : 0) + (s.timeline === 'two' ? 6 : 0) - (s.timeline === 'asap' ? 4 : 0) + (s.income === 'm200' || s.income === 'h200' ? 4 : 0)
   score = Math.min(97, Math.max(48, score))
-  const readyColor = score >= 85 ? '#138808' : score >= 70 ? '#FF9933' : '#E24B4A'
-  const readyLabel = score >= 85 ? 'Well positioned' : score >= 70 ? 'On track' : score >= 60 ? 'Almost ready' : 'Needs planning'
-  const pctile = S.timeline === 'asap' ? 41 : S.timeline === 'year' ? 63 : S.timeline === 'two' ? 78 : 52
-  const currCost = CURR_COST[S.income] || '~$7.5K/mo'
-  const savePct = SAVE_PCT[S.income] || '~60%'
-  const rnorSave = RNOR_SAVE[S.income] || '₹18–28L'
-  const countryNote = COUNTRY_NOTE[S.country] || COUNTRY_NOTE['other']
-  const intro = INTENT_INTRO[S.intent] || INTENT_INTRO['undecided']
-  const countryName = ({ usa: 'USA', uk: 'UK', uae: 'UAE', canada: 'Canada', other: 'abroad' } as Record<string, string>)[S.country] || 'abroad'
-
-  const risk = S.timeline === 'asap'
-    ? `RNOR paperwork window is tight — missing it costs you ${rnorSave}.`
-    : S.family === 'kids'
-    ? `School admissions in ${city.name} fill 12–18 months ahead — start applications immediately.`
-    : S.intent === 'undecided'
-    ? 'Indecision risk: each month of delay erodes your RNOR window.'
-    : 'NRE/NRO account transition must happen before you leave — not after.'
-
-  const actions = S.intent === 'permanent' || S.timeline === 'asap'
-    ? ['Open NRE account now and begin transferring liquid assets — tax-free in India.', 'File Form 12A within 30 days of arriving to lock your RNOR status.', S.family === 'kids' ? `Begin school applications in ${city.name} immediately — admissions close early.` : `Secure a 6-month rental in ${city.name} before landing.`]
-    : S.intent === 'trial'
-    ? ['Plan a 3-month scouting trip first — rent short-term before committing.', 'Keep your current job / remote arrangement during the trial period.', 'Open NRE account now to start the tax clock and transfer savings.']
-    : S.intent === 'remote'
-    ? ['Negotiate a remote-from-India arrangement with your employer before leaving.', `Open NRE account — your foreign salary stays tax-free during RNOR window (${rnorSave}).`, `Budget for co-working space and reliable internet in ${city.name}.`]
-    : [`Research ${city.name} neighbourhoods on a scouting trip.`, 'Speak to 2–3 returned NRIs in your profession before deciding.', 'Calculate your exact RNOR window — it starts the day you land.']
-
-  return { city, cost: fmtCost(cost), score, readyColor, readyLabel, pctile, currCost, savePct, rnorSave, countryNote, intro, countryName, risk, actions }
+  const readyColor = score >= 85 ? T.green : score >= 70 ? '#CC7A00' : '#C0392B'
+  const statusBg = score >= 85 ? T.greenLight : score >= 70 ? T.saffronLight : '#FCEBEB'
+  const readyLabel = score >= 85 ? 'Well positioned' : score >= 70 ? 'On track' : 'Needs planning'
+  const countryName = ({ usa: 'USA', uk: 'UK', uae: 'UAE', canada: 'Canada', other: 'abroad' } as Record<string, string>)[s.country] || 'abroad'
+  const intro = s.intent === 'permanent' ? 'You have already made the strategic decision. The job now is clean execution.' : s.intent === 'trial' ? 'A trial move is smart if you structure it deliberately.' : s.intent === 'remote' ? 'Remote income from India can be a powerful version of this move.' : 'Research first is the right move. This gives you a realistic preview.'
+  const risk = s.timeline === 'asap' ? `RNOR paperwork timing is tight. Missing it can cost you ${RNOR[s.income] || RNOR.m100}.` : s.family === 'kids' ? `School admissions in ${city.name} often need 12-18 months of lead time.` : s.intent === 'undecided' ? 'Delay can quietly burn the RNOR advantage without creating real clarity.' : 'Banking and NRE / NRO setup should happen before leaving, not after landing.'
+  const actions = s.intent === 'remote'
+    ? ['Negotiate and document a remote-from-India arrangement before leaving.', `Use the RNOR window deliberately while foreign income remains high leverage (${RNOR[s.income] || RNOR.m100}).`, `Plan reliable internet and workspace rhythm in ${city.name}.`]
+    : s.intent === 'trial'
+      ? ['Structure a 3-month scouting or trial period before a final one-way move.', 'Keep current income continuity during the trial if possible.', 'Use the trial to validate neighborhood, school, and routine fit.']
+      : ['Open or organize NRE and NRO banking now.', 'Map RNOR filing and residency sequence before you lock flights.', s.family === 'kids' ? `Start school research and applications in ${city.name} immediately.` : `Secure a 60-90 day housing bridge in ${city.name} before landing.`]
+  return {
+    city, score, readyColor, statusBg, readyLabel, countryName, intro, risk, actions,
+    currCost: COST_NOW[s.income] || COST_NOW.m100, savePct: SAVE_PCT[s.income] || SAVE_PCT.m100, rnorSave: RNOR[s.income] || RNOR.m100,
+    recommendationTitle: score >= 85 ? 'You can plan this as a live move program.' : score >= 70 ? 'Close the gaps before you commit.' : 'Use the tools to build the foundation first.',
+    statusDetail: score >= 85 ? 'Your profile can move from exploration into execution.' : score >= 70 ? 'The move looks viable, but a few details still determine whether it feels smooth or stressful.' : 'You need more structure before this turns into a confident move plan.',
+  }
 }
 
-function PlannerWidget() {
-  const [S, setS] = useState<PlannerState>({ country: '', income: '', intent: '', timeline: '', family: '', city: '' })
-  const [loading, setLoading] = useState(false)
-  const [done, setDone] = useState(false)
-  const [showPlanner, setShowPlanner] = useState(false)
-
-  const KEYS: (keyof PlannerState)[] = ['country', 'income', 'intent', 'timeline', 'family', 'city']
-  const answered = KEYS.filter(k => !!S[k]).length
-
-  function pick(key: keyof PlannerState, val: string) {
-    const next = { ...S, [key]: val }
-    setS(next)
-    const newAnswered = KEYS.filter(k => !!next[k]).length
-    if (newAnswered === 6) {
-      setLoading(true)
-      setTimeout(() => { setLoading(false); setDone(true) }, 1300)
-    }
-  }
-
-  const inputStyle: React.CSSProperties = {
-    padding: '9px 11px', borderRadius: '12px', cursor: 'pointer',
-    fontFamily: 'DM Sans, sans-serif', textAlign: 'left',
-    transition: 'all 0.15s', width: '100%', border: '1px solid var(--border)',
-    background: 'var(--white)',
-  }
-
-  if (!showPlanner) {
-    return (
-      <div style={{
-        background: 'var(--white)', border: '1px solid var(--border)',
-        borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.06)',
-      }}>
-        {/* SAMPLE RESULT CARD */}
-        <div style={{ background: '#0F0D08', padding: '1.5rem 2rem', borderBottom: '0.5px solid rgba(255,255,255,0.07)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Sample snapshot</div>
-              <div style={{ color: '#fff', fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem' }}>Hyderabad · Family with kids · Moving in ~1 year</div>
-            </div>
-            <div style={{ background: 'rgba(19,136,8,0.2)', color: '#4ABA48', fontSize: '11px', fontWeight: 600, padding: '4px 12px', borderRadius: '100px', border: '0.5px solid rgba(19,136,8,0.4)' }}>Plan ready</div>
-          </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', borderBottom: '1px solid var(--border)' }}>
-          {[
-            { label: 'Tax saving', val: '₹18–28L', color: '#FF9933' },
-            { label: 'Monthly cost', val: '₹1.8L/mo', color: 'var(--ink)' },
-            { label: 'City match', val: '94%', color: '#138808' },
-            { label: 'Readiness', val: '80/100', color: 'var(--ink)' },
-          ].map((s, i) => (
-            <div key={s.label} style={{ padding: '1rem 1.25rem', borderRight: i < 3 ? '1px solid var(--border)' : 'none' }}>
-              <div style={{ fontSize: '10px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{s.label}</div>
-              <div style={{ fontSize: '1.3rem', fontWeight: 500, color: s.color }}>{s.val}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {[
-            { bg: '#FFF3E6', color: '#CC7A00', icon: '!', text: 'Good runway — begin NRE/NRO account transition within 60 days.' },
-            { bg: '#E8F5E8', color: '#138808', icon: '✓', text: 'Hyderabad cost: ₹1.8L/mo — 25% lower than Bangalore.' },
-            { bg: '#E8E8FF', color: '#000080', icon: 'i', text: 'IB & IGCSE schools available — apply 12–18 months early.' },
-          ].map(r => (
-            <div key={r.text} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', color: 'var(--ink-muted)', lineHeight: 1.55 }}>
-              <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: r.bg, color: r.color, fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{r.icon}</div>
-              <span>{r.text}</span>
-            </div>
-          ))}
-        </div>
-        <div style={{ padding: '1.25rem 1.5rem', background: 'var(--india-white)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)', marginBottom: '2px' }}>This is a sample. Yours takes 6 questions.</div>
-            <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Personalised to your timeline, family, and city — free, no signup.</div>
-          </div>
-          <button
-            onClick={() => setShowPlanner(true)}
-            style={{ background: '#FF9933', color: '#fff', border: 'none', borderRadius: '100px', padding: '0.85rem 2rem', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}
-          >
-            Get my personalised plan →
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: '24px', padding: '3rem', textAlign: 'center', boxShadow: '0 8px 40px rgba(0,0,0,0.06)' }}>
-        <div style={{ width: '36px', height: '36px', border: '3px solid rgba(255,153,51,0.2)', borderTopColor: '#FF9933', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 1.25rem' }} />
-        <div style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink)', marginBottom: '6px' }}>Generating your plan...</div>
-        <div style={{ fontSize: '13px', color: 'var(--ink-soft)' }}>Personalising based on your profile</div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      </div>
-    )
-  }
-
-  if (done) {
-    const r = compute(S)
-    return (
-      <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.06)' }}>
-        <div style={{ background: '#1A1208', padding: '1.5rem 2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.75rem' }}>
-            <div>
-              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '5px' }}>Your personalised plan</div>
-              <div style={{ color: '#fff', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '420px' }}>{r.intro}</div>
-            </div>
-            <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '12px', padding: '8px 12px', textAlign: 'center', flexShrink: 0 }}>
-              <div style={{ fontSize: '1.4rem', fontWeight: 500, color: r.readyColor, lineHeight: 1 }}>{r.score}</div>
-              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>/ 100</div>
-              <div style={{ fontSize: '10px', color: r.readyColor, marginTop: '3px', fontWeight: 500 }}>{r.readyLabel}</div>
-            </div>
-          </div>
-          <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: r.readyColor, borderRadius: '4px', width: r.score + '%' }} />
-          </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px', padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-          {[
-            { label: 'Tax saving', val: r.rnorSave, color: '#FF9933' },
-            { label: 'India cost', val: r.cost, color: 'var(--ink)' },
-            { label: 'City match', val: r.city.match + '%', color: '#138808' },
-            { label: 'You vs peers', val: 'Top ' + (100 - r.pctile) + '%', color: 'var(--ink)' },
-          ].map(s => (
-            <div key={s.label} style={{ background: 'var(--india-white)', borderRadius: '10px', padding: '10px 12px' }}>
-              <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '3px' }}>{s.label}</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 500, color: s.color }}>{s.val}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-            <div style={{ background: '#FCEBEB', border: '0.5px solid #F7C1C1', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#A32D2D', marginBottom: '3px' }}>Now ({r.countryName})</div>
-              <div style={{ fontSize: '1rem', fontWeight: 500, color: '#791F1F' }}>{r.currCost}</div>
-            </div>
-            <div style={{ fontSize: '18px', color: 'var(--ink-soft)', textAlign: 'center' }}>→</div>
-            <div style={{ background: '#EAF3DE', border: '0.5px solid #C0DD97', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#3B6D11', marginBottom: '3px' }}>India ({r.city.name})</div>
-              <div style={{ fontSize: '1rem', fontWeight: 500, color: '#27500A' }}>{r.cost}</div>
-            </div>
-          </div>
-          <div style={{ background: 'rgba(255,153,51,0.08)', border: '0.5px solid rgba(255,153,51,0.25)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center', fontSize: '13px', color: '#854F0B' }}>
-            You save roughly <strong>{r.savePct}</strong> on monthly living costs
-          </div>
-        </div>
-        <div style={{ padding: '1rem', background: '#FFF3E6', borderBottom: '1px solid var(--border)', fontSize: '13px', color: '#633806', lineHeight: 1.55, display: 'flex', gap: '8px' }}>
-          <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#FF9933', color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>!</div>
-          <span>{r.countryNote}</span>
-        </div>
-        <div style={{ padding: '1rem', background: '#FCEBEB', borderBottom: '1px solid var(--border)', fontSize: '13px', color: '#791F1F', lineHeight: 1.55, display: 'flex', gap: '8px' }}>
-          <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#E24B4A', color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>!</div>
-          <span><strong>Top risk: </strong>{r.risk}</span>
-        </div>
-        <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '0.75rem' }}>Your 3-step action plan</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {r.actions.map((a, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#FF9933', color: '#fff', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{i + 1}</div>
-                <div style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: 1.55 }}>{a}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div style={{ padding: '1rem', background: 'var(--india-white)', fontSize: '12px', color: 'var(--ink-muted)', textAlign: 'center', borderBottom: '1px solid var(--border)' }}>
-          You are more prepared than <strong style={{ color: 'var(--ink)' }}>{r.pctile}% of NRIs</strong> at your stage
-        </div>
-        <div style={{ padding: '1rem', display: 'flex', gap: '8px' }}>
-          <Link href="/contact" style={{ flex: 2, padding: '11px', borderRadius: '100px', background: '#FF9933', color: '#fff', border: 'none', fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer', textAlign: 'center', textDecoration: 'none' }}>
-            Unlock full plan →
-          </Link>
-          <button onClick={() => { setS({ country: '', income: '', intent: '', timeline: '', family: '', city: '' }); setDone(false); setLoading(false) }} style={{ flex: 1, padding: '11px', borderRadius: '100px', background: 'transparent', color: 'var(--ink-muted)', border: '1px solid var(--border)', fontFamily: 'DM Sans, sans-serif', fontSize: '12px', cursor: 'pointer' }}>
-            Start over
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  const currentStep = STEPS[answered]
-
+function QuestionCard({ step, value, setValue }: { step: Step; value: string; setValue: (v: string) => void }) {
   return (
-    <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: '24px', padding: '2rem', boxShadow: '0 8px 40px rgba(0,0,0,0.06)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink)' }}>Answer 6 questions — get your intelligent plan instantly</div>
-        <button onClick={() => setShowPlanner(false)} style={{ background: 'none', border: '0.5px solid var(--border)', borderRadius: '100px', padding: '5px 14px', fontSize: '12px', color: 'var(--ink-muted)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>← Back</button>
+    <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.2rem', boxShadow: '0 12px 28px rgba(29,22,15,0.04)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{step.section}</div>
+          <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink }}>{step.q}</h3>
+          <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>{step.hint}</p>
+        </div>
+        {value ? <div style={{ alignSelf: 'flex-start', background: T.greenLight, color: T.green, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 999 }}>Set</div> : null}
       </div>
-
-      {/* Step circles */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '1.5rem' }}>
-        {STEPS.map((s, i) => {
-          const done2 = !!S[s.key as keyof PlannerState]
-          const active = i === answered
-          const bg = done2 ? '#138808' : active ? '#FF9933' : 'rgba(26,18,8,0.1)'
-          const col = (done2 || active) ? '#fff' : 'rgba(26,18,8,0.3)'
+      <div className="tools-option-grid">
+        {step.opts.map((opt) => {
+          const selected = value === opt.k
           return (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < 5 ? '1' : 'none' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: bg, color: col, fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {done2 ? '✓' : i + 1}
-              </div>
-              {i < 5 && <div style={{ flex: 1, height: '2px', background: done2 ? '#138808' : 'rgba(26,18,8,0.08)', borderRadius: '1px', margin: '0 4px' }} />}
-            </div>
+            <button key={opt.k} type="button" onClick={() => setValue(opt.k)} style={{ textAlign: 'left', padding: '0.95rem 1rem', borderRadius: 16, border: `1.5px solid ${selected ? T.saffron : T.border}`, background: selected ? T.saffronLight : T.white, color: T.ink, fontFamily: 'DM Sans, sans-serif' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{opt.label}</div>
+              <div style={{ fontSize: 12, color: T.muted, lineHeight: 1.55 }}>{opt.sub}</div>
+            </button>
           )
         })}
       </div>
-
-      {/* Progress bar */}
-      <div style={{ height: '3px', background: 'rgba(26,18,8,0.08)', borderRadius: '100px', overflow: 'hidden', marginBottom: '2rem' }}>
-        <div style={{ height: '100%', background: '#FF9933', borderRadius: '100px', width: Math.round((answered / 6) * 100) + '%', transition: 'width 0.4s ease' }} />
-      </div>
-
-      {/* Current question */}
-      {currentStep && (
-        <div>
-          <div style={{ fontSize: '11px', fontWeight: 500, color: '#FF9933', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>
-            Step {answered + 1} of 6 — {currentStep.hint}
-          </div>
-          <div style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink)', marginBottom: '1.25rem', letterSpacing: '-0.01em' }}>{currentStep.q}</div>
-
-          {(currentStep as { dropdown?: boolean }).dropdown ? (
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px', marginBottom: '0.75rem' }}>
-                {currentStep.opts.map(opt => {
-                  const sel = S.city === opt.k
-                  const cd = CITY_DATA[opt.k]
-                  return (
-                    <button
-                      key={opt.k}
-                      onClick={() => pick('city', opt.k)}
-                      style={{
-                        ...inputStyle,
-                        border: sel ? '2px solid #138808' : '1px solid var(--border)',
-                        background: sel ? 'rgba(19,136,8,0.06)' : 'var(--white)',
-                      }}
-                    >
-                      <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink)', marginBottom: '2px' }}>{opt.label}</div>
-                      {cd && <div style={{ fontSize: '10px', color: 'var(--ink-soft)' }}>{cd.costRange}</div>}
-                    </button>
-                  )
-                })}
-              </div>
-              {S.city && CITY_DATA[S.city] && (
-                <div style={{ padding: '12px 14px', background: 'var(--india-white)', borderRadius: '12px', border: '0.5px solid var(--border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)' }}>{CITY_DATA[S.city].name}</span>
-                    <span style={{ fontSize: '10px', fontWeight: 500, color: '#138808', background: 'rgba(19,136,8,0.1)', borderRadius: '100px', padding: '2px 8px' }}>{CITY_DATA[S.city].matchTag}</span>
-                    <span style={{ fontSize: '10px', color: 'var(--ink-soft)' }}>{CITY_DATA[S.city].match}% match</span>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px', marginBottom: '8px' }}>
-                    {[
-                      { label: 'Cost', val: CITY_DATA[S.city].costRange },
-                      { label: 'Jobs', val: CITY_DATA[S.city].jobs },
-                      { label: 'NRI', val: CITY_DATA[S.city].nri.replace('Very High', 'V.High') },
-                      { label: 'AQI', val: CITY_DATA[S.city].airQ, color: CITY_DATA[S.city].airQ === 'Good' ? '#138808' : CITY_DATA[S.city].airQ === 'Moderate' ? '#FF9933' : '#E24B4A' },
-                    ].map(c => (
-                      <div key={c.label} style={{ background: 'var(--white)', borderRadius: '8px', padding: '5px 7px', border: '0.5px solid var(--border)' }}>
-                        <div style={{ fontSize: '8px', color: 'var(--ink-soft)', textTransform: 'uppercase', marginBottom: '2px' }}>{c.label}</div>
-                        <div style={{ fontSize: '11px', fontWeight: 500, color: c.color || 'var(--ink)' }}>{c.val}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--ink-muted)', lineHeight: 1.45 }}>{CITY_DATA[S.city].why[0]}</div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '1rem' }}>
-              {currentStep.opts.map(opt => {
-                const sel = S[currentStep.key as keyof PlannerState] === opt.k
-                return (
-                  <button
-                    key={opt.k}
-                    onClick={() => pick(currentStep.key as keyof PlannerState, opt.k)}
-                    style={{
-                      ...inputStyle,
-                      border: sel ? '2px solid #FF9933' : '1px solid var(--border)',
-                      background: sel ? 'rgba(255,153,51,0.06)' : 'var(--white)',
-                    }}
-                  >
-                    <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink)', marginBottom: '3px' }}>{opt.label}</div>
-                    {'sub' in opt && <div style={{ fontSize: '11px', color: 'var(--ink-soft)' }}>{(opt as { k: string; label: string; sub: string }).sub}</div>}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-
-          {/* Answered chips */}
-          {answered > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', paddingTop: '0.75rem', borderTop: '0.5px solid var(--border)' }}>
-              {STEPS.slice(0, answered).map(ps => {
-                const val = S[ps.key as keyof PlannerState]
-                const opt = ps.opts.find(o => o.k === val)
-                return opt ? (
-                  <div key={ps.key} style={{ fontSize: '11px', color: 'var(--ink-muted)', background: 'var(--india-white)', border: '0.5px solid var(--border)', borderRadius: '100px', padding: '3px 10px' }}>
-                    {ps.q.split(' ').slice(0, 3).join(' ')}… <strong style={{ color: 'var(--ink)' }}>{opt.label}</strong>
-                  </div>
-                ) : null
-              })}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
 }
 
 export default function Tools() {
   const { shouldBlock } = useProtectedRoute()
+  const [state, setState] = useState<State>({ country: '', income: '', intent: '', timeline: '', family: '', city: '' })
+  const [loading, setLoading] = useState(false)
+  const [done, setDone] = useState(false)
   if (shouldBlock) return null
 
-  return (
-    <>
-      {/* HEADER */}
-      <section style={{ background: 'var(--india-white)', padding: '5rem 2rem 4rem', textAlign: 'center' }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-          
-          <h1 className="section-title">Tools built for every decision you need to make</h1>
-          <p className="section-sub" style={{ margin: '0 auto' }}>
-            Every feature exists because a real NRI needed it and couldn&apos;t find it anywhere else.
-            Starting with the decisions that cost the most when you get them wrong.
-          </p>
-        </div>
-      </section>
+  const keys: (keyof State)[] = ['country', 'income', 'intent', 'timeline', 'family', 'city']
+  const answered = keys.filter((k) => !!state[k]).length
+  const progress = Math.round((answered / keys.length) * 100)
+  const result = compute(state)
 
+  const css = `
+    .tools-page { overflow-x: hidden; }
+    .tools-shell, .tools-result-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    .tools-grid { display:grid; grid-template-columns:minmax(280px,360px) minmax(0,1fr); gap:1.25rem; align-items:start; }
+    .tools-sticky { position:sticky; top:96px; }
+    .tools-stack { display:grid; gap:1rem; }
+    .tools-option-grid { display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+    .tools-hero-grid { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(280px,.8fr); gap:.9rem; align-items:start; }
+    .tools-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.9rem; }
+    .tools-overview, .tools-cards { display:grid; grid-template-columns:1.05fr .95fr; gap:1rem; margin-top:1rem; }
+    .tools-cards { grid-template-columns:1fr 1fr; }
+    @media (max-width:980px){ .tools-grid,.tools-hero-grid,.tools-overview,.tools-cards{grid-template-columns:1fr;} .tools-sticky{position:static;} .tools-stats{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media (max-width:767px){ .tools-shell,.tools-result-shell{padding:1rem .9rem 2rem;} .tools-option-grid,.tools-stats{grid-template-columns:1fr !important;} }
+  `
 
+  if (loading) {
+    return <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><style>{css + '@keyframes spin{to{transform:rotate(360deg)}}'}</style><div style={{ textAlign: 'center' }}><div style={{ width: 52, height: 52, border: `3px solid ${T.saffronBorder}`, borderTopColor: T.saffron, borderRadius: '50%', animation: 'spin .8s linear infinite', margin: '0 auto 1.5rem' }} /><h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.75rem', color: T.ink, marginBottom: '.5rem' }}>Generating your tools dashboard...</h2><p style={{ color: T.muted }}>Pulling together the right view for your move profile.</p></div></div>
+  }
 
-      {/* WHAT'S INSIDE */}
-      <section style={{ padding: '5rem 2rem', background: 'var(--white)' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div className="section-label">Free tools — live now</div>
-            
-            
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
-            {[
-              { href: '/planner', icon: '🗺️', color: '#FF9933', bg: '#FFF3E6', title: 'Return Readiness Check', desc: 'Answer 12 questions and get your personalised readiness score, top risks, financial snapshot, and a 3-phase action plan.', outcome: 'Know exactly where you stand' },
-              { href: '/rnor', icon: '📊', color: '#138808', bg: '#E8F5E8', title: 'RNOR Tax Optimizer', desc: 'Calculate your exact tax-free window, RSU vesting strategy, 401(k) plan, and every form you need to file with deadlines.', outcome: 'Save ₹18–60L in year 1' },
-              { href: '/city', icon: '🏙️', color: '#7C5CBF', bg: '#F0EEFF', title: 'City Match + Cost of Living', desc: 'Score 5 cities across jobs, schools, lifestyle, air quality, and NRI community — personalised to your family and income.', outcome: 'Pick the right city with data' },
-              { href: '/schools', icon: '🎓', color: '#000080', bg: '#E8E8FF', title: 'Schools Comparison Tool', desc: '17 real schools across 5 cities with actual fees, boards, mid-year entry policy, US curriculum bridge programs, and contact details.', outcome: "Secure your child's school early" },
-              { href: '/housing', icon: '🏠', color: '#D4695A', bg: '#FCEBEB', title: 'Rental & Housing Finder', desc: 'NRI-curated neighbourhoods with rent ranges, safety ratings, school proximity, serviced apartment options, and agent tips.', outcome: 'Have a home before you arrive' },
-              { href: '/healthcare', icon: '🏥', color: '#1D9E75', bg: '#E8F5F0', title: 'Healthcare & Insurance Guide', desc: 'Top hospitals by city (JCI accredited), 6 insurance plans with premiums, and how to bridge the gap between US and India coverage.', outcome: 'Never be without coverage' },
-              { href: '/citylife', icon: '☕', color: '#FF9933', bg: '#FFF3E6', title: 'City Life Guide', desc: 'Where to eat, buy international groceries, work out, co-work, and find your NRI community — curated by returnees, for returnees.', outcome: 'Feel at home from day one' },
-              { href: '/jobs', icon: '💼', color: '#138808', bg: '#E8F5E8', title: 'Job & Career Guide', desc: 'India salary benchmarks vs US, 15 companies hiring NRI returnees, remote work negotiation script, and a 90-day job search plan.', outcome: 'Land the right role' },
-            ].map((tool) => (
-              <Link
-                key={tool.href}
-                href={tool.href}
-                style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '20px', padding: '1.5rem', transition: 'all 0.2s', cursor: 'pointer' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = tool.color; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.08)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
-              >
-                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: tool.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>{tool.icon}</div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--ink)', fontFamily: 'DM Sans, sans-serif', margin: 0 }}>{tool.title}</h3>
-                <p style={{ fontSize: '0.875rem', color: 'var(--ink-muted)', lineHeight: 1.65, flex: 1, margin: 0 }}>{tool.desc}</p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '0.5px solid var(--border)' }}>
-                  <span style={{ fontSize: '12px', color: tool.color, fontWeight: 500 }}>✓ {tool.outcome}</span>
-                  <span style={{ fontSize: '13px', color: tool.color, fontWeight: 500 }}>→</span>
+  if (done) {
+    return (
+      <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif' }}>
+        <style>{css}</style>
+        <div className="tools-result-shell">
+          <div className="tools-hero-grid">
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 26, overflow: 'hidden', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
+              <div style={{ padding: '1.2rem 1.25rem', background: '#20160f' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 999, padding: '0.45rem 0.85rem', marginBottom: '1rem' }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: T.saffron }} /><span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Tools dashboard</span></div>
+                <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.9rem,4vw,3rem)', lineHeight: 0.98, color: T.white, marginBottom: 8 }}>{result.city.name} looks like your current lead.</h1>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, maxWidth: 620 }}>{result.intro}</p>
+                <div className="tools-stats" style={{ marginTop: 16 }}>
+                  {[{ label: 'Score', value: String(result.score) }, { label: 'Status', value: result.readyLabel }, { label: 'India cost', value: result.city.cost }, { label: 'RNOR upside', value: result.rnorSave }].map((item) => <div key={item.label} style={{ padding: '1rem', borderRadius: 18, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}><div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{item.label}</div><div style={{ fontSize: 15, fontWeight: 700, color: T.white, lineHeight: 1.45 }}>{item.value}</div></div>)}
                 </div>
-              </Link>
-            ))}
+              </div>
+            </div>
+            <div style={{ display: 'grid', gap: '.9rem' }}>
+              <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 22, padding: '1.05rem 1.1rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}><div><div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Next best action</div><h2 style={{ fontSize: '1.15rem', color: T.ink, marginBottom: 6 }}>{result.recommendationTitle}</h2></div><div style={{ background: result.statusBg, color: result.readyColor, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 999, alignSelf: 'flex-start' }}>{result.readyLabel}</div></div>
+                <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 14 }}>{result.statusDetail}</p>
+                <div style={{ padding: '1rem', borderRadius: 18, background: T.saffronLight, border: `1px solid ${T.saffronBorder}` }}><div style={{ fontSize: 12, fontWeight: 700, color: '#8d5c22', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Why this matters</div><div style={{ fontSize: 14, color: '#8d5c22', lineHeight: 1.75 }}>{result.actions[0]}</div></div>
+              </div>
+              <Link href="/planner" style={{ display: 'inline-flex', justifyContent: 'center', alignItems: 'center', padding: '1rem 1.15rem', background: T.saffron, color: '#fff', fontSize: 14, fontWeight: 700, borderRadius: 999, textDecoration: 'none' }}>Open Readiness Check</Link>
+              <Link href="/journey" style={{ display: 'inline-flex', justifyContent: 'center', alignItems: 'center', padding: '1rem 1.15rem', background: T.green, color: '#fff', fontSize: 14, fontWeight: 700, borderRadius: 999, textDecoration: 'none' }}>Open Journey</Link>
+              <button type="button" onClick={() => setDone(false)} style={{ width: '100%', padding: '1rem 1.15rem', borderRadius: 999, border: `1px solid ${T.saffronBorder}`, background: 'linear-gradient(180deg, #FFF8F0 0%, #FFF2E2 100%)', color: T.ink, fontSize: 14, fontWeight: 700, fontFamily: 'DM Sans, sans-serif' }}>Rebuild Tools Plan</button>
+            </div>
+          </div>
+
+          <div className="tools-overview">
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.35rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Planning signals</div>
+              <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 16 }}>What the tools are telling you right now</h2>
+              {[{ label: 'City fit', value: `${result.city.match}%`, note: result.city.reason, pct: result.city.match, color: T.green }, { label: 'Current spend', value: result.currCost, note: `Current operating baseline in ${result.countryName}`, pct: Math.max(40, result.score - 10), color: '#791F1F' }, { label: 'Projected spend', value: result.city.cost, note: `Estimated operating cost in ${result.city.name}`, pct: Math.max(45, result.score - 6), color: T.ink }, { label: 'Peer position', value: `Top ${100 - (state.timeline === 'asap' ? 41 : state.timeline === 'year' ? 37 : state.timeline === 'two' ? 22 : 48)}%`, note: 'How prepared you look versus similar returnees', pct: 100 - (state.timeline === 'asap' ? 41 : state.timeline === 'year' ? 37 : state.timeline === 'two' ? 22 : 48), color: T.navy }].map((item) => <div key={item.label} style={{ marginBottom: 14 }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}><div><div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{item.label}</div><div style={{ fontSize: 12, color: T.muted }}>{item.note}</div></div><div style={{ fontSize: 13, fontWeight: 700, color: item.color }}>{item.value}</div></div><div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}><div style={{ width: `${item.pct}%`, height: '100%', background: item.color }} /></div></div>)}
+            </div>
+            <div style={{ background: result.statusBg, border: `1.5px solid ${result.readyColor}22`, borderRadius: 24, padding: '1.35rem' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: result.readyColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Recommendation</div>
+              <h2 style={{ fontSize: '1.35rem', color: result.readyColor, marginBottom: 12 }}>{result.recommendationTitle}</h2>
+              <p style={{ fontSize: 14, color: result.readyColor, lineHeight: 1.75, margin: '0 0 1rem 0', opacity: 0.92 }}>{result.intro}</p>
+              <div style={{ display: 'grid', gap: 10 }}>{result.actions.map((action, index) => <div key={index} style={{ display: 'grid', gridTemplateColumns: '26px minmax(0,1fr)', gap: 12, alignItems: 'start', padding: '.95rem', borderRadius: 18, background: 'rgba(255,255,255,0.45)' }}><div style={{ width: 26, height: 26, borderRadius: '50%', background: result.readyColor, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 800 }}>{index + 1}</div><div style={{ fontSize: 14, color: result.readyColor, lineHeight: 1.7 }}>{action}</div></div>)}</div>
+            </div>
+          </div>
+
+          <div className="tools-cards">
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.35rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Financial translation</div>
+              <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 14 }}>How the move changes the financial picture</h2>
+              {[{ label: `Current spend (${result.countryName})`, val: result.currCost, sub: 'Current operating baseline', bg: '#FCEBEB', border: 'rgba(192,57,43,0.12)', color: '#791F1F' }, { label: `Projected spend (${result.city.name})`, val: result.city.cost, sub: result.city.reason, bg: T.greenLight, border: 'rgba(19,136,8,0.12)', color: T.green }, { label: 'Savings improvement', val: result.savePct, sub: 'Rough reduction in living-cost burn', bg: T.saffronLight, border: T.saffronBorder, color: '#8d5c22' }, { label: 'RNOR upside', val: result.rnorSave, sub: 'Potential first-year tax value if handled correctly', bg: T.navyLight, border: 'rgba(0,0,128,0.12)', color: T.navy }].map((item) => <div key={item.label} style={{ padding: '1rem', borderRadius: 18, background: item.bg, border: `1px solid ${item.border}`, marginBottom: 12 }}><div style={{ fontSize: 11, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{item.label}</div><div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.45rem', color: item.color, marginBottom: 3 }}>{item.val}</div><div style={{ fontSize: 12, color: T.muted }}>{item.sub}</div></div>)}
+            </div>
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.35rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Risk and fit</div>
+              <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 14 }}>What needs attention before you trust the plan</h2>
+              {[{ label: 'Top risk', body: result.risk, bg: '#FCEBEB', border: 'rgba(192,57,43,0.18)', color: '#C0392B' }, { label: 'Country-specific note', body: ({ usa: 'Your 401(k), RSUs, and tax residency sequence need planning before departure.', uk: 'UK departure and domicile implications can still matter after leaving.', uae: 'Your tax-free base makes the RNOR window especially valuable.', canada: 'Departure tax can materially change available capital.', other: 'Check home-country exit taxes and reporting before you leave.' } as Record<string, string>)[state.country] || 'Check home-country exit taxes and reporting before you leave.', bg: T.saffronLight, border: T.saffronBorder, color: '#CC7A00' }, { label: 'City fit read', body: `${result.city.name} combines ${result.city.jobs.toLowerCase()} job depth, ${result.city.schools.toLowerCase()} schooling options, and a ${result.city.nri.toLowerCase()} NRI community profile.`, bg: T.navyLight, border: 'rgba(0,0,128,0.12)', color: T.navy }].map((item) => <div key={item.label} style={{ padding: '1rem', borderRadius: 18, background: item.bg, border: `1px solid ${item.border}`, marginBottom: 12 }}><div style={{ fontSize: 11, fontWeight: 700, color: item.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{item.label}</div><div style={{ fontSize: 14, color: T.ink, lineHeight: 1.7 }}>{item.body}</div></div>)}
+            </div>
           </div>
         </div>
-      </section>
+      </div>
+    )
+  }
 
+  return (
+    <div className="tools-page" style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif' }}>
+      <style>{css}</style>
+      <div className="tools-shell">
+        <div className="tools-grid">
+          <div className="tools-sticky">
+            <div style={{ overflow: 'hidden', borderRadius: 24, boxShadow: '0 22px 48px rgba(29,22,15,0.06)', background: T.white, border: `1px solid ${T.border}` }}>
+              <div style={{ padding: '1.4rem 1.4rem 1rem', background: '#20160f' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 999, padding: '0.45rem 0.85rem', marginBottom: '1rem' }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: T.saffron }} /><span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Tools planning</span></div>
+                <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(2.2rem,5vw,4.2rem)', lineHeight: 0.98, color: T.white, marginBottom: '.9rem' }}>Use the tools like a<em style={{ fontStyle: 'italic', color: T.saffron }}> real system.</em></h1>
+                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>Answer the same kind of structured questions you see in Readiness Check and Journey. We will turn them into a practical tools-first plan.</p>
+              </div>
+              <div style={{ padding: '1.25rem 1.4rem 1.4rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.muted, marginBottom: 8 }}><span>Assessment progress</span><span style={{ fontWeight: 700 }}>{progress}%</span></div>
+                <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden', marginBottom: 14 }}><div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #f08a24 0%, #f3a44f 100%)' }} /></div>
+                {[{ title: 'What this gives you', body: 'A city and cost baseline, a readiness-style result, and the right next surfaces to open.' }, { title: 'Surfaces it connects to', body: 'Readiness Check, Back2India Journey, and deeper specialist resources.' }, { title: 'Progress snapshot', body: answered === keys.length ? 'Your tools plan is ready to generate.' : `${keys.length - answered} question${keys.length - answered === 1 ? '' : 's'} left before we can build your dashboard.` }].map((item) => <div key={item.title} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 18, padding: '1rem 1rem .95rem', marginBottom: 12 }}><div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{item.title}</div><div style={{ fontSize: 14, color: T.muted, lineHeight: 1.65 }}>{item.body}</div></div>)}
+              </div>
+            </div>
+          </div>
 
-
-
-      {/* CTA */}
-
-    </>
+          <div className="tools-stack">
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.25rem 1.3rem', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: 100, padding: '5px 14px', marginBottom: '1rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: T.saffron }} /><span style={{ fontSize: 11, fontWeight: 500, color: T.muted, letterSpacing: '0.06em' }}>Tools Assessment · Free · {keys.length} questions</span></div>
+              <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', color: T.ink, marginBottom: 8 }}>Build your tools plan</h2>
+              <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, maxWidth: 760 }}>Move through the questions below and we will turn them into a clear tools-first dashboard with recommendations, actions, and the next surfaces to open.</p>
+            </div>
+            {STEPS.map((step) => <QuestionCard key={step.key} step={step} value={state[step.key]} setValue={(v) => setState((prev) => ({ ...prev, [step.key]: v }))} />)}
+            <div style={{ background: answered === keys.length ? '#20160f' : T.white, border: `1px solid ${answered === keys.length ? '#20160f' : T.border}`, borderRadius: 24, padding: '1.2rem', boxShadow: '0 12px 28px rgba(29,22,15,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div><div style={{ fontSize: 12, fontWeight: 700, color: answered === keys.length ? 'rgba(255,255,255,0.65)' : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Next step</div><div style={{ fontSize: 16, fontWeight: 700, color: answered === keys.length ? T.white : T.ink, marginBottom: 4 }}>{answered === keys.length ? 'Your tools dashboard is ready.' : `${keys.length - answered} inputs still missing.`}</div><div style={{ fontSize: 14, color: answered === keys.length ? 'rgba(255,255,255,0.7)' : T.muted, lineHeight: 1.7 }}>{answered === keys.length ? 'Generate the result to see your city fit, financial view, top risk, and the exact tools to open next.' : 'Finish the missing answers once, then the tools plan can generate from the full profile.'}</div></div>
+                <button type="button" disabled={answered !== keys.length} onClick={() => { setLoading(true); setTimeout(() => { setLoading(false); setDone(true); window.scrollTo({ top: 0, behavior: 'smooth' }) }, 1100) }} style={{ padding: '1rem 1.4rem', borderRadius: 999, border: 'none', background: answered === keys.length ? T.saffron : 'rgba(29,22,15,0.08)', color: answered === keys.length ? T.white : T.soft, fontSize: 14, fontWeight: 800, minWidth: 240, fontFamily: 'DM Sans, sans-serif' }}>Generate My Tools Dashboard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
