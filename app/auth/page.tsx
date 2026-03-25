@@ -253,20 +253,10 @@ function AuthPageContent() {
               maxWidth: '11ch',
             }}
           >
-            Sign in or create your account.
+            Sign in or create your free account.
           </h1>
 
-          <p
-            style={{
-              fontSize: '1.05rem',
-              lineHeight: 1.85,
-              color: T.muted,
-              margin: '0 0 28px',
-              maxWidth: '58ch',
-            }}
-          >
-            Save your readiness assessment, return to your journey anytime, and keep your move-back planning tied to one clean profile.
-          </p>
+
 
           <div
             style={{
