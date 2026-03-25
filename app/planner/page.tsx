@@ -124,6 +124,33 @@ const SECTION_COLORS: Record<string, string> = {
   'Timeline': T.saffron, 'Tax Planning': '#7C5CBF',
 }
 
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function getPlannerYearRange(): number[] {
+  const year = new Date().getFullYear()
+  return [year, year + 1, year + 2, year + 3]
+}
+
+function plannerTimelineFromMoveDate(moveDate: string): Answers['timeline'] {
+  if (!moveDate) return 'exploring'
+  const now = new Date()
+  const [y, mo] = moveDate.split('-').map(Number)
+  const target = new Date(y, mo - 1, 1)
+  const diffMonths = (target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+  if (diffMonths <= 6) return 'within6'
+  if (diffMonths <= 12) return '6to12'
+  return '1to2'
+}
+
+function defaultMoveDateForTimeline(timeline?: string): string {
+  if (!timeline || timeline === 'exploring') return ''
+
+  const now = new Date()
+  const monthOffset = timeline === 'within6' ? 3 : timeline === '6to12' ? 9 : 15
+  const target = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1)
+  return `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}`
+}
+
 // ─── OPTION POINTS ─────────────────────────────────────────────────────────────
 
 export const OPTION_POINTS: Partial<Record<keyof Answers, Record<string, number>>> = {
@@ -666,40 +693,154 @@ function QSelect({ value, onChange, opts, questionKey }: { value: string; onChan
   const points = OPTION_POINTS[questionKey] || {}
   
   return (
-    <div className="planner-select-wrap" style={{ position: 'relative' }}>
-      <select value={value} onChange={e => onChange(e.target.value)}
-        className="planner-select"
-        style={{ width: '100%', padding: '11px 88px 11px 14px', background: value ? T.saffronLight : T.white, border: `1.5px solid ${value ? T.saffron : T.border}`, borderRadius: '10px', color: value ? T.ink : T.soft, fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', appearance: 'none', cursor: 'pointer' }}>
-        <option value="" disabled>Select an answer…</option>
-        {opts.map(o => {
-          const pts = points[o.k]
-          return (
-            <option key={o.k} value={o.k}>
-              {o.label}{pts !== undefined ? ` (+${pts} pts)` : ''}
-            </option>
-          )
-        })}
-      </select>
-      <svg style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke={T.soft} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-      
-      {/* Show points badge when selected */}
-      {value && points[value] !== undefined && (
-        <div className="planner-select-badge" style={{ 
-          position: 'absolute', 
-          right: '40px', 
-          top: '50%', 
-          transform: 'translateY(-50%)',
-          background: T.green,
-          color: '#fff',
-          fontSize: '10px',
-          fontWeight: 600,
-          padding: '2px 6px',
-          borderRadius: '4px',
-          pointerEvents: 'none'
-        }}>
-          +{points[value]}
+    <div className="planner-option-grid" style={{ display: 'grid', gap: '0.7rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+      {opts.map(o => {
+        const selected = value === o.k
+        const pts = points[o.k]
+
+        return (
+          <button
+            key={o.k}
+            type="button"
+            onClick={() => onChange(o.k)}
+            style={{
+              textAlign: 'left',
+              padding: '1rem 1rem 0.95rem',
+              borderRadius: 18,
+              border: `1.5px solid ${selected ? T.saffron : T.border}`,
+              background: selected ? T.saffronLight : T.white,
+              boxShadow: selected ? '0 10px 24px rgba(255,153,51,0.14)' : 'none',
+              transition: 'all .18s ease',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, lineHeight: 1.45 }}>{o.label}</div>
+                {pts !== undefined ? (
+                  <div style={{ marginTop: 6, fontSize: 12, color: selected ? T.saffron : T.muted, lineHeight: 1.5 }}>
+                    {pts > 0 ? `Adds ${pts} readiness point${pts === 1 ? '' : 's'}` : 'No readiness points'}
+                  </div>
+                ) : null}
+              </div>
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: '50%',
+                  border: `1.5px solid ${selected ? T.saffron : T.border}`,
+                  background: selected ? T.saffron : 'transparent',
+                  flexShrink: 0,
+                  marginTop: 2,
+                }}
+              />
+            </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function PlannerTimelinePicker({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (value: string, timeline: Answers['timeline']) => void
+}) {
+  const selectedYear = value ? Number(value.split('-')[0]) : null
+  const selectedMonth = value ? Number(value.split('-')[1]) : null
+  const now = new Date()
+
+  return (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+          Year
         </div>
-      )}
+        <div className="planner-timeline-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
+          {getPlannerYearRange().map((year) => {
+            const selected = selectedYear === year
+            return (
+              <button
+                type="button"
+                key={year}
+                onClick={() => {
+                  const month = selectedMonth || Math.max(now.getMonth() + 1, 1)
+                  const safeMonth = year === now.getFullYear() && month < now.getMonth() + 1 ? now.getMonth() + 1 : month
+                  const moveDate = `${year}-${String(safeMonth).padStart(2, '0')}`
+                  onChange(moveDate, plannerTimelineFromMoveDate(moveDate))
+                }}
+                style={{
+                  padding: '0.9rem 0.75rem',
+                  borderRadius: 16,
+                  border: `1.5px solid ${selected ? T.saffron : T.border}`,
+                  background: selected ? T.saffronLight : T.white,
+                  color: selected ? T.ink : T.muted,
+                  fontSize: 14,
+                  fontWeight: 700,
+                }}
+              >
+                {year}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+          Month
+        </div>
+        <div className="planner-timeline-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
+          {MONTHS_SHORT.map((month, idx) => {
+            const monthNumber = idx + 1
+            const selected = selectedMonth === monthNumber
+            const disabled = !selectedYear || (selectedYear === now.getFullYear() && monthNumber < now.getMonth() + 1)
+            return (
+              <button
+                type="button"
+                key={month}
+                disabled={disabled}
+                onClick={() => {
+                  if (!selectedYear || disabled) return
+                  const moveDate = `${selectedYear}-${String(monthNumber).padStart(2, '0')}`
+                  onChange(moveDate, plannerTimelineFromMoveDate(moveDate))
+                }}
+                style={{
+                  padding: '0.95rem 0.5rem',
+                  borderRadius: 16,
+                  border: `1.5px solid ${selected ? T.saffron : T.border}`,
+                  background: selected ? T.saffronLight : selectedYear ? T.white : 'rgba(29,22,15,0.03)',
+                  color: selected ? T.ink : !selectedYear ? T.soft : disabled ? T.soft : T.muted,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  opacity: disabled ? 0.55 : 1,
+                }}
+              >
+                {month}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onChange('', 'exploring')}
+        style={{
+          padding: '0.9rem 1rem',
+          borderRadius: 16,
+          border: `1px solid ${T.border}`,
+          background: value ? T.white : 'rgba(29,22,15,0.03)',
+          color: value ? T.muted : T.ink,
+          fontSize: 13,
+          fontWeight: 700,
+          textAlign: 'left',
+        }}
+      >
+        Just exploring for now
+      </button>
     </div>
   )
 }
@@ -718,6 +859,7 @@ export default function Planner() {
   const [loadingSavedResult, setLoadingSavedResult] = useState(true)
   const [submitError, setSubmitError] = useState('')
   const [result, setResult] = useState<Result | null>(null)
+  const [plannerMoveDate, setPlannerMoveDate] = useState(() => defaultMoveDateForTimeline(''))
   const reportRef = useRef<HTMLDivElement>(null)
 
   // Load saved readiness data from Supabase for the logged-in user
@@ -733,6 +875,7 @@ export default function Planner() {
         if (!active) return
         setAnswers({})
         setResult(null)
+        setPlannerMoveDate('')
         setLoadingSavedResult(false)
         return
       }
@@ -756,11 +899,14 @@ export default function Planner() {
       }
 
       if (data?.answers_json && data?.result_json) {
-        setAnswers(data.answers_json as Partial<Answers>)
+        const savedAnswers = data.answers_json as Partial<Answers>
+        setAnswers(savedAnswers)
         setResult(data.result_json as Result)
+        setPlannerMoveDate(defaultMoveDateForTimeline(savedAnswers.timeline))
       } else {
         setAnswers({})
         setResult(null)
+        setPlannerMoveDate('')
       }
 
       setLoadingSavedResult(false)
@@ -788,17 +934,15 @@ export default function Planner() {
   const progress = Math.round((answered / total) * 100)
   const allAnswered = answered === total
 
-  // Group visible questions by section
-  const sections: { name: string; qs: typeof QUESTIONS }[] = []
-  visibleQs.forEach(q => {
-    const last = sections[sections.length - 1]
-    if (!last || last.name !== q.section) sections.push({ name: q.section, qs: [q] })
-    else last.qs.push(q)
-  })
-
   function setAnswer(key: keyof Answers, val: string) {
     setSubmitError('')
     setAnswers(prev => ({ ...prev, [key]: val }))
+  }
+
+  function setTimelineAnswer(moveDate: string, timeline: Answers['timeline']) {
+    setSubmitError('')
+    setPlannerMoveDate(moveDate)
+    setAnswers(prev => ({ ...prev, timeline }))
   }
 
   async function handleGenerateReport() {
@@ -847,6 +991,38 @@ export default function Planner() {
     .planner-page {
       overflow-x: hidden;
     }
+    .planner-shell {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    .planner-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+      gap: 1.25rem;
+      align-items: start;
+    }
+    .planner-sticky-panel {
+      position: sticky;
+      top: 96px;
+    }
+    .planner-question-stack {
+      display: grid;
+      gap: 1rem;
+    }
+    .planner-option-grid {
+      display: grid;
+      gap: 0.7rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    @media (max-width: 980px) {
+      .planner-grid {
+        grid-template-columns: 1fr;
+      }
+      .planner-sticky-panel {
+        position: static;
+      }
+    }
     @media (max-width: 767px) {
       .planner-form-header,
       .planner-result-header,
@@ -864,6 +1040,9 @@ export default function Planner() {
       .planner-form-content,
       .planner-result-content {
         padding-bottom: 2rem !important;
+      }
+      .planner-shell {
+        padding: 1rem 0.9rem 2rem;
       }
       .planner-score-grid,
       .planner-financial-grid,
@@ -892,12 +1071,11 @@ export default function Planner() {
         width: 100%;
         text-align: center;
       }
-      .planner-select {
-        min-height: 48px;
-        font-size: 16px !important;
+      .planner-option-grid {
+        grid-template-columns: 1fr !important;
       }
-      .planner-select-badge {
-        display: none;
+      .planner-timeline-grid {
+        grid-template-columns: 1fr 1fr !important;
       }
     }
     @media (max-width: 480px) {
@@ -943,10 +1121,6 @@ export default function Planner() {
 
         {/* SCORE HEADER */}
         <div className="planner-result-header" style={{ padding: '4rem 2rem 2.5rem', textAlign: 'center', maxWidth: '860px', margin: '0 auto' }}>
-          <div className="planner-result-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: '100px', padding: '5px 14px', marginBottom: '1.5rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: T.saffron }} />
-            <span style={{ fontSize: '11px', fontWeight: 500, color: T.muted, letterSpacing: '0.06em' }}>Return Readiness Report · saved to {user.email}</span>
-          </div>
           <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.8rem,4vw,2.6rem)', color: T.ink, marginBottom: '0.5rem', lineHeight: 1.2 }}>
             {user?.firstName || 'Hi'}, <em style={{ fontStyle: 'italic', color: T.saffron }}>{r.headline}</em>
           </h1>
@@ -976,22 +1150,6 @@ export default function Planner() {
         </div>
 
         <div className="planner-result-content" style={{ maxWidth: '860px', margin: '0 auto', padding: '0 2rem 3rem' }}>
-
-          {/* Account Saved Banner */}
-          <div className="planner-saved-banner" style={{ background: T.greenLight, border: `1px solid rgba(19,136,8,.2)`, borderRadius: '14px', padding: '1rem 1.25rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="9" stroke={T.green} strokeWidth="1.5" />
-              <path d="M6 10l3 3 5-5" stroke={T.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#27500A', marginBottom: '2px' }}>
-                Readiness assessment saved
-              </div>
-              <div style={{ fontSize: '12px', color: '#27500A', opacity: .85, lineHeight: 1.5 }}>
-                Your assessment is saved to {user.email}. Return anytime to view your results or start your Journey.
-              </div>
-            </div>
-          </div>
 
           {/* Financial snapshot */}
           <div className="planner-financial-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.75rem', marginBottom: '0.75rem' }}>
@@ -1060,8 +1218,29 @@ export default function Planner() {
             </Link>
           </div>
 
-          <button onClick={restart} style={{ background: 'none', border: `1px solid ${T.border}`, color: T.muted, fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', width: '100%', textAlign: 'center', padding: '0.875rem', borderRadius: '10px', marginTop: '0.5rem' }}>
-            ✏️ Update Milestone Changes
+          <button
+            onClick={restart}
+            style={{
+              width: '100%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              padding: '1rem 1.2rem',
+              marginTop: '0.5rem',
+              borderRadius: '14px',
+              border: `1px solid ${T.saffronBorder}`,
+              background: 'linear-gradient(180deg, #FFF8F0 0%, #FFF2E2 100%)',
+              color: T.ink,
+              fontSize: '14px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'DM Sans, sans-serif',
+              boxShadow: '0 10px 24px rgba(255,153,51,0.12)',
+            }}
+          >
+            <span style={{ fontSize: '16px', lineHeight: 1 }}>✏️</span>
+            <span>Update Milestone Changes</span>
           </button>
         </div>
       </div>
@@ -1073,54 +1252,119 @@ export default function Planner() {
     <div className="planner-page" style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif' }}>
       <style>{`select option { background: #fff; color: ${T.ink}; } select:focus { box-shadow: 0 0 0 3px ${T.saffronBorder}; } ${responsiveStyles}`}</style>
 
-      <div className="planner-form-header" style={{ padding: '3rem 2rem 1.5rem', maxWidth: '680px', margin: '0 auto' }}>
-        <div className="planner-result-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: '100px', padding: '5px 14px', marginBottom: '1.25rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}>
-          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: T.saffron, animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: '11px', fontWeight: 500, color: T.muted, letterSpacing: '0.06em' }}>Return Readiness Assessment · Free · {total} questions</span>
-        </div>
-        <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
-        <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.8rem,4vw,2.6rem)', color: T.ink, marginBottom: '0.5rem', lineHeight: 1.2 }}>
-          How ready are you to <em style={{ fontStyle: 'italic', color: T.saffron }}>return to India?</em>
-        </h1>
-        <p style={{ color: T.muted, fontSize: '0.95rem', marginBottom: '1.5rem' }}>
-          Answer all {total} questions below and get your personalised score, top risks, and a clear recommendation.
-        </p>
-
-        {/* Progress bar */}
-        <div className="planner-progress-row" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.25rem' }}>
-          <div style={{ flex: 1, height: '5px', background: '#EDE9E0', borderRadius: '100px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: T.saffron, borderRadius: '100px', width: progress + '%', transition: 'width 0.3s ease', boxShadow: progress > 0 ? '0 0 8px rgba(255,153,51,0.4)' : 'none' }} />
-          </div>
-          <span style={{ fontSize: '12px', color: progress === 100 ? T.green : T.saffron, fontWeight: 600, flexShrink: 0 }}>
-            {answered}/{total}{progress === 100 ? ' ✓ All done!' : ''}
-          </span>
-        </div>
-      </div>
-
-      <div className="planner-form-content" style={{ maxWidth: '680px', margin: '0 auto', padding: '0.5rem 2rem 3rem' }}>
-        {sections.map(section => (
-          <div key={section.name} style={{ marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '0.6rem', paddingLeft: '2px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: SECTION_COLORS[section.name] || T.saffron }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{section.name}</span>
-            </div>
-            <div className="planner-section-card" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '16px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {section.qs.map(q => (
-                <div key={q.key as string}>
-                  <div className="planner-question-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '14px', fontWeight: 500, color: answers[q.key] ? T.ink : T.muted, lineHeight: 1.3 }}>{q.q}</label>
-                    {answers[q.key] && <span style={{ fontSize: '11px', color: T.green, flexShrink: 0, marginLeft: '8px' }}>✓</span>}
-                  </div>
-                  <QSelect value={answers[q.key] || ''} onChange={v => setAnswer(q.key, v)} opts={q.opts} questionKey={q.key} />
-                  {!answers[q.key] && <div style={{ fontSize: '11px', color: T.soft, marginTop: '4px' }}>{q.hint}</div>}
+      <div className="planner-shell">
+        <div className="planner-grid">
+          <div className="planner-sticky-panel">
+            <div className="planner-section-card" style={{ overflow: 'hidden', borderRadius: 24, boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
+              <div style={{ padding: '1.4rem 1.4rem 1rem', background: '#20160f' }}>
+                <div className="planner-result-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '999px', padding: '0.45rem 0.85rem', marginBottom: '1rem' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: T.saffron, animation: 'pulse 2s infinite' }} />
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Readiness Check
+                  </span>
                 </div>
-              ))}
+                <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+                <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(2.2rem,5vw,4.2rem)', lineHeight: 0.98, color: T.white, marginBottom: '0.9rem' }}>
+                  Plan your move like a <em style={{ fontStyle: 'italic', color: T.saffron }}>real transition.</em>
+                </h1>
+                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>
+                  Answer the same readiness questions in a more guided format and get your score, top risks, and next-step recommendation in one pass.
+                </p>
+              </div>
+
+              <div style={{ padding: '1.25rem 1.4rem 1.4rem' }}>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.muted, marginBottom: 8 }}>
+                    <span>Assessment progress</span>
+                    <span style={{ fontWeight: 700 }}>{progress}%</span>
+                  </div>
+                  <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
+                    <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #f08a24 0%, #f3a44f 100%)' }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gap: 12 }}>
+                  <div className="planner-section-card" style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      What you’ll get
+                    </div>
+                    <div style={{ display: 'grid', gap: 8, fontSize: 14, color: T.muted }}>
+                      <div>A readiness score built from the same Planner logic you already use</div>
+                      <div>Top financial and move-planning risks based on your answers</div>
+                      <div>A clear recommendation before you commit to timing your return</div>
+                    </div>
+                  </div>
+
+                  <div className="planner-section-card" style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      Your progress
+                    </div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
+                      {answered} of {total} questions answered
+                    </div>
+                    <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.65 }}>
+                      {allAnswered
+                        ? 'Everything is filled in and ready for your personalised report.'
+                        : `${total - answered} question${total - answered === 1 ? '' : 's'} left before you can generate your report.`}
+                    </div>
+                  </div>
+
+                  <div className="planner-section-card" style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      How to answer
+                    </div>
+                    <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.7 }}>
+                      Pick the option that best describes your current situation. You can change answers anytime before generating the report.
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        ))}
 
-        {/* Submit */}
-        <div style={{ marginTop: '0.75rem' }}>
+          <div className="planner-question-stack">
+            <div className="planner-section-card" style={{ padding: '1.25rem 1.3rem' }}>
+              <div>
+                <div className="planner-result-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: '100px', padding: '5px 14px', marginBottom: '1rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: T.saffron }} />
+                  <span style={{ fontSize: '11px', fontWeight: 500, color: T.muted, letterSpacing: '0.06em' }}>Return Readiness Assessment · Free · {total} questions</span>
+                </div>
+                <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', color: T.ink, marginBottom: '0.6rem' }}>
+                  How ready are you to return to India?
+                </h2>
+                <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8 }}>
+                  Move through the questions below and we’ll turn your answers into a clear readiness score and recommendation.
+                </p>
+              </div>
+            </div>
+
+            {visibleQs.map((q, index) => (
+              <div key={q.key as string} className="planner-section-card" style={{ padding: '1.2rem' }}>
+                <div className="planner-question-label" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      {q.section}
+                    </div>
+                    <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4 }}>
+                      {index + 1}. {q.q}
+                    </h3>
+                    <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>{q.hint}</p>
+                  </div>
+                  {answers[q.key] ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.42rem 0.8rem', borderRadius: 999, background: T.greenLight, color: T.green, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                      Set
+                    </span>
+                  ) : null}
+                </div>
+                {q.key === 'timeline' ? (
+                  <PlannerTimelinePicker value={plannerMoveDate} onChange={setTimelineAnswer} />
+                ) : (
+                  <QSelect value={answers[q.key] || ''} onChange={v => setAnswer(q.key, v)} opts={q.opts} questionKey={q.key} />
+                )}
+              </div>
+            ))}
+
+            <div style={{ marginTop: '0.25rem' }}>
           {submitError && (
             <div style={{ padding: '.875rem', background: '#FCEBEB', border: '1px solid #C0392B', borderRadius: '10px', marginBottom: '0.75rem' }}>
               <p style={{ fontSize: '13px', color: '#C0392B', margin: 0 }}>{submitError}</p>
@@ -1139,6 +1383,8 @@ export default function Planner() {
               </div>
             </div>
           )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
