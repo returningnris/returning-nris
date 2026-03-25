@@ -903,9 +903,10 @@ function getPhaseTimeStatus(phase: number, activePhase: number) {
   return 'future'
 }
 
-function SurfaceCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function SurfaceCard({ children, style, className }: { children: React.ReactNode; style?: React.CSSProperties; className?: string }) {
   return (
     <div
+      className={className}
       style={{
         background: T.paper,
         border: `1px solid ${T.border}`,
@@ -1485,6 +1486,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
           .dashboard-shell { padding: 1rem 0.9rem 2rem; }
           .stats-grid { grid-template-columns: 1fr; }
           .phase-grid { grid-template-columns: 1fr !important; }
+          .journey-phase-panel { display: none; }
           .journey-metric { min-width: 0 !important; width: calc(50% - 8px); }
           .journey-top-actions { align-items: stretch !important; }
           .journey-edit-button { margin-left: 0 !important; width: 100%; }
@@ -1714,7 +1716,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
               </SurfaceCard>
             </div>
 
-            <SurfaceCard style={{ padding: '1.35rem' }}>
+            <SurfaceCard className="journey-phase-panel" style={{ padding: '1.35rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
@@ -2158,6 +2160,11 @@ export default function JourneyPage() {
       return
     }
   }, [loadingSavedJourney, state.answers, state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.editingProfile, state.manualMilestones, state.step, user?.id])
+
+  useEffect(() => {
+    if (loadingSavedJourney || typeof window === 'undefined') return
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [loadingSavedJourney, state.step])
 
   if (shouldBlock || loadingSavedJourney) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
