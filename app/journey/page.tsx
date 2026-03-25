@@ -1032,21 +1032,23 @@ function OptionButton({
 
 function QuestionBlock({
   question,
+  index,
   value,
   onChange,
 }: {
   question: Question
+  index: number
   value: string
   onChange: (value: string) => void
 }) {
   return (
     <SurfaceCard style={{ padding: '1.2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+      <div className="journey-question-label" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <div>
           <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
             {question.section}
           </div>
-          <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink }}>{question.q}</h3>
+          <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4 }}>{index + 1}. {question.q}</h3>
           <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>{question.hint}</p>
         </div>
         {value ? <Pill tone="green">Set</Pill> : null}
@@ -1214,7 +1216,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
   }, [alreadyMovedRequired, projectedAnswers, state.answers])
 
   return (
-    <div style={{ minHeight: '100vh', background: T.hero, padding: '2rem 1.25rem 4rem' }}>
+    <div style={{ minHeight: '100vh', background: '#F8F5F0', backgroundImage: 'radial-gradient(ellipse 70% 55% at 50% 10%, rgba(255,153,51,0.1) 0%, transparent 65%), radial-gradient(ellipse 45% 45% at 15% 80%, rgba(19,136,8,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 85% 75%, rgba(0,0,128,0.05) 0%, transparent 60%)', padding: '2rem 1.25rem 4rem', fontFamily: 'DM Sans, sans-serif' }}>
       <style>{`
         .journey-shell { max-width: 1240px; margin: 0 auto; }
         .journey-grid { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
@@ -1233,6 +1235,11 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
           .journey-month-grid {
             grid-template-columns: 1fr 1fr !important;
           }
+          .journey-question-label,
+          .journey-progress-row {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+          }
           .journey-metric {
             min-width: 0 !important;
           }
@@ -1248,12 +1255,12 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
           <div className="sticky-panel">
             <SurfaceCard style={{ overflow: 'hidden' }}>
               <div style={{ padding: '1.4rem 1.4rem 1rem', background: T.dark }}>
-                <Pill tone="saffron">Back2India journey</Pill>
+                <Pill tone="saffron">Journey setup</Pill>
                 <h1 style={{ fontSize: 'clamp(2.35rem, 6vw, 4.5rem)', lineHeight: 0.96, color: T.white, marginTop: 16, marginBottom: 14 }}>
                   Plan the move like a real transition.
                 </h1>
                 <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>
-                  This setup turns your answers into a living relocation dashboard: readiness, risks, milestones, and the exact next moves.
+                  Answer the same guided questions you see in the readiness check and we’ll shape the live relocation dashboard from them.
                 </p>
               </div>
 
@@ -1271,16 +1278,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
                 <div style={{ display: 'grid', gap: 12 }}>
                   <SurfaceCard style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-                      Profile
-                    </div>
-                    <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.65 }}>
-                      {state.firstName ? `Planning for ${state.firstName}.` : 'Your account profile will be used to personalize the journey.'}
-                    </div>
-                  </SurfaceCard>
-
-                  <SurfaceCard style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                      What this unlocks
+                      What you’ll get
                     </div>
                     <div style={{ display: 'grid', gap: 8, fontSize: 14, color: T.muted }}>
                       <div>A premium move-back workflow built from your saved readiness answers</div>
@@ -1291,12 +1289,26 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
 
                   <SurfaceCard style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                      Saved profile
+                      Your progress
+                    </div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
+                      {totalAnswered} of {totalRequired} questions answered
+                    </div>
+                    <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.65 }}>
+                      {allDone
+                        ? 'Everything is filled in and ready for your personalised dashboard.'
+                        : `${totalRequired - totalAnswered} question${totalRequired - totalAnswered === 1 ? '' : 's'} left before you can start the journey.`}
+                    </div>
+                  </SurfaceCard>
+
+                  <SurfaceCard style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      How to answer
                     </div>
                     <div style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>
                       {projectedScore !== null
-                        ? 'Your saved readiness answers are complete enough to initialize the journey immediately.'
-                        : 'If you have not completed the readiness check yet, answer the remaining items here once.'}
+                        ? 'Your saved readiness answers are already strong enough to initialize the journey immediately.'
+                        : 'Pick the option that best fits your current move. You can update the setup anytime before entering the dashboard.'}
                     </div>
                   </SurfaceCard>
                 </div>
@@ -1308,20 +1320,21 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
             <SurfaceCard style={{ padding: '1.25rem 1.3rem' }}>
               <div style={{ display: 'grid', gap: 16 }}>
                 <div>
-                  <Pill tone="navy">Setup</Pill>
+                  <Pill tone="navy">Journey profile</Pill>
                   <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', color: T.ink, marginTop: 14, marginBottom: 8 }}>
                     Build your journey profile
                   </h2>
                   <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, maxWidth: 760 }}>
-                    This setup is only used when saved readiness data is missing or incomplete. Once your answers are in place, the journey becomes your ongoing relocation command center.
+                    Move through the questions below and we’ll turn your answers into your relocation dashboard, milestones, and next-step actions.
                   </p>
                 </div>
               </div>
             </SurfaceCard>
 
-            {visibleQuestions.map((question) => (
+            {visibleQuestions.map((question, index) => (
               <QuestionBlock
                 key={question.key}
+                index={index}
                 question={question}
                 value={state.answers[question.key] || ''}
                 onChange={(value) => dispatch({ type: 'SET_ANSWER', key: question.key, value })}
@@ -1335,48 +1348,24 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
               onAlreadyMoved={(value) => dispatch({ type: 'SET_ANSWER', key: 'alreadyMoved', value })}
             />
 
-            <SurfaceCard style={{ padding: '1.2rem', background: allDone ? T.dark : T.paper }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+            {allDone ? (
+              <button
+                type="button"
+                className="journey-primary-action"
+                onClick={() => dispatch({ type: 'START_JOURNEY' })}
+                style={{ width: '100%', padding: '15px', background: T.saffron, color: '#fff', border: 'none', borderRadius: '12px', fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(255,153,51,0.4)' }}
+              >
+                {state.editingProfile ? 'Return to Dashboard →' : 'Open Journey Dashboard →'}
+              </button>
+            ) : (
+              <SurfaceCard className="journey-progress-row" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <div style={{ fontSize: '1.25rem' }}>📋</div>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: allDone ? 'rgba(255,255,255,0.65)' : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                    Next step
-                  </div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: allDone ? T.white : T.ink, marginBottom: 4 }}>
-                    {allDone
-                      ? state.editingProfile
-                        ? 'Your dashboard can be updated now.'
-                        : 'Your dashboard is ready.'
-                      : `${totalRequired - totalAnswered} inputs still missing.`}
-                  </div>
-                  <div style={{ fontSize: 14, color: allDone ? 'rgba(255,255,255,0.7)' : T.muted, lineHeight: 1.7 }}>
-                    {allDone
-                      ? state.editingProfile
-                        ? 'Go back to the journey dashboard with these updated answers applied.'
-                        : 'Open the journey dashboard to start using the live relocation flow.'
-                      : 'Finish the missing answers once, then the journey can initialize from this data going forward.'}
-                  </div>
+                  <div style={{ fontSize: '13px', color: T.muted }}>Answer all {totalRequired} questions to start your journey</div>
+                  <div style={{ fontSize: '11px', color: T.soft, marginTop: '2px' }}>{totalRequired - totalAnswered} question{totalRequired - totalAnswered !== 1 ? 's' : ''} remaining</div>
                 </div>
-
-                <button
-                  type="button"
-                  className="journey-primary-action"
-                  disabled={!allDone}
-                  onClick={() => dispatch({ type: 'START_JOURNEY' })}
-                  style={{
-                    padding: '1rem 1.4rem',
-                    borderRadius: 999,
-                    border: 'none',
-                    background: allDone ? T.saffron : 'rgba(29,22,15,0.08)',
-                    color: allDone ? T.white : T.soft,
-                    fontSize: 14,
-                    fontWeight: 800,
-                    minWidth: 220,
-                  }}
-                >
-                  {state.editingProfile ? 'Return to dashboard' : 'Open journey dashboard'}
-                </button>
-              </div>
-            </SurfaceCard>
+              </SurfaceCard>
+            )}
           </div>
         </div>
       </div>

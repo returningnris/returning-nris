@@ -61,24 +61,53 @@ function compute(s: State) {
   }
 }
 
-function QuestionCard({ step, value, setValue }: { step: Step; value: string; setValue: (v: string) => void }) {
+function QuestionCard({ step, index, value, setValue }: { step: Step; index: number; value: string; setValue: (v: string) => void }) {
   return (
-    <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.2rem', boxShadow: '0 12px 28px rgba(29,22,15,0.04)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+    <div className="tools-section-card" style={{ padding: '1.2rem' }}>
+      <div className="tools-question-label" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <div>
           <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{step.section}</div>
-          <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink }}>{step.q}</h3>
+          <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4 }}>{index + 1}. {step.q}</h3>
           <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>{step.hint}</p>
         </div>
-        {value ? <div style={{ alignSelf: 'flex-start', background: T.greenLight, color: T.green, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 999 }}>Set</div> : null}
+        {value ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.42rem 0.8rem', borderRadius: 999, background: T.greenLight, color: T.green, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Set</span> : null}
       </div>
       <div className="tools-option-grid">
         {step.opts.map((opt) => {
           const selected = value === opt.k
           return (
-            <button key={opt.k} type="button" onClick={() => setValue(opt.k)} style={{ textAlign: 'left', padding: '0.95rem 1rem', borderRadius: 16, border: `1.5px solid ${selected ? T.saffron : T.border}`, background: selected ? T.saffronLight : T.white, color: T.ink, fontFamily: 'DM Sans, sans-serif' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{opt.label}</div>
-              <div style={{ fontSize: 12, color: T.muted, lineHeight: 1.55 }}>{opt.sub}</div>
+            <button
+              key={opt.k}
+              type="button"
+              onClick={() => setValue(opt.k)}
+              style={{
+                textAlign: 'left',
+                padding: '1rem 1rem 0.95rem',
+                borderRadius: 18,
+                border: `1.5px solid ${selected ? T.saffron : T.border}`,
+                background: selected ? T.saffronLight : T.white,
+                boxShadow: selected ? '0 10px 24px rgba(255,153,51,0.14)' : 'none',
+                transition: 'all .18s ease',
+                fontFamily: 'DM Sans, sans-serif',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, lineHeight: 1.45 }}>{opt.label}</div>
+                  <div style={{ marginTop: 6, fontSize: 12, color: T.muted, lineHeight: 1.5 }}>{opt.sub}</div>
+                </div>
+                <div
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    border: `1.5px solid ${selected ? T.saffron : T.border}`,
+                    background: selected ? T.saffron : 'transparent',
+                    flexShrink: 0,
+                    marginTop: 2,
+                  }}
+                />
+              </div>
             </button>
           )
         })}
@@ -105,13 +134,14 @@ export default function Tools() {
     .tools-grid { display:grid; grid-template-columns:minmax(280px,360px) minmax(0,1fr); gap:1.25rem; align-items:start; }
     .tools-sticky { position:sticky; top:96px; }
     .tools-stack { display:grid; gap:1rem; }
+    .tools-section-card, .tools-question-card { background:${T.white}; border:1px solid ${T.border}; border-radius:24px; box-shadow:0 22px 48px rgba(29,22,15,0.06); }
     .tools-option-grid { display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
     .tools-hero-grid { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(280px,.8fr); gap:.9rem; align-items:start; }
     .tools-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.9rem; }
     .tools-overview, .tools-cards { display:grid; grid-template-columns:1.05fr .95fr; gap:1rem; margin-top:1rem; }
     .tools-cards { grid-template-columns:1fr 1fr; }
     @media (max-width:980px){ .tools-grid,.tools-hero-grid,.tools-overview,.tools-cards{grid-template-columns:1fr;} .tools-sticky{position:static;} .tools-stats{grid-template-columns:repeat(2,minmax(0,1fr));}}
-    @media (max-width:767px){ .tools-shell,.tools-result-shell{padding:1rem .9rem 2rem;} .tools-option-grid,.tools-stats{grid-template-columns:1fr !important;} }
+    @media (max-width:767px){ .tools-shell,.tools-result-shell{padding:1rem .9rem 2rem;} .tools-option-grid,.tools-stats{grid-template-columns:1fr !important;} .tools-question-label,.tools-progress-row{flex-direction:column !important; align-items:flex-start !important;} .tools-section-card,.tools-question-card{padding:1rem !important;} }
   `
 
   if (loading) {
@@ -183,32 +213,53 @@ export default function Tools() {
       <div className="tools-shell">
         <div className="tools-grid">
           <div className="tools-sticky">
-            <div style={{ overflow: 'hidden', borderRadius: 24, boxShadow: '0 22px 48px rgba(29,22,15,0.06)', background: T.white, border: `1px solid ${T.border}` }}>
+            <div className="tools-section-card" style={{ overflow: 'hidden' }}>
               <div style={{ padding: '1.4rem 1.4rem 1rem', background: '#20160f' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 999, padding: '0.45rem 0.85rem', marginBottom: '1rem' }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: T.saffron }} /><span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Tools planning</span></div>
-                <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(2.2rem,5vw,4.2rem)', lineHeight: 0.98, color: T.white, marginBottom: '.9rem' }}>Use the tools like a<em style={{ fontStyle: 'italic', color: T.saffron }}> real system.</em></h1>
-                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>Answer the same kind of structured questions you see in Readiness Check and Journey. We will turn them into a practical tools-first plan.</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '999px', padding: '0.45rem 0.85rem', marginBottom: '1rem' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: T.saffron, animation: 'pulse 2s infinite' }} />
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Tools Planning
+                  </span>
+                </div>
+                <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+                <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(2.2rem,5vw,4.2rem)', lineHeight: 0.98, color: T.white, marginBottom: '.9rem' }}>Use the tools like a <em style={{ fontStyle: 'italic', color: T.saffron }}>real system.</em></h1>
+                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>Answer the same guided questions and get a tools-first recommendation, your strongest fit, and the next surface to open.</p>
               </div>
               <div style={{ padding: '1.25rem 1.4rem 1.4rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.muted, marginBottom: 8 }}><span>Assessment progress</span><span style={{ fontWeight: 700 }}>{progress}%</span></div>
-                <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden', marginBottom: 14 }}><div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #f08a24 0%, #f3a44f 100%)' }} /></div>
-                {[{ title: 'What this gives you', body: 'A city and cost baseline, a readiness-style result, and the right next surfaces to open.' }, { title: 'Surfaces it connects to', body: 'Readiness Check, Back2India Journey, and deeper specialist resources.' }, { title: 'Progress snapshot', body: answered === keys.length ? 'Your tools plan is ready to generate.' : `${keys.length - answered} question${keys.length - answered === 1 ? '' : 's'} left before we can build your dashboard.` }].map((item) => <div key={item.title} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 18, padding: '1rem 1rem .95rem', marginBottom: 12 }}><div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{item.title}</div><div style={{ fontSize: 14, color: T.muted, lineHeight: 1.65 }}>{item.body}</div></div>)}
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.muted, marginBottom: 8 }}><span>Assessment progress</span><span style={{ fontWeight: 700 }}>{progress}%</span></div>
+                  <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}><div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #f08a24 0%, #f3a44f 100%)' }} /></div>
+                </div>
+                {[{ title: 'What you’ll get', body: 'A city recommendation, a financial translation, and the next tools to open.' }, { title: 'Your progress', body: answered === keys.length ? 'Everything is filled in and ready for your personalised dashboard.' : `${answered} of ${keys.length} questions answered. ${keys.length - answered} left before you can generate your dashboard.` }, { title: 'How to answer', body: 'Pick the option that best describes your current situation. You can change answers anytime before generating the dashboard.' }].map((item) => <div key={item.title} className="tools-section-card" style={{ padding: '1rem 1rem 0.95rem', boxShadow: 'none', marginBottom: 12 }}><div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{item.title}</div><div style={{ fontSize: 14, color: T.muted, lineHeight: 1.65 }}>{item.body}</div></div>)}
               </div>
             </div>
           </div>
 
           <div className="tools-stack">
-            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.25rem 1.3rem', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
+            <div className="tools-section-card" style={{ padding: '1.25rem 1.3rem' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: 100, padding: '5px 14px', marginBottom: '1rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: T.saffron }} /><span style={{ fontSize: 11, fontWeight: 500, color: T.muted, letterSpacing: '0.06em' }}>Tools Assessment · Free · {keys.length} questions</span></div>
-              <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', color: T.ink, marginBottom: 8 }}>Build your tools plan</h2>
-              <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, maxWidth: 760 }}>Move through the questions below and we will turn them into a clear tools-first dashboard with recommendations, actions, and the next surfaces to open.</p>
+              <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', color: T.ink, marginBottom: '0.6rem' }}>Build your tools plan</h2>
+              <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, maxWidth: 760 }}>Move through the questions below and we’ll turn your answers into a clear tools-first dashboard and recommendation.</p>
             </div>
-            {STEPS.map((step) => <QuestionCard key={step.key} step={step} value={state[step.key]} setValue={(v) => setState((prev) => ({ ...prev, [step.key]: v }))} />)}
-            <div style={{ background: answered === keys.length ? '#20160f' : T.white, border: `1px solid ${answered === keys.length ? '#20160f' : T.border}`, borderRadius: 24, padding: '1.2rem', boxShadow: '0 12px 28px rgba(29,22,15,0.04)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-                <div><div style={{ fontSize: 12, fontWeight: 700, color: answered === keys.length ? 'rgba(255,255,255,0.65)' : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Next step</div><div style={{ fontSize: 16, fontWeight: 700, color: answered === keys.length ? T.white : T.ink, marginBottom: 4 }}>{answered === keys.length ? 'Your tools dashboard is ready.' : `${keys.length - answered} inputs still missing.`}</div><div style={{ fontSize: 14, color: answered === keys.length ? 'rgba(255,255,255,0.7)' : T.muted, lineHeight: 1.7 }}>{answered === keys.length ? 'Generate the result to see your city fit, financial view, top risk, and the exact tools to open next.' : 'Finish the missing answers once, then the tools plan can generate from the full profile.'}</div></div>
-                <button type="button" disabled={answered !== keys.length} onClick={() => { setLoading(true); setTimeout(() => { setLoading(false); setDone(true); window.scrollTo({ top: 0, behavior: 'smooth' }) }, 1100) }} style={{ padding: '1rem 1.4rem', borderRadius: 999, border: 'none', background: answered === keys.length ? T.saffron : 'rgba(29,22,15,0.08)', color: answered === keys.length ? T.white : T.soft, fontSize: 14, fontWeight: 800, minWidth: 240, fontFamily: 'DM Sans, sans-serif' }}>Generate My Tools Dashboard</button>
-              </div>
+            {STEPS.map((step, index) => <QuestionCard key={step.key} index={index} step={step} value={state[step.key]} setValue={(v) => setState((prev) => ({ ...prev, [step.key]: v }))} />)}
+            <div style={{ marginTop: '0.25rem' }}>
+              {answered === keys.length ? (
+                <button
+                  type="button"
+                  onClick={() => { setLoading(true); setTimeout(() => { setLoading(false); setDone(true); window.scrollTo({ top: 0, behavior: 'smooth' }) }, 1100) }}
+                  style={{ width: '100%', padding: '15px', background: T.saffron, color: '#fff', border: 'none', borderRadius: '12px', fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(255,153,51,0.4)' }}
+                >
+                  Generate My Tools Dashboard →
+                </button>
+              ) : (
+                <div className="tools-progress-row tools-question-card" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                  <div style={{ fontSize: '1.25rem' }}>📋</div>
+                  <div>
+                    <div style={{ fontSize: '13px', color: T.muted }}>Answer all {keys.length} questions to generate your dashboard</div>
+                    <div style={{ fontSize: '11px', color: T.soft, marginTop: '2px' }}>{keys.length - answered} question{keys.length - answered !== 1 ? 's' : ''} remaining</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
