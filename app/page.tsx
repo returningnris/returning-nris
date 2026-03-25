@@ -152,17 +152,7 @@ export default function Home() {
                 The operating system for your move back to India.
               </h1>
 
-              <p
-                style={{
-                  fontSize: 18,
-                  color: '#665848',
-                  lineHeight: 1.8,
-                  maxWidth: 680,
-                  marginBottom: '1.5rem',
-                }}
-              >
-                ReturningNRIs is not a single calculator or checklist. It is a guided platform that helps returning NRIs assess readiness, plan the move, track the journey, and use specialist tools across tax, city choice, schools, housing, healthcare, career, and settling in.
-              </p>
+
 
               <div className="home-cta-row" style={{ display: 'flex', gap: '0.85rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
                 <Link href="/planner" className="btn-primary">
@@ -353,28 +343,7 @@ export default function Home() {
                 gap: '0',
               }}
             >
-              <div style={{ padding: '1.8rem', background: 'linear-gradient(180deg, #fffaf3 0%, #fff5ea 100%)' }}>
-                <div className="section-label">Platform Scope</div>
-                <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)', lineHeight: 1.02, color: '#1d160f', marginBottom: '1rem' }}>
-                  Sophisticated enough for the hard decisions.
-                </h2>
-                <p style={{ fontSize: 16, color: '#665848', lineHeight: 1.85, marginBottom: '1.25rem' }}>
-                  ReturningNRIs is built for the decisions that usually get fragmented across spreadsheets, advisors, WhatsApp groups, and late-night searches. The product experience brings them into one clean operating layer.
-                </p>
-                <div style={{ display: 'grid', gap: 10 }}>
-                  {[
-                    'Readiness assessment before the move',
-                    'Phase-based journey management after the decision',
-                    'Specialist tools for tax, city, schools, housing, healthcare, and careers',
-                    'Guides and resources that support deeper research',
-                  ].map((item) => (
-                    <div key={item} style={{ display: 'grid', gridTemplateColumns: '18px minmax(0, 1fr)', gap: 10, alignItems: 'start' }}>
-                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#f08a24', marginTop: 4 }} />
-                      <div style={{ fontSize: 15, color: '#665848', lineHeight: 1.75 }}>{item}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+
 
               <div style={{ padding: '1.8rem', background: '#fffdf9' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
