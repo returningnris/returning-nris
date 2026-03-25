@@ -325,52 +325,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section style={{ background: '#f7f1e8', padding: '5rem 0' }}>
-        <div className="home-shell">
-          <div
-            style={{
-              background: '#ffffff',
-              border: '1px solid rgba(29,22,15,0.10)',
-              borderRadius: 28,
-              overflow: 'hidden',
-              boxShadow: '0 22px 48px rgba(29,22,15,0.06)',
-            }}
-          >
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'minmax(0, 0.95fr) minmax(0, 1.05fr)',
-                gap: '0',
-              }}
-            >
-
-
-              <div style={{ padding: '1.8rem', background: '#fffdf9' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                  What users rely on
-                </div>
-                <div style={{ display: 'grid', gap: 12 }}>
-                  {FEATURE_SURFACES.map(([title, body]) => (
-                    <div
-                      key={title}
-                      style={{
-                        padding: '1rem',
-                        borderRadius: 20,
-                        background: 'rgba(29,22,15,0.03)',
-                        border: '1px solid rgba(29,22,15,0.08)',
-                      }}
-                    >
-                      <div style={{ fontSize: 16, fontWeight: 700, color: '#1d160f', marginBottom: 6 }}>{title}</div>
-                      <div style={{ fontSize: 14, color: '#665848', lineHeight: 1.7 }}>{body}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section style={{ background: '#fffdf9', padding: '5rem 0' }}>
         <div className="home-shell">
           <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto 2.5rem' }}>
