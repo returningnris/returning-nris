@@ -198,7 +198,7 @@ function AuthPageContent() {
           minHeight: 'calc(100vh - 64px)',
         }}
       >
-        <section style={{ padding: '18px 6px 18px 6px' }}>
+        <section className="auth-copy" style={{ padding: '18px 6px 18px 6px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
             <div
               style={{
@@ -328,6 +328,7 @@ function AuthPageContent() {
         </section>
 
         <section
+          className="auth-form-shell"
           style={{
             background: 'rgba(255,255,255,0.72)',
             border: `1px solid ${T.border}`,
@@ -347,6 +348,7 @@ function AuthPageContent() {
           >
             <form
               onSubmit={handleSignInSubmit}
+              className="auth-form-card"
               style={{
                 background: T.white,
                 border: `1px solid ${requestedMode === 'signin' ? T.saffronBorder : T.border}`,
@@ -420,9 +422,7 @@ function AuthPageContent() {
                 </div>
               )}
 
-              {!signInError && (
-                <div style={{ minHeight: '66px', marginBottom: '14px' }} />
-              )}
+              {!signInError && <div style={{ minHeight: '66px', marginBottom: '14px' }} />}
 
               <div style={{ marginTop: 'auto' }}>
                 <button
@@ -451,6 +451,7 @@ function AuthPageContent() {
 
             <form
               onSubmit={handleSignUpSubmit}
+              className="auth-form-card"
               style={{
                 background: T.white,
                 border: `1px solid ${requestedMode === 'signup' ? T.saffronBorder : T.border}`,
@@ -550,6 +551,8 @@ function AuthPageContent() {
                 </div>
               )}
 
+              {!signUpError && !signUpSuccess && <div style={{ minHeight: '66px', marginBottom: '14px' }} />}
+
               <div style={{ marginTop: 'auto' }}>
                 <button
                   type="submit"
@@ -571,7 +574,7 @@ function AuthPageContent() {
                   {signUpLoading ? 'Creating your account...' : 'Create account'}
                 </button>
 
-               
+                <div style={{ margin: '14px 0 0', minHeight: '58px' }} />
               </div>
             </form>
           </div>
@@ -587,9 +590,48 @@ function AuthPageContent() {
         }
 
         @media (max-width: 760px) {
+          .auth-shell {
+            gap: 18px !important;
+            padding-top: 2px;
+          }
+
+          .auth-form-shell {
+            order: -1;
+            padding: 12px !important;
+            border-radius: 24px !important;
+          }
+
+          .auth-copy {
+            padding: 4px 2px 0 !important;
+          }
+
           .auth-card-grid,
           .auth-stats {
             grid-template-columns: 1fr !important;
+          }
+
+          .auth-form-card {
+            padding: 18px !important;
+          }
+
+          .auth-stats {
+            gap: 10px !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .auth-copy h1 {
+            font-size: clamp(2.1rem, 11vw, 3rem) !important;
+            max-width: none !important;
+            margin-bottom: 14px !important;
+          }
+
+          .auth-copy > div:first-child {
+            margin-bottom: 18px !important;
+          }
+
+          .auth-copy .auth-stats {
+            margin-top: 20px !important;
           }
         }
       `}</style>
