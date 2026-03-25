@@ -428,7 +428,8 @@ export default function RNOROptimizer() {
 
   const totalSteps = STEPS.length
   const step = STEPS[currentStep]
-  const progress = Math.round((currentStep / totalSteps) * 100)
+  const answered = STEPS.filter((s) => !!answers[s.key as keyof Inputs]).length
+  const progress = Math.round((answered / totalSteps) * 100)
   if (shouldBlock) return null
 
   const sectionColors: Record<string, string> = {
@@ -437,18 +438,20 @@ export default function RNOROptimizer() {
     'Tax Planning': '#7C5CBF',
   }
 
+  function setAnswer(key: string, val: string) {
+    setAnswers(prev => ({ ...prev, [key]: val }))
+  }
+
+  function handleGenerate() {
+    setLoading(true)
+    setTimeout(() => {
+      setResult(computeRNOR(answers as Inputs))
+      setLoading(false)
+    }, 1600)
+  }
+
   function pick(key: string, val: string) {
-    const next = { ...answers, [key]: val }
-    setAnswers(next)
-    if (currentStep < STEPS.length - 1) {
-      setTimeout(() => setCurrentStep(s => s + 1), 280)
-    } else {
-      setLoading(true)
-      setTimeout(() => {
-        setResult(computeRNOR(next as Inputs))
-        setLoading(false)
-      }, 1600)
-    }
+    setAnswer(key, val)
   }
 
   function restart() {
@@ -740,13 +743,13 @@ export default function RNOROptimizer() {
 
                   <div style={{ background: '#FFFFFF', border: '1px solid #E5E1DA', borderRadius: 18, padding: '1rem 1rem 0.95rem' }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#B5A898', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Your progress</div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#1A1208', marginBottom: 4 }}>Question {currentStep + 1} of {totalSteps}</div>
-                    <div style={{ fontSize: 14, color: '#6B5E50', lineHeight: 1.65 }}>{totalSteps - (currentStep + 1)} question{totalSteps - (currentStep + 1) === 1 ? '' : 's'} left before your report generates.</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: '#1A1208', marginBottom: 4 }}>{answered} of {totalSteps} questions answered</div>
+                    <div style={{ fontSize: 14, color: '#6B5E50', lineHeight: 1.65 }}>{answered === totalSteps ? 'Everything is filled in and ready for your report.' : `${totalSteps - answered} question${totalSteps - answered === 1 ? '' : 's'} left before your report generates.`}</div>
                   </div>
 
                   <div style={{ background: '#FFFFFF', border: '1px solid #E5E1DA', borderRadius: 18, padding: '1rem 1rem 0.95rem' }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#B5A898', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>How to answer</div>
-                    <div style={{ fontSize: 14, color: '#6B5E50', lineHeight: 1.7 }}>Pick the option that best describes your current tax profile. Each answer advances the flow automatically.</div>
+                    <div style={{ fontSize: 14, color: '#6B5E50', lineHeight: 1.7 }}>Pick the option that best describes your current tax profile. You can update any answer before generating the report.</div>
                   </div>
                 </div>
               </div>
@@ -763,12 +766,12 @@ export default function RNOROptimizer() {
               <p style={{ fontSize: 15, color: '#6B5E50', lineHeight: 1.8 }}>Move through the questions below and we’ll turn your answers into a clear RNOR window, tax estimate, and recommendation.</p>
             </div>
 
-            {step ? (
+            {STEPS.map((step, index) => (
               <div style={{ background: '#FFFFFF', border: '1px solid #E5E1DA', borderRadius: 24, padding: '1.2rem', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
                 <div className="rnor-question-label" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#B5A898', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{step.section}</div>
-                    <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: '#1A1208', fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4 }}>{currentStep + 1}. {step.q}</h3>
+                    <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: '#1A1208', fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4 }}>{index + 1}. {step.q}</h3>
                     <p style={{ fontSize: 13, color: '#6B5E50', lineHeight: 1.65 }}>{step.hint}</p>
                   </div>
                   {answers[step.key as keyof Inputs] ? (
@@ -783,7 +786,7 @@ export default function RNOROptimizer() {
                       <button
                         key={opt.k}
                         type="button"
-                        onClick={() => pick(step.key, opt.k)}
+                        onClick={() => setAnswer(step.key, opt.k)}
                         style={{ textAlign: 'left', padding: '1rem 1rem 0.95rem', borderRadius: 18, border: `1.5px solid ${sel ? '#FF9933' : '#E5E1DA'}`, background: sel ? '#FFF3E6' : '#FFFFFF', boxShadow: sel ? '0 10px 24px rgba(255,153,51,0.14)' : 'none', transition: 'all .18s ease', fontFamily: 'DM Sans, sans-serif', cursor: 'pointer' }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
@@ -798,11 +801,19 @@ export default function RNOROptimizer() {
                   })}
                 </div>
 
-                {currentStep > 0 ? (
-                  <button type="button" onClick={() => setCurrentStep((s) => s - 1)} style={{ marginTop: '1.5rem', background: 'none', border: 'none', color: '#6B5E50', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', padding: 0 }}>← Back</button>
-                ) : null}
               </div>
-            ) : null}
+            ))}
+            {answered === totalSteps ? (
+              <button onClick={handleGenerate} style={{ width: '100%', padding: '15px', background: '#FF9933', color: '#fff', border: 'none', borderRadius: '12px', fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(255,153,51,0.4)' }}>Generate My RNOR Report →</button>
+            ) : (
+              <div className="rnor-progress-row" style={{ background: '#FFFFFF', border: '1px solid #E5E1DA', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <div style={{ fontSize: '1.25rem' }}>📋</div>
+                <div>
+                  <div style={{ fontSize: '13px', color: '#6B5E50' }}>Answer all {totalSteps} questions to generate your report</div>
+                  <div style={{ fontSize: '11px', color: '#B5A898', marginTop: '2px' }}>{totalSteps - answered} question{totalSteps - answered !== 1 ? 's' : ''} remaining</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
