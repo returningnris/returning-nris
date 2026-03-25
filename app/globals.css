@@ -104,6 +104,25 @@ img {
   transform: translateY(-1px);
 }
 
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 100px;
+  padding: 0.85rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #0f6f07;
+  transform: translateY(-1px);
+}
+
 .btn-ghost {
   display: inline-flex;
   align-items: center;

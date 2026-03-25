@@ -5,22 +5,22 @@ const PLATFORM_PILLARS = [
     label: 'Readiness Check',
     title: 'Know where you stand before you move.',
     body: 'Assess income readiness, RNOR timing, city clarity, family complexity, and housing preparation in one guided flow.',
-    href: '/planner',
-    cta: 'Open Readiness Check',
+    links: [{ href: '/planner', label: 'Open Readiness Check' }],
   },
   {
     label: 'Journey Tracker',
     title: 'Turn a big move into a managed program.',
     body: 'Move from decision to arrival and year one with phased tasks, milestone tracking, and a clear next-best action.',
-    href: '/journey',
-    cta: 'Open Journey Tracker',
+    links: [{ href: '/journey', label: 'Open Journey Tracker' }],
   },
   {
     label: 'Tools + Resources',
     title: 'Go deeper with specialist tools and guides.',
     body: 'Use RNOR, city, school, housing, healthcare, and career tools alongside practical returning-NRI articles.',
-    href: '/Tools',
-    cta: 'Explore Tools',
+    links: [
+      { href: '/Tools', label: 'Explore Tools' },
+      { href: '/resources', label: 'Browse Resources' },
+    ],
   },
 ]
 
@@ -152,13 +152,20 @@ export default function Home() {
                 The operating system for your move back to India.
               </h1>
 
-
-
-              <div className="home-cta-row" style={{ display: 'flex', gap: '0.85rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
+              <div
+                className="home-cta-row"
+                style={{
+                  display: 'flex',
+                  gap: '1.1rem',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  marginBottom: '2.5rem',
+                }}
+              >
                 <Link href="/planner" className="btn-primary">
                   Start Readiness Check
                 </Link>
-                <Link href="/journey" className="btn-ghost">
+                <Link href="/journey" className="btn-secondary">
                   View Journey Tracker
                 </Link>
               </div>
@@ -179,7 +186,16 @@ export default function Home() {
                       border: '1px solid rgba(29,22,15,0.08)',
                     }}
                   >
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: '#9d907f',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.08em',
+                        marginBottom: 8,
+                      }}
+                    >
                       {title}
                     </div>
                     <div style={{ fontSize: 14, color: '#665848', lineHeight: 1.7 }}>{body}</div>
@@ -227,16 +243,13 @@ export default function Home() {
 
                 <div style={{ display: 'grid', gap: 10 }}>
                   {PLATFORM_PILLARS.map((pillar) => (
-                    <Link
+                    <div
                       key={pillar.title}
-                      href={pillar.href}
                       style={{
-                        display: 'block',
                         padding: '1rem',
                         borderRadius: 20,
                         background: 'rgba(255,255,255,0.08)',
                         border: '1px solid rgba(255,255,255,0.1)',
-                        textDecoration: 'none',
                       }}
                     >
                       <div style={{ fontSize: 12, fontWeight: 700, color: '#f3a44f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
@@ -244,8 +257,15 @@ export default function Home() {
                       </div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{pillar.title}</div>
                       <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, marginBottom: 10 }}>{pillar.body}</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{pillar.cta} →</div>
-                    </Link>
+                      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                        {pillar.links.map((link) => (
+                          <Link key={link.href} href={link.href} style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                            {link.label}
+                            {' ->'}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -316,9 +336,13 @@ export default function Home() {
                 </div>
                 <h3 style={{ fontSize: 22, color: '#1d160f', marginBottom: 10 }}>{pillar.title}</h3>
                 <p style={{ fontSize: 15, color: '#665848', lineHeight: 1.8, marginBottom: 18 }}>{pillar.body}</p>
-                <Link href={pillar.href} className="btn-ghost">
-                  {pillar.cta}
-                </Link>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  {pillar.links.map((link) => (
+                    <Link key={link.href} href={link.href} className="btn-ghost">
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -355,7 +379,10 @@ export default function Home() {
                 </div>
                 <div style={{ fontSize: 22, color: '#1d160f', marginBottom: 10 }}>{title}</div>
                 <div style={{ fontSize: 15, color: '#665848', lineHeight: 1.8, marginBottom: 14 }}>{body}</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#1d160f' }}>Open →</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1d160f' }}>
+                  Open
+                  {' ->'}
+                </div>
               </Link>
             ))}
           </div>
