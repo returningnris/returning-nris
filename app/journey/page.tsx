@@ -967,7 +967,7 @@ function LabeledMetric({
 }) {
   const color = tone === 'green' ? T.green : tone === 'saffron' ? T.saffron : tone === 'navy' ? T.navy : T.white
   return (
-    <div style={{ minWidth: 116 }}>
+    <div className="journey-metric" style={{ minWidth: 116 }}>
       <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
         {label}
       </div>
@@ -1043,7 +1043,7 @@ function QuestionBlock({
         </div>
         {value ? <Pill tone="green">Set</Pill> : null}
       </div>
-      <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+      <div className="journey-option-grid" style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
         {question.opts.map((opt) => (
           <OptionButton
             key={opt.k}
@@ -1091,7 +1091,7 @@ function TimelinePicker({
         <div style={{ fontSize: 11, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
           Year
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
+        <div className="journey-year-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
           {getYearRange().map((year) => {
             const selected = selectedYear === year
             return (
@@ -1123,7 +1123,7 @@ function TimelinePicker({
         <div style={{ fontSize: 11, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
           Month
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
+        <div className="journey-month-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
           {MONTHS_SHORT.map((month, idx) => {
             const monthNumber = idx + 1
             const selected = selectedMonth === monthNumber
@@ -1232,6 +1232,23 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
         @media (max-width: 980px) {
           .journey-grid { grid-template-columns: 1fr; }
           .sticky-panel { position: static; }
+        }
+        @media (max-width: 640px) {
+          .journey-shell {
+            padding-bottom: 2rem;
+          }
+          .journey-option-grid,
+          .journey-year-grid,
+          .journey-month-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .journey-metric {
+            min-width: 0 !important;
+          }
+          .journey-primary-action {
+            width: 100%;
+            min-width: 0 !important;
+          }
         }
       `}</style>
 
@@ -1351,6 +1368,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
 
                 <button
                   type="button"
+                  className="journey-primary-action"
                   disabled={!allDone}
                   onClick={() => dispatch({ type: 'START_JOURNEY' })}
                   style={{
@@ -1458,12 +1476,22 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
         .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; }
         .overview-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; }
         .milestone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; }
+        .phase-grid { display: grid; gap: 10px; }
         @media (max-width: 980px) {
           .hero-grid, .overview-grid { grid-template-columns: 1fr; }
           .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (max-width: 640px) {
+          .dashboard-shell { padding: 1rem 0.9rem 2rem; }
           .stats-grid { grid-template-columns: 1fr; }
+          .phase-grid { grid-template-columns: 1fr !important; }
+          .journey-metric { min-width: 0 !important; width: calc(50% - 8px); }
+          .journey-top-actions { align-items: stretch !important; }
+          .journey-edit-button { margin-left: 0 !important; width: 100%; }
+          .journey-task-row {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+          }
         }
       `}</style>
 
@@ -1567,7 +1595,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
           </SurfaceCard>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1rem' }}>
+        <div className="journey-top-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1rem' }}>
           {[
             ['guidance', 'Guidance'],
             ['tasks', 'Task flow'],
@@ -1596,6 +1624,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
           <button
             type="button"
             onClick={() => dispatch({ type: 'EDIT_PROFILE' })}
+            className="journey-edit-button"
             style={{
               marginLeft: 'auto',
               padding: '0.8rem 1.05rem',
@@ -1754,7 +1783,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                 Select a phase above to focus on that part of the move.
               </p>
 
-              <div style={{ display: 'grid', gap: 10, gridTemplateColumns: `repeat(${alreadyMoved ? 2 : 5}, minmax(0, 1fr))` }}>
+              <div className="phase-grid" style={{ gridTemplateColumns: `repeat(${alreadyMoved ? 2 : 5}, minmax(0, 1fr))` }}>
                 {(alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]).map((phase) => {
                   const stats = phaseTaskStats(phase, effectiveCompletedTasks, state.customTasks, state.completedCustomTaskIds)
                   const active = selectedPhaseIndex === phase
@@ -1840,6 +1869,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                       return (
                         <div
                           key={task.id}
+                          className="journey-task-row"
                           style={{
                             display: 'grid',
                             gridTemplateColumns: '28px minmax(0, 1fr)',
@@ -1892,6 +1922,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                       return (
                         <div
                           key={task.id}
+                          className="journey-task-row"
                           style={{
                             display: 'grid',
                             gridTemplateColumns: '28px minmax(0, 1fr)',

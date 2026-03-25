@@ -666,9 +666,10 @@ function QSelect({ value, onChange, opts, questionKey }: { value: string; onChan
   const points = OPTION_POINTS[questionKey] || {}
   
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="planner-select-wrap" style={{ position: 'relative' }}>
       <select value={value} onChange={e => onChange(e.target.value)}
-        style={{ width: '100%', padding: '11px 36px 11px 14px', background: value ? T.saffronLight : T.white, border: `1.5px solid ${value ? T.saffron : T.border}`, borderRadius: '10px', color: value ? T.ink : T.soft, fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', appearance: 'none', cursor: 'pointer' }}>
+        className="planner-select"
+        style={{ width: '100%', padding: '11px 88px 11px 14px', background: value ? T.saffronLight : T.white, border: `1.5px solid ${value ? T.saffron : T.border}`, borderRadius: '10px', color: value ? T.ink : T.soft, fontFamily: 'DM Sans, sans-serif', fontSize: '14px', outline: 'none', appearance: 'none', cursor: 'pointer' }}>
         <option value="" disabled>Select an answer…</option>
         {opts.map(o => {
           const pts = points[o.k]
@@ -683,7 +684,7 @@ function QSelect({ value, onChange, opts, questionKey }: { value: string; onChan
       
       {/* Show points badge when selected */}
       {value && points[value] !== undefined && (
-        <div style={{ 
+        <div className="planner-select-badge" style={{ 
           position: 'absolute', 
           right: '40px', 
           top: '50%', 
@@ -842,6 +843,73 @@ export default function Planner() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const responsiveStyles = `
+    .planner-page {
+      overflow-x: hidden;
+    }
+    @media (max-width: 767px) {
+      .planner-form-header,
+      .planner-result-header,
+      .planner-result-content {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+      }
+      .planner-form-header {
+        padding-top: 2rem !important;
+      }
+      .planner-result-header {
+        padding-top: 2.25rem !important;
+        padding-bottom: 1.5rem !important;
+      }
+      .planner-form-content,
+      .planner-result-content {
+        padding-bottom: 2rem !important;
+      }
+      .planner-score-grid,
+      .planner-financial-grid,
+      .planner-sim-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .planner-progress-row,
+      .planner-question-label,
+      .planner-saved-banner,
+      .planner-journey-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+      .planner-section-card,
+      .planner-question-card,
+      .planner-score-card,
+      .planner-journey-card {
+        padding: 1rem !important;
+      }
+      .planner-result-pill {
+        max-width: 100%;
+        white-space: normal;
+        text-align: left;
+      }
+      .planner-journey-link {
+        width: 100%;
+        text-align: center;
+      }
+      .planner-select {
+        min-height: 48px;
+        font-size: 16px !important;
+      }
+      .planner-select-badge {
+        display: none;
+      }
+    }
+    @media (max-width: 480px) {
+      .planner-score-total {
+        font-size: 3rem !important;
+      }
+      .planner-financial-value {
+        font-size: 1.2rem !important;
+      }
+    }
+  `
+
   if (authLoading || loadingSavedResult) {
     return (
       <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -870,12 +938,12 @@ export default function Planner() {
   if (result && user) {
     const r = result
     return (
-      <div style={{ background: T.bg, backgroundImage: T.heroGrad, minHeight: '100vh', fontFamily: 'DM Sans, sans-serif' }} ref={reportRef}>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <div className="planner-page" style={{ background: T.bg, backgroundImage: T.heroGrad, minHeight: '100vh', fontFamily: 'DM Sans, sans-serif' }} ref={reportRef}>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}} ${responsiveStyles}`}</style>
 
         {/* SCORE HEADER */}
-        <div style={{ padding: '4rem 2rem 2.5rem', textAlign: 'center', maxWidth: '860px', margin: '0 auto' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: '100px', padding: '5px 14px', marginBottom: '1.5rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}>
+        <div className="planner-result-header" style={{ padding: '4rem 2rem 2.5rem', textAlign: 'center', maxWidth: '860px', margin: '0 auto' }}>
+          <div className="planner-result-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: '100px', padding: '5px 14px', marginBottom: '1.5rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}>
             <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: T.saffron }} />
             <span style={{ fontSize: '11px', fontWeight: 500, color: T.muted, letterSpacing: '0.06em' }}>Return Readiness Report · saved to {user.email}</span>
           </div>
@@ -885,13 +953,13 @@ export default function Planner() {
           <p style={{ color: T.muted, fontSize: '1rem', marginBottom: '2rem' }}>{r.subheadline}</p>
 
           {/* Score + breakdown cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: '1rem', maxWidth: '700px', margin: '0 auto' }}>
-            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '18px', padding: '1.5rem', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '3.5rem', color: r.statusColor, lineHeight: 1 }}>{r.score.total}</div>
+          <div className="planner-score-grid" style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: '1rem', maxWidth: '700px', margin: '0 auto' }}>
+            <div className="planner-score-card" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '18px', padding: '1.5rem', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+              <div className="planner-score-total" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '3.5rem', color: r.statusColor, lineHeight: 1 }}>{r.score.total}</div>
               <div style={{ fontSize: '12px', color: T.soft, margin: '4px 0 10px' }}>out of 100</div>
               <div style={{ background: r.statusBg, color: r.statusColor, fontSize: '11px', fontWeight: 600, padding: '5px 12px', borderRadius: '100px', display: 'inline-block' }}>{r.status}</div>
             </div>
-            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '18px', padding: '1.25rem 1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+            <div className="planner-score-card" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '18px', padding: '1.25rem 1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               {[{ label: 'Financial', s: r.score.financial, max: 40, c: T.saffron }, { label: 'Life Complexity', s: r.score.lifeComplexity, max: 25, c: '#7C5CBF' }, { label: 'Career', s: r.score.career, max: 20, c: T.green }, { label: 'Planning', s: r.score.planning, max: 20, c: T.navy }].map(x => (
                 <div key={x.label} style={{ marginBottom: '10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -907,10 +975,10 @@ export default function Planner() {
           </div>
         </div>
 
-        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 2rem 3rem' }}>
+        <div className="planner-result-content" style={{ maxWidth: '860px', margin: '0 auto', padding: '0 2rem 3rem' }}>
 
           {/* Account Saved Banner */}
-          <div style={{ background: T.greenLight, border: `1px solid rgba(19,136,8,.2)`, borderRadius: '14px', padding: '1rem 1.25rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="planner-saved-banner" style={{ background: T.greenLight, border: `1px solid rgba(19,136,8,.2)`, borderRadius: '14px', padding: '1rem 1.25rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <circle cx="10" cy="10" r="9" stroke={T.green} strokeWidth="1.5" />
               <path d="M6 10l3 3 5-5" stroke={T.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -926,7 +994,7 @@ export default function Planner() {
           </div>
 
           {/* Financial snapshot */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <div className="planner-financial-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.75rem', marginBottom: '0.75rem' }}>
             {[
               { label: 'India monthly cost', val: r.financial.monthlyCost, sub: r.cityName, color: T.ink },
               { label: 'Financial runway', val: r.financial.runway, sub: 'on savings alone', color: r.financial.runwayMonths >= 18 ? T.green : '#CC7A00' },
@@ -934,7 +1002,7 @@ export default function Planner() {
             ].map(s => (
               <div key={s.label} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '14px', padding: '1rem 1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
                 <div style={{ fontSize: '10px', color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>{s.label}</div>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.4rem', color: s.color, marginBottom: '2px' }}>{s.val}</div>
+                <div className="planner-financial-value" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.4rem', color: s.color, marginBottom: '2px' }}>{s.val}</div>
                 <div style={{ fontSize: '11px', color: T.soft }}>{s.sub}</div>
               </div>
             ))}
@@ -961,8 +1029,8 @@ export default function Planner() {
           </div>
 
           {/* Ready to Start Journey Card */}
-          <div style={{ background: T.white, borderRadius: '16px', padding: '2rem', border: `1px solid ${T.border}`, marginBottom: '1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '1.5rem' }}>
+          <div className="planner-journey-card" style={{ background: T.white, borderRadius: '16px', padding: '2rem', border: `1px solid ${T.border}`, marginBottom: '1.5rem' }}>
+            <div className="planner-journey-row" style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '1.5rem' }}>
               <span style={{ fontSize: '32px' }}>🚀</span>
               <div>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: T.ink, marginBottom: '8px', margin: 0 }}>
@@ -975,6 +1043,7 @@ export default function Planner() {
             </div>
             <Link
               href="/journey"
+              className="planner-journey-link"
               style={{
                 display: 'inline-block',
                 padding: '1rem 2rem',
@@ -1001,11 +1070,11 @@ export default function Planner() {
 
   // ── QUESTIONNAIRE ──
   return (
-    <div style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif' }}>
-      <style>{`select option { background: #fff; color: ${T.ink}; } select:focus { box-shadow: 0 0 0 3px ${T.saffronBorder}; }`}</style>
+    <div className="planner-page" style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif' }}>
+      <style>{`select option { background: #fff; color: ${T.ink}; } select:focus { box-shadow: 0 0 0 3px ${T.saffronBorder}; } ${responsiveStyles}`}</style>
 
-      <div style={{ padding: '3rem 2rem 1.5rem', maxWidth: '680px', margin: '0 auto' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: '100px', padding: '5px 14px', marginBottom: '1.25rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}>
+      <div className="planner-form-header" style={{ padding: '3rem 2rem 1.5rem', maxWidth: '680px', margin: '0 auto' }}>
+        <div className="planner-result-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: '100px', padding: '5px 14px', marginBottom: '1.25rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}>
           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: T.saffron, animation: 'pulse 2s infinite' }} />
           <span style={{ fontSize: '11px', fontWeight: 500, color: T.muted, letterSpacing: '0.06em' }}>Return Readiness Assessment · Free · {total} questions</span>
         </div>
@@ -1018,7 +1087,7 @@ export default function Planner() {
         </p>
 
         {/* Progress bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.25rem' }}>
+        <div className="planner-progress-row" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.25rem' }}>
           <div style={{ flex: 1, height: '5px', background: '#EDE9E0', borderRadius: '100px', overflow: 'hidden' }}>
             <div style={{ height: '100%', background: T.saffron, borderRadius: '100px', width: progress + '%', transition: 'width 0.3s ease', boxShadow: progress > 0 ? '0 0 8px rgba(255,153,51,0.4)' : 'none' }} />
           </div>
@@ -1028,17 +1097,17 @@ export default function Planner() {
         </div>
       </div>
 
-      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0.5rem 2rem 3rem' }}>
+      <div className="planner-form-content" style={{ maxWidth: '680px', margin: '0 auto', padding: '0.5rem 2rem 3rem' }}>
         {sections.map(section => (
           <div key={section.name} style={{ marginBottom: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '0.6rem', paddingLeft: '2px' }}>
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: SECTION_COLORS[section.name] || T.saffron }} />
               <span style={{ fontSize: '11px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{section.name}</span>
             </div>
-            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '16px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="planner-section-card" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '16px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {section.qs.map(q => (
                 <div key={q.key as string}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <div className="planner-question-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                     <label style={{ fontSize: '14px', fontWeight: 500, color: answers[q.key] ? T.ink : T.muted, lineHeight: 1.3 }}>{q.q}</label>
                     {answers[q.key] && <span style={{ fontSize: '11px', color: T.green, flexShrink: 0, marginLeft: '8px' }}>✓</span>}
                   </div>
@@ -1062,7 +1131,7 @@ export default function Planner() {
               {!isAuthenticated ? 'Sign In to Generate Report →' : (result ? 'Save Updated Assessment →' : 'Generate My Readiness Report →')}
             </button>
           ) : (
-            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+            <div className="planner-progress-row planner-question-card" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
               <div style={{ fontSize: '1.25rem' }}>📋</div>
               <div>
                 <div style={{ fontSize: '13px', color: T.muted }}>Answer all {total} questions to generate your report</div>

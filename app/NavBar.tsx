@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ARTICLES as GUIDES } from '../lib/articles-data'
 import AuthButton from '../components/AuthButton'
 import { useAuth } from '../components/useAuth'
@@ -35,6 +35,17 @@ export default function NavBar() {
   const isResourcesActive = GUIDES.some(g => pathname === g.href) || pathname === '/resources' || pathname.startsWith('/resources/')
   const protectedHref = (href: string) => (isAuthenticated ? href : `/auth?mode=signup&next=${encodeURIComponent(href)}`)
 
+  useEffect(() => {
+    if (!mobileOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [mobileOpen])
+
   return (
     <>
       <nav style={{
@@ -44,10 +55,10 @@ export default function NavBar() {
         borderBottom: '0.5px solid rgba(255,255,255,0.06)',
         fontFamily: 'DM Sans, sans-serif',
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: '60px', gap: '2rem' }}>
+        <div className="nav-inner" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: '60px', gap: '2rem' }}>
 
           {/* LOGO */}
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none', flexShrink: 0 }}>
+          <Link href="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none', flexShrink: 0 }}>
             <svg width="26" height="30" viewBox="0 0 52 56" fill="none">
               <rect x="0" y="0" width="52" height="18" rx="5" fill="#FF9933"/>
               <rect x="0" y="18" width="52" height="20" fill="#F4F0E8"/>
@@ -55,13 +66,13 @@ export default function NavBar() {
               <circle cx="26" cy="28" r="8" fill="none" stroke="#000080" strokeWidth="1.5"/>
               <circle cx="26" cy="28" r="2" fill="#000080"/>
             </svg>
-            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem', color: '#fff' }}>
+            <span className="nav-logo-text" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.1rem', color: '#fff' }}>
               <span style={{ color: '#FF9933' }}>Returning</span><span style={{ color: '#138808' }}>NRIs</span>
             </span>
           </Link>
 
           {/* DESKTOP NAV */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flex: 1 }}>
+          <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flex: 1 }}>
 
             <Link href="/" style={{ fontSize: '13px', fontWeight: 500, color: pathname === '/' ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === '/' ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
               Home
@@ -158,7 +169,14 @@ export default function NavBar() {
           </div>
 
           {/* MOBILE HAMBURGER */}
-          <button onClick={() => setMobileOpen(o => !o)} className="nav-hamburger" style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', display: 'flex', flexDirection: 'column', gap: '4px', marginLeft: 'auto' }}>
+          <button
+            onClick={() => setMobileOpen(o => !o)}
+            className="nav-hamburger"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
+            aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '10px', display: 'flex', flexDirection: 'column', gap: '4px', marginLeft: 'auto' }}
+          >
             <div style={{ width: '20px', height: '1.5px', background: '#fff', borderRadius: '2px', transition: 'all 0.2s', transform: mobileOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }} />
             <div style={{ width: '20px', height: '1.5px', background: '#fff', borderRadius: '2px', transition: 'all 0.2s', opacity: mobileOpen ? 0 : 1 }} />
             <div style={{ width: '20px', height: '1.5px', background: '#fff', borderRadius: '2px', transition: 'all 0.2s', transform: mobileOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }} />
@@ -167,7 +185,9 @@ export default function NavBar() {
 
         {/* MOBILE MENU */}
         {mobileOpen && (
-          <div style={{ background: '#1A1208', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '1rem 1.5rem 1.5rem' }}>
+          <div className="mobile-nav-shell">
+            <div className="mobile-nav-backdrop" onClick={() => setMobileOpen(false)} aria-hidden="true" />
+            <div id="mobile-navigation" className="mobile-nav-panel" style={{ background: '#1A1208', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '1rem 1.5rem 1.5rem' }}>
             <Link href="/" onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === '/' ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>Home</Link>
 
             {TOP_LINKS.map(link => (
@@ -215,12 +235,65 @@ export default function NavBar() {
               <AuthButton />
             </div>
           </div>
+          </div>
         )}
       </nav>
 
       <style>{`
-        @media (min-width: 768px) { .nav-hamburger { display: none !important; } }
-        @media (max-width: 767px) { .nav-hamburger { display: flex !important; } }
+        .mobile-nav-shell {
+          position: absolute;
+          inset: 100% 0 auto 0;
+        }
+        .mobile-nav-backdrop {
+          position: fixed;
+          inset: 60px 0 0 0;
+          background: rgba(10, 7, 3, 0.45);
+          backdrop-filter: blur(6px);
+        }
+        .mobile-nav-panel {
+          position: relative;
+          max-height: calc(100vh - 60px);
+          overflow-y: auto;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
+        }
+        @media (min-width: 768px) {
+          .nav-hamburger { display: none !important; }
+          .mobile-nav-shell { display: none; }
+        }
+        @media (max-width: 767px) {
+          .nav-inner {
+            padding: 0 1rem !important;
+            gap: 0.75rem !important;
+            height: 64px !important;
+          }
+          .nav-logo {
+            min-width: 0;
+          }
+          .nav-logo-text {
+            font-size: 1rem !important;
+            white-space: nowrap;
+          }
+          .desktop-nav { display: none !important; }
+          .nav-hamburger {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
+            border-radius: 12px;
+          }
+          .mobile-nav-backdrop {
+            top: 64px;
+          }
+          .mobile-nav-panel {
+            max-height: calc(100vh - 64px);
+            padding: 0.75rem 1rem 1.25rem !important;
+          }
+          .mobile-nav-panel a,
+          .mobile-nav-panel button {
+            min-height: 44px;
+          }
+        }
       `}</style>
     </>
   )

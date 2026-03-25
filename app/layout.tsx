@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 
 function Footer() {
   return (
-    <footer style={{
+    <footer className="site-footer" style={{
       borderTop: '0.5px solid var(--border)',
       padding: '2rem 2.5rem',
       display: 'flex',
@@ -71,6 +71,14 @@ function Footer() {
       <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
         © 2026 ReturningNRIs
       </p>
+      <style>{`
+        @media (max-width: 767px) {
+          .site-footer {
+            padding: 1.5rem 1rem !important;
+            align-items: flex-start !important;
+          }
+        }
+      `}</style>
     </footer>
   )
 }
