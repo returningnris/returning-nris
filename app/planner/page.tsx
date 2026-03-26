@@ -6,27 +6,12 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '../../components/useAuth'
 import { useProtectedRoute } from '../../components/useProtectedRoute'
 import FounderConsultationCard from '../../components/FounderConsultationCard'
+import { REFINED_READINESS_QUESTIONS, type ReadinessAnswers } from '../../lib/readinessQuestions'
 import { supabase } from '../../lib/supabase'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type Answers = {
-  country: string
-  timeline: string
-  savings: string
-  commitments: string
-  netWorth: string
-  hasJob: string
-  city: string
-  housing: string
-  childrenCount: string
-  teenageChildren: string
-  knowsRNOR: string
-  foreignAssets: string
-  yearsAbroad: string
-  hasKids: string
-  kidsAge: string
-}
+export type Answers = ReadinessAnswers
 
 export type ScoreBreakdown = { financial: number; lifeComplexity: number; career: number; planning: number; total: number }
 type RiskItem = { level: 'high' | 'medium' | 'low'; title: string; detail: string; action: string }
@@ -150,6 +135,8 @@ const REFINED_QUESTIONS: {
   { key: 'knowsRNOR', section: 'Tax Planning', q: 'Aware of RNOR tax status?', hint: 'A planning-maturity signal that can materially affect post-move taxes.', tooltip: 'RNOR planning can reduce avoidable tax in the first years back.', opts: [{ k: 'yes_filed', label: 'Yes — already planned with a CA specialist' }, { k: 'yes_aware', label: 'Yes — aware but not planned yet' }, { k: 'partial', label: 'Heard of it, not sure what it means' }, { k: 'no', label: 'No — first time hearing this' }] },
   { key: 'foreignAssets', section: 'Tax Planning', q: 'Do you have foreign financial assets (401k, RSUs, stocks, etc.) that need planning?', hint: 'Captures cross-border planning complexity without expanding the form too much.', tooltip: 'Foreign assets need tax and compliance planning before you move.', opts: [{ k: 'planned', label: 'Yes — planned or being handled' }, { k: 'unplanned', label: 'Yes — not yet planned' }, { k: 'minimal', label: 'No / minimal' }] },
 ]
+
+void REFINED_QUESTIONS
 
 const SECTION_COLORS: Record<string, string> = {
   'Where You Are': T.saffron, 'Finances': T.green, 'Career': T.navy,
@@ -490,8 +477,8 @@ function UpdateSimulator({
   const hasChanges = JSON.stringify(simAnswers) !== JSON.stringify(originalAnswers)
   const scoreDelta = simResult.score.total - originalResult.score.total
 
-  const visibleQs = REFINED_QUESTIONS
-  const sections: { name: string; qs: typeof REFINED_QUESTIONS }[] = []
+  const visibleQs = REFINED_READINESS_QUESTIONS
+  const sections: { name: string; qs: typeof REFINED_READINESS_QUESTIONS }[] = []
   visibleQs.forEach(q => {
     const last = sections[sections.length - 1]
     if (!last || last.name !== q.section) sections.push({ name: q.section, qs: [q] })
@@ -711,7 +698,7 @@ function UpdateSimulator({
                   {changedKeys.length} change{changedKeys.length > 1 ? 's' : ''}
                 </div>
                 {changedKeys.slice(0, 3).map(k => {
-                  const q = REFINED_QUESTIONS.find(x => x.key === k)
+                  const q = REFINED_READINESS_QUESTIONS.find(x => x.key === k)
                   const origLabel = q?.opts.find(o => o.k === originalAnswers[k])?.label || originalAnswers[k]
                   const simLabel = q?.opts.find(o => o.k === simAnswers[k])?.label || simAnswers[k]
                   return (
@@ -1110,7 +1097,7 @@ export default function Planner() {
 
   if (shouldBlock) return null
 
-  const visibleQs = REFINED_QUESTIONS
+  const visibleQs = REFINED_READINESS_QUESTIONS
   const answered = visibleQs.filter(q => answers[q.key]).length
   const total = visibleQs.length
   const progress = Math.round((answered / total) * 100)

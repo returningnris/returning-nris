@@ -4,26 +4,12 @@ import { useEffect, useMemo, useReducer, useState } from 'react'
 import FounderConsultationCard from '../../components/FounderConsultationCard'
 import { useAuth } from '../../components/useAuth'
 import { useProtectedRoute } from '../../components/useProtectedRoute'
+import { REFINED_READINESS_QUESTIONS, type ReadinessAnswers } from '../../lib/readinessQuestions'
 import { supabase } from '../../lib/supabase'
 
-type Answers = {
-  country: string
-  savings: string
-  yearsAbroad: string
-  commitments: string
-  netWorth: string
-  hasJob: string
-  city: string
-  timeline: string
-  childrenCount: string
-  teenageChildren: string
-  knowsRNOR: string
-  foreignAssets: string
-  housing: string
+type Answers = ReadinessAnswers & {
   moveDate: string
   alreadyMoved: string
-  hasKids: string
-  kidsAge: string
 }
 
 const CITY_BASE: Record<string, number> = {
@@ -402,6 +388,8 @@ const SETUP_QUESTIONS: Question[] = [
     ],
   },
 ]
+
+void SETUP_QUESTIONS
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -1282,7 +1270,7 @@ function TimelinePicker({
 }
 
 function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: React.Dispatch<Action> }) {
-  const visibleQuestions = SETUP_QUESTIONS.filter((q) => !q.skipIf || state.answers[q.skipIf.key] !== q.skipIf.value)
+  const visibleQuestions = REFINED_READINESS_QUESTIONS.filter((q) => q.key !== 'timeline')
   const beforeTimelineQuestions = visibleQuestions.slice(0, 1)
   const afterTimelineQuestions = visibleQuestions.slice(1)
   const answered = visibleQuestions.filter((q) => state.answers[q.key]).length
