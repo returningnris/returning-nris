@@ -964,10 +964,6 @@ function getDefaultJourneyPhase(answers: Partial<Answers>) {
   return visiblePhases.includes(activePhase) ? activePhase : visiblePhases[0]
 }
 
-function shouldOpenJourneyDashboard(answers: Partial<Answers>) {
-  return Boolean(answers.country || answers.savings || answers.hasJob || answers.city || answers.moveDate || answers.timeline)
-}
-
 function getPhaseTimeStatus(phase: number, activePhase: number) {
   if (phase < activePhase) return 'past'
   if (phase === activePhase) return 'current'
@@ -2176,7 +2172,7 @@ export default function JourneyPage() {
 
       const { data, error } = await supabase
         .from('planner_submissions')
-        .select('answers_json')
+        .select('answers_json, result_json')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -2185,10 +2181,13 @@ export default function JourneyPage() {
       if (!active) return
 
       const savedAnswers = (data?.answers_json || {}) as Partial<Answers>
-      const hasSavedReadiness = Object.keys(savedAnswers).length > 0
+      const hasSavedReadiness =
+        Boolean(data?.answers_json) &&
+        Boolean(data?.result_json) &&
+        Object.keys(savedAnswers).length > 0
 
       let persisted: Partial<JourneyState> = {}
-      if (typeof window !== 'undefined') {
+      if (hasSavedReadiness && typeof window !== 'undefined') {
         try {
           const raw = window.localStorage.getItem(`journey:state:${user.id}`)
           if (raw) {
@@ -2206,11 +2205,17 @@ export default function JourneyPage() {
               completedCustomTaskIds: new Set(parsed.completedCustomTaskIds || []),
               manualMilestones: new Set(parsed.manualMilestoneIds || []),
               customTasks: parsed.customTasks || [],
-              currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : hasSavedReadiness ? 0 : 0,
+              currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : 0,
             }
           }
         } catch {
           persisted = {}
+        }
+      } else if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.removeItem(`journey:state:${user.id}`)
+        } catch {
+          // Ignore storage cleanup errors and continue with server-only state.
         }
       }
 
@@ -2218,15 +2223,14 @@ export default function JourneyPage() {
         console.error('Error loading journey initialization:', error)
       }
 
-      const mergedAnswers = { ...savedAnswers, ...(persisted.answers || {}) }
-      const shouldOpenDashboard = shouldOpenJourneyDashboard(mergedAnswers)
+      const mergedAnswers = hasSavedReadiness ? { ...savedAnswers, ...(persisted.answers || {}) } : {}
 
       dispatch({
         type: 'LOAD_SAVED',
         payload: {
           firstName: user.firstName || '',
           answers: mergedAnswers,
-          step: shouldOpenDashboard ? 'journey' : 'profile',
+          step: hasSavedReadiness ? 'journey' : 'profile',
           editingProfile: false,
           completedTasks: persisted.completedTasks,
           completedCustomTaskIds: persisted.completedCustomTaskIds,
