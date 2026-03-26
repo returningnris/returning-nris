@@ -1482,7 +1482,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
 
       <div className="dashboard-shell">
         <div className="hero-grid" style={{ marginBottom: '1rem' }}>
-          <SurfaceCard style={{ overflow: 'hidden' }}>
+          <SurfaceCard style={{ overflow: 'hidden', background: T.dark, border: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ padding: '1.15rem 1.2rem', background: T.dark }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 14 }}>
                 <div>
@@ -1507,7 +1507,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
               <div className="stats-grid">
                 {[
                   { label: 'Current phase', value: `${currentPhaseLabel}` },
-                  { label: 'When', value: PHASE_WINDOWS[journeyPhaseIndex] },
+                  { label: 'Move target', value: formatMoveDate(A.moveDate) },
                 ].map((item) => (
                   <div
                     key={item.label}
