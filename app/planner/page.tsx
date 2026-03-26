@@ -1176,7 +1176,6 @@ export default function Planner() {
     .planner-shell {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 2rem 1.25rem 4rem;
     }
     .planner-grid {
       display: grid;
@@ -1244,6 +1243,9 @@ export default function Planner() {
       }
     }
     @media (max-width: 767px) {
+      .planner-page {
+        padding: 1rem 0.9rem 2rem !important;
+      }
       .planner-form-header,
       .planner-result-header,
       .planner-result-content {
@@ -1262,7 +1264,7 @@ export default function Planner() {
         padding-bottom: 2rem !important;
       }
       .planner-shell {
-        padding: 1rem 0.9rem 2rem;
+        padding: 0;
       }
       .planner-result-shell {
         padding: 1rem 0.9rem 2rem;
@@ -1617,7 +1619,7 @@ export default function Planner() {
   }
 
   return (
-    <div className="planner-page" style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif' }}>
+    <div className="planner-page" style={{ minHeight: '100vh', background: T.bg, backgroundImage: T.heroGrad, fontFamily: 'DM Sans, sans-serif', padding: '2rem 1.25rem 4rem' }}>
       <style>{`select option { background: #fff; color: ${T.ink}; } select:focus { box-shadow: 0 0 0 3px ${T.saffronBorder}; } ${responsiveStyles}`}</style>
 
       <div className="planner-shell">
