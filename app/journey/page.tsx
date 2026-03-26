@@ -1444,7 +1444,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
             {afterTimelineQuestions.map((question, index) => (
               <QuestionBlock
                 key={question.key}
-                index={beforeTimelineQuestions.length + 2 + index}
+                index={beforeTimelineQuestions.length + 1 + index}
                 question={question}
                 value={state.answers[question.key] || ''}
                 onChange={(value) => dispatch({ type: 'SET_ANSWER', key: question.key, value })}
