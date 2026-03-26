@@ -344,6 +344,7 @@ function AuthPageContent() {
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
               gap: '16px',
+              alignItems: 'start',
             }}
           >
             <form
@@ -356,7 +357,6 @@ function AuthPageContent() {
                 padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
-                minHeight: '100%',
               }}
             >
               <div
@@ -422,9 +422,7 @@ function AuthPageContent() {
                 </div>
               )}
 
-              {!signInError && <div style={{ minHeight: '66px', marginBottom: '14px' }} />}
-
-              <div style={{ marginTop: 'auto' }}>
+              <div style={{ marginTop: '6px' }}>
                 <button
                   type="submit"
                   disabled={signInLoading}
@@ -444,8 +442,6 @@ function AuthPageContent() {
                 >
                   {signInLoading ? 'Signing you in...' : 'Sign in'}
                 </button>
-
-                <div style={{ margin: '14px 0 0', minHeight: '58px' }} />
               </div>
             </form>
 
@@ -459,7 +455,6 @@ function AuthPageContent() {
                 padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
-                minHeight: '100%',
               }}
             >
               <div
@@ -551,9 +546,7 @@ function AuthPageContent() {
                 </div>
               )}
 
-              {!signUpError && !signUpSuccess && <div style={{ minHeight: '66px', marginBottom: '14px' }} />}
-
-              <div style={{ marginTop: 'auto' }}>
+              <div style={{ marginTop: '6px' }}>
                 <button
                   type="submit"
                   disabled={signUpLoading}
@@ -573,8 +566,6 @@ function AuthPageContent() {
                 >
                   {signUpLoading ? 'Creating your account...' : 'Create account'}
                 </button>
-
-                <div style={{ margin: '14px 0 0', minHeight: '58px' }} />
               </div>
             </form>
           </div>
