@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from 'react'
 import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
 
 type CalendlyPrefill = {
   email?: string
@@ -145,8 +146,34 @@ export default function CalendlyPopupButton({
   return (
     <button
       type="button"
-      onClick={() => {
+      onClick={async () => {
         if (!calendlyUrl) return
+
+        try {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession()
+
+          if (session?.access_token) {
+            await fetch('/api/consultation-requests', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                source,
+                email,
+                firstName,
+                lastName,
+                readinessStatus,
+                calendlyUrl,
+              }),
+            })
+          }
+        } catch (error) {
+          console.error('Failed to log consultation request:', error)
+        }
 
         if (window.Calendly?.initPopupWidget) {
           window.Calendly.initPopupWidget({

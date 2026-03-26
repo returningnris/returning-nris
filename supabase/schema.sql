@@ -131,3 +131,43 @@ for update
 to authenticated
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
+
+create table if not exists public.consultation_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  email text not null,
+  first_name text not null default '',
+  last_name text not null default '',
+  source text not null default '',
+  readiness_status text not null default '',
+  consultation_type text not null default 'founder_intro',
+  status text not null default 'initiated',
+  calendly_url text not null default '',
+  metadata_json jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists consultation_requests_user_id_created_at_idx
+  on public.consultation_requests (user_id, created_at desc);
+
+drop trigger if exists consultation_requests_set_updated_at on public.consultation_requests;
+create trigger consultation_requests_set_updated_at
+before update on public.consultation_requests
+for each row execute procedure public.set_updated_at();
+
+alter table public.consultation_requests enable row level security;
+
+drop policy if exists "consultation_requests_select_own" on public.consultation_requests;
+create policy "consultation_requests_select_own"
+on public.consultation_requests
+for select
+to authenticated
+using (auth.uid() = user_id);
+
+drop policy if exists "consultation_requests_insert_own" on public.consultation_requests;
+create policy "consultation_requests_insert_own"
+on public.consultation_requests
+for insert
+to authenticated
+with check (auth.uid() = user_id);
