@@ -31,6 +31,9 @@ export default function FounderConsultationCard({
         borderRadius: isResults ? 24 : 22,
         padding: isResults ? '1.25rem' : '1.1rem',
         boxShadow: isResults ? '0 18px 38px rgba(29,22,15,0.05)' : '0 14px 28px rgba(29,22,15,0.04)',
+        height: isResults ? '100%' : 'auto',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <div
@@ -97,14 +100,16 @@ export default function FounderConsultationCard({
         </div>
       </div>
 
-      <CalendlyPopupButton
-        buttonLabel={isResults ? 'Book free intro call' : 'Talk to the founder'}
-        source={source}
-        email={email}
-        firstName={firstName}
-        lastName={lastName}
-        readinessStatus={readinessStatus}
-      />
+      <div style={{ marginTop: isResults ? 'auto' : 0 }}>
+        <CalendlyPopupButton
+          buttonLabel={isResults ? 'Book free intro call' : 'Talk to the founder'}
+          source={source}
+          email={email}
+          firstName={firstName}
+          lastName={lastName}
+          readinessStatus={readinessStatus}
+        />
+      </div>
     </div>
   )
 }

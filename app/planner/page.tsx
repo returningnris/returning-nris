@@ -1335,6 +1335,7 @@ export default function Planner() {
   // ── RESULT ──
   if (result && user) {
     const r = result
+    const scoreColor = r.score.total < 50 ? '#C0392B' : r.score.total < 75 ? T.saffron : T.green
     const scoreBreakdown = [
       { label: 'Financial', s: r.score.financial, max: 35, c: T.saffron, note: 'Liquidity, fixed pressure, and runway strength' },
       { label: 'Planning', s: r.score.planning, max: 27, c: T.navy, note: 'Country, timing, city, RNOR, and asset planning' },
@@ -1369,7 +1370,10 @@ export default function Planner() {
                   <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                     <div style={{ minWidth: 92 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Score</div>
-                      <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.4rem', color: '#fff', lineHeight: 1 }}>{r.score.total}/100</div>
+                      <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.4rem', lineHeight: 1 }}>
+                        <span style={{ color: scoreColor }}>{r.score.total}</span>
+                        <span style={{ color: 'rgba(255,255,255,0.72)' }}>/100</span>
+                      </div>
                     </div>
                     <div style={{ minWidth: 92 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Status</div>
@@ -1403,7 +1407,7 @@ export default function Planner() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gap: '0.9rem' }}>
+            <div style={{ display: 'grid', gap: '0.9rem', height: '100%' }}>
               <FounderConsultationCard
                 variant="results"
                 source="readiness_results"
