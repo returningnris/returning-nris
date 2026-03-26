@@ -11,14 +11,26 @@ import { supabase } from '../../lib/supabase'
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 export type Answers = {
-  country: string; savings: string; yearsAbroad: string; hasKids: string
-  kidsAge: string; hasJob: string; city: string
-  timeline: string; knowsRNOR: string; housing: string
+  country: string
+  timeline: string
+  savings: string
+  commitments: string
+  netWorth: string
+  hasJob: string
+  city: string
+  housing: string
+  childrenCount: string
+  teenageChildren: string
+  knowsRNOR: string
+  foreignAssets: string
+  yearsAbroad: string
+  hasKids: string
+  kidsAge: string
 }
 
 export type ScoreBreakdown = { financial: number; lifeComplexity: number; career: number; planning: number; total: number }
 type RiskItem = { level: 'high' | 'medium' | 'low'; title: string; detail: string; action: string }
-export type FinancialSnapshot = { monthlyCost: string; runway: string; runwayMonths: number; rnorSaving: string; savingsLabel: string }
+export type FinancialSnapshot = { monthlyCost: string; runway: string; runwayMonths: number; rnorSaving: string; savingsLabel: string; commitmentsLabel?: string }
 export type Rec = {
   icon: string; color: string; bg: string; border: string
   verdict: string
@@ -87,8 +99,10 @@ const T = {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
-export const CITY_BASE: Record<string, number> = { Hyderabad: 180000, Bangalore: 240000, Pune: 160000, Chennai: 170000, Mumbai: 280000, Other: 185000, undecided: 185000 }
-export const SAVINGS_USD: Record<string, number> = { '200000+': 200000, '100000': 150000, '50000': 75000, 'under50': 35000 }
+export const CITY_BASE: Record<string, number> = { Hyderabad: 190000, Bangalore: 250000, Pune: 185000, Chennai: 180000, Mumbai: 300000, DelhiNCR: 240000, Tier2: 160000, undecided: 200000 }
+export const SAVINGS_USD: Record<string, number> = { '200000+': 200000, '150000': 150000, '100000': 100000, '50000': 50000 }
+const COMMITMENTS_USD: Record<string, number> = { none: 0, moderate: 500, high: 1000, very_high: 1500 }
+const QUESTION_MAX: Partial<Record<keyof Answers, number>> = { country: 3, timeline: 6, savings: 20, commitments: 0, netWorth: 10, hasJob: 20, city: 7, housing: 6, childrenCount: 12, teenageChildren: 0, knowsRNOR: 8, foreignAssets: 3 }
 
 // ─── QUESTIONS ────────────────────────────────────────────────────────────────
 
@@ -117,6 +131,24 @@ export const QUESTIONS: {
   { key: 'housing', section: "Where You're Going", q: 'Housing sorted in India?', hint: 'First 90 days are hardest without a home arranged', opts: [{ k: 'owned', label: 'Own a home — ready to move in' }, { k: 'arranged', label: 'Rental arranged remotely' }, { k: 'searching', label: 'Actively searching' }, { k: 'no', label: 'Not started yet' }] },
   { key: 'timeline', section: 'Timeline', q: 'When are you planning to move?', hint: 'Closer timelines need more urgent action', opts: [{ k: 'within6', label: 'Within 6 months' }, { k: '6to12', label: '6–12 months' }, { k: '1to2', label: '1–2 years' }] },
   { key: 'knowsRNOR', section: 'Tax Planning', q: 'Aware of RNOR tax status?', hint: 'RNOR can save ₹18–60L — worth planning before you move', opts: [{ k: 'yes_filed', label: 'Yes — already planned with a CA specialist' }, { k: 'yes_aware', label: 'Yes — aware but not planned yet' }, { k: 'partial', label: 'Heard of it, not sure what it means' }, { k: 'no', label: 'No — first time hearing this' }] },
+]
+
+const REFINED_QUESTIONS: {
+  key: keyof Answers; section: string; q: string; hint: string; tooltip: string
+  opts: { k: string; label: string }[]
+}[] = [
+  { key: 'country', section: 'Where You Are', q: 'Where are you currently based?', hint: 'A small modifier tied to tax complexity and move structure.', tooltip: 'Your current country slightly affects readiness because it changes tax complexity, likely savings profile, and how easily you can structure your move. It is only a minor modifier, not a major decision factor.', opts: [{ k: 'USA', label: 'United States' }, { k: 'UK', label: 'United Kingdom' }, { k: 'UAE', label: 'UAE / Middle East' }, { k: 'Canada', label: 'Canada' }, { k: 'Other', label: 'Other country' }] },
+  { key: 'timeline', section: 'Timeline', q: 'When are you planning to move?', hint: 'A shorter timeline demands stronger readiness before departure.', tooltip: 'Your timeline determines how urgently you need to prepare. A shorter timeline requires stronger financial readiness, job certainty, and planning before your move.', opts: [{ k: 'within6', label: 'Within 6 months' }, { k: '6to12', label: '6â€“12 months' }, { k: '1to2', label: '1â€“2 years' }] },
+  { key: 'savings', section: 'Finances', q: 'Total liquid savings?', hint: 'Your strongest financial readiness signal and primary runway input.', tooltip: 'Liquid savings is the most important factor for a smooth return. It determines how long you can manage expenses without income. Ideally, you should have at least 12â€“18 months of runway.', opts: [{ k: '200000+', label: '$200K+' }, { k: '150000', label: '$150K' }, { k: '100000', label: '$100K' }, { k: '50000', label: '$50K' }] },
+  { key: 'commitments', section: 'Finances', q: 'Do you have significant monthly financial commitments (EMIs, loans, etc.)?', hint: 'Fixed obligations reduce how long your savings can actually support the move.', tooltip: 'Monthly financial commitments reduce your available financial buffer. Higher fixed expenses can shorten your runway and increase pressure during your transition.', opts: [{ k: 'none', label: 'No significant commitments' }, { k: 'moderate', label: 'Moderate commitments (< $500/month)' }, { k: 'high', label: 'High commitments ($1000/month)' }, { k: 'very_high', label: 'Very high commitments ($1500/month)' }] },
+  { key: 'netWorth', section: 'Finances', q: 'Total net worth / other assets?', hint: 'A secondary confidence modifier, not a replacement for liquidity.', tooltip: 'Total assets increase your confidence and financial security during the move. Even if not immediately accessible, they reduce long-term risk and give you flexibility in decision-making.', opts: [{ k: '1000000+', label: '$1M+' }, { k: '750000', label: '$750K' }, { k: '500000', label: '$500K' }, { k: '250000', label: '$250K' }] },
+  { key: 'hasJob', section: 'Career', q: 'Career situation after moving to India?', hint: 'Income continuity is the single biggest factor in readiness.', tooltip: 'Your income after moving is the single biggest factor in your readiness. Having a stable income significantly reduces risk. Uncertain or no income increases financial pressure and can force difficult decisions after moving.', opts: [{ k: 'remote_us', label: 'Keeping remote US / abroad job â€” same salary' }, { k: 'india_job', label: 'India job confirmed â€” offer letter in hand' }, { k: 'own_business', label: 'Running my own business â€” location independent' }, { k: 'searching', label: 'Actively job hunting in India â€” no offer yet' }, { k: 'no', label: 'No income plan yet â€” will figure it out after moving' }] },
+  { key: 'city', section: "Where You're Going", q: 'Target city in India?', hint: 'City changes cost and logistics, but should not overpower savings or income.', tooltip: 'City choice directly affects your monthly expenses and financial runway. Lower-cost cities allow your savings to last longer, while higher-cost cities may offer better infrastructure, schools, and job opportunities. Choosing the right city is a balance between financial comfort and lifestyle needs.', opts: [{ k: 'Hyderabad', label: 'Hyderabad' }, { k: 'Bangalore', label: 'Bangalore' }, { k: 'Pune', label: 'Pune' }, { k: 'Chennai', label: 'Chennai' }, { k: 'Mumbai', label: 'Mumbai' }, { k: 'DelhiNCR', label: 'Delhi NCR' }, { k: 'Tier2', label: 'Tier 2 city (Kochi, Vizag, etc.)' }, { k: 'undecided', label: 'Not decided yet' }] },
+  { key: 'housing', section: "Where You're Going", q: 'Housing situation in India?', hint: 'Housing readiness reduces both cost pressure and move stress.', tooltip: 'Having housing arranged significantly reduces both financial pressure and relocation stress. Owning a home provides the strongest advantage by eliminating rental costs. A finalized rental reduces uncertainty, while searching or not starting can delay your move.', opts: [{ k: 'owned', label: 'Own home â€” ready to move in' }, { k: 'arranged', label: 'Rental finalized' }, { k: 'searching', label: 'Actively searching' }, { k: 'no', label: 'Not started yet' }] },
+  { key: 'childrenCount', section: 'Family', q: 'How many children are you planning for?', hint: 'More children increase admissions, coordination, and planning complexity.', tooltip: 'More children increase planning complexity, including school admissions and coordination. Larger families typically require more preparation before moving.', opts: [{ k: 'none', label: 'None' }, { k: 'one', label: '1' }, { k: 'two_plus', label: '2+' }] },
+  { key: 'teenageChildren', section: 'Family', q: 'Do you have teenage children (13â€“17)?', hint: 'Teen transitions are the most likely to disrupt an otherwise solid move plan.', tooltip: 'Teenagers typically face the most difficulty adjusting to a move due to academic and social transitions. Having teenage children can significantly increase planning complexity.', opts: [{ k: 'none', label: 'None' }, { k: 'one', label: '1' }, { k: 'two_plus', label: '2+' }] },
+  { key: 'knowsRNOR', section: 'Tax Planning', q: 'Aware of RNOR tax status?', hint: 'A planning-maturity signal that can materially affect post-move taxes.', tooltip: 'RNOR status can significantly reduce your tax liability for 2â€“3 years after returning to India. Planning this before your move can help avoid unnecessary taxes on foreign income and assets.', opts: [{ k: 'yes_filed', label: 'Yes â€” already planned with a CA specialist' }, { k: 'yes_aware', label: 'Yes â€” aware but not planned yet' }, { k: 'partial', label: 'Heard of it, not sure what it means' }, { k: 'no', label: 'No â€” first time hearing this' }] },
+  { key: 'foreignAssets', section: 'Tax Planning', q: 'Do you have foreign financial assets (401k, RSUs, stocks, etc.) that need planning?', hint: 'Captures cross-border planning complexity without expanding the form too much.', tooltip: 'Foreign assets like 401k, stocks, and RSUs may have tax and compliance implications when you move. Proper planning helps avoid double taxation and ensures smooth transition of your finances.', opts: [{ k: 'planned', label: 'Yes â€” planned or being handled' }, { k: 'unplanned', label: 'Yes â€” not yet planned' }, { k: 'minimal', label: 'No / minimal' }] },
 ]
 
 const SECTION_COLORS: Record<string, string> = {
@@ -165,6 +197,21 @@ export const OPTION_POINTS: Partial<Record<keyof Answers, Record<string, number>
   city: { 'Hyderabad': 6, 'Bangalore': 6, 'Pune': 6, 'Chennai': 6, 'Mumbai': 6, 'Other': 6, 'undecided': 2 },
   timeline: { 'within6': 6, '6to12': 5, '1to2': 4, 'exploring': 2 },
   knowsRNOR: { 'yes_filed': 8, 'yes_aware': 5, 'partial': 3, 'no': 1 },
+}
+
+const REFINED_OPTION_POINTS: Partial<Record<keyof Answers, Record<string, number>>> = {
+  country: { 'USA': 3, 'UK': 3, 'UAE': 2, 'Canada': 2, 'Other': 2 },
+  timeline: { 'within6': 6, '6to12': 5, '1to2': 4, 'exploring': 2 },
+  savings: { '200000+': 20, '150000': 16, '100000': 12, '50000': 7 },
+  commitments: { 'none': 0, 'moderate': -2, 'high': -5, 'very_high': -9 },
+  netWorth: { '1000000+': 10, '750000': 8, '500000': 5, '250000': 3 },
+  hasJob: { 'remote_us': 20, 'india_job': 15, 'own_business': 10, 'searching': 0, 'no': -5 },
+  city: { 'Hyderabad': 6, 'Bangalore': 4, 'Pune': 6, 'Chennai': 6, 'Mumbai': 3, 'DelhiNCR': 4, 'Tier2': 7, 'undecided': 2 },
+  housing: { 'owned': 6, 'arranged': 3, 'searching': 1, 'no': 0 },
+  childrenCount: { 'none': 12, 'one': 8, 'two_plus': 4 },
+  teenageChildren: { 'none': 0, 'one': -2, 'two_plus': -4 },
+  knowsRNOR: { 'yes_filed': 8, 'yes_aware': 5, 'partial': 3, 'no': 0 },
+  foreignAssets: { 'planned': 3, 'unplanned': 0, 'minimal': 2 },
 }
 
 // Continue with all your scoring functions (computeScore, computeRisks, computeFinancial, computeRecommendation, computeResult)
@@ -270,6 +317,155 @@ export function computeResult(A: Answers): Result {
   return { score, status, statusColor, statusBg, headline, subheadline, risks, financial, cityName, recommendation }
 }
 
+function normalizeAnswers(raw: Partial<Record<string, unknown>> | null | undefined): Partial<Answers> {
+  if (!raw) return {}
+
+  const legacyHasKids = raw.hasKids === 'yes'
+  const legacyKidsAge = typeof raw.kidsAge === 'string' ? raw.kidsAge : ''
+
+  return {
+    country: typeof raw.country === 'string' ? raw.country : '',
+    timeline: typeof raw.timeline === 'string' ? raw.timeline : '',
+    savings: typeof raw.savings === 'string' ? (raw.savings === 'under50' ? '50000' : raw.savings) : '',
+    commitments: typeof raw.commitments === 'string' ? raw.commitments : 'none',
+    netWorth: typeof raw.netWorth === 'string' ? raw.netWorth : '',
+    hasJob: typeof raw.hasJob === 'string' ? raw.hasJob : '',
+    city: typeof raw.city === 'string' ? (raw.city === 'Other' ? 'Tier2' : raw.city) : '',
+    housing: typeof raw.housing === 'string' ? raw.housing : '',
+    childrenCount: typeof raw.childrenCount === 'string' ? raw.childrenCount : legacyHasKids ? 'one' : 'none',
+    teenageChildren: typeof raw.teenageChildren === 'string' ? raw.teenageChildren : legacyKidsAge === 'teen' ? 'one' : 'none',
+    knowsRNOR: typeof raw.knowsRNOR === 'string' ? raw.knowsRNOR : '',
+    foreignAssets: typeof raw.foreignAssets === 'string' ? raw.foreignAssets : '',
+    yearsAbroad: typeof raw.yearsAbroad === 'string' ? raw.yearsAbroad : '',
+    hasKids: typeof raw.hasKids === 'string' ? raw.hasKids : '',
+    kidsAge: typeof raw.kidsAge === 'string' ? raw.kidsAge : '',
+  }
+}
+
+function calcRefinedRunwayMonths(savings: string, city: string, commitments: string): number {
+  const savingsUsd = SAVINGS_USD[savings] || 50000
+  const monthlyCost = CITY_BASE[city] || 200000
+  const monthlyUsd = monthlyCost / 83 + (COMMITMENTS_USD[commitments] || 0)
+  return Math.floor(savingsUsd / monthlyUsd)
+}
+
+function computeRefinedScore(A: Answers): ScoreBreakdown {
+  let financial = 0
+  let life = 0
+  let career = 0
+  let planning = 0
+
+  const runwayMonths = calcRefinedRunwayMonths(A.savings, A.city, A.commitments)
+  financial += REFINED_OPTION_POINTS.savings?.[A.savings] || 0
+  financial += REFINED_OPTION_POINTS.commitments?.[A.commitments] || 0
+  financial += REFINED_OPTION_POINTS.netWorth?.[A.netWorth] || 0
+  financial += runwayMonths >= 18 ? 3 : runwayMonths >= 12 ? 2 : runwayMonths >= 9 ? 1 : 0
+
+  life += REFINED_OPTION_POINTS.childrenCount?.[A.childrenCount] || 0
+  life += REFINED_OPTION_POINTS.teenageChildren?.[A.teenageChildren] || 0
+  life += REFINED_OPTION_POINTS.housing?.[A.housing] || 0
+
+  career = REFINED_OPTION_POINTS.hasJob?.[A.hasJob] || 0
+
+  planning += REFINED_OPTION_POINTS.country?.[A.country] || 0
+  planning += REFINED_OPTION_POINTS.timeline?.[A.timeline] || 0
+  planning += REFINED_OPTION_POINTS.city?.[A.city] || 0
+  planning += REFINED_OPTION_POINTS.knowsRNOR?.[A.knowsRNOR] || 0
+  planning += REFINED_OPTION_POINTS.foreignAssets?.[A.foreignAssets] || 0
+
+  const rawScore = financial + life + career + planning
+  return { financial, lifeComplexity: life, career, planning, total: Math.max(0, Math.min(100, rawScore)) }
+}
+
+function computeRefinedRisks(A: Answers): RiskItem[] {
+  const risks: RiskItem[] = []
+  const runwayMonths = calcRefinedRunwayMonths(A.savings, A.city, A.commitments)
+
+  if (A.hasJob === 'no' || A.hasJob === 'searching') risks.push({ level: 'high', title: 'Income continuity is still unresolved', detail: 'This is the biggest readiness gap. Moving without confirmed income creates pressure quickly and can force reactive decisions after landing.', action: A.hasJob === 'searching' ? 'Convert the job search into an offer before you set a departure date.' : 'Secure a remote role, India offer, or business income plan before moving.' })
+  if (runwayMonths < 12 || A.commitments === 'high' || A.commitments === 'very_high') risks.push({ level: 'high', title: 'Financial runway may be thinner than it looks', detail: 'Savings matter most, but EMIs and fixed obligations can shorten your practical runway and raise pressure during the transition.', action: 'Increase liquid savings, reduce fixed commitments, or delay until you have 12â€“18 months of usable runway.' })
+  if (A.teenageChildren === 'one' || A.teenageChildren === 'two_plus') risks.push({ level: 'high', title: 'Teenage transition risk is elevated', detail: 'Teenagers usually face the hardest academic and social adjustment, which can make a rushed move much more disruptive for the family.', action: 'Plan around school calendars, transfer timing, and target-city schooling options before committing.' })
+  if (A.city === 'undecided') risks.push({ level: 'medium', title: 'Target city is still unclear', detail: 'Without a city, it is hard to make realistic decisions about cost, schools, housing, and job trade-offs.', action: 'Narrow to one or two cities before you lock the move plan.' })
+  if (A.housing === 'no') risks.push({ level: 'medium', title: 'Housing is not yet arranged', detail: 'Housing uncertainty adds both stress and immediate cost pressure in the first weeks after return.', action: 'Finalize a rental or at least a short-term bridge stay before departure.' })
+  if (A.knowsRNOR === 'no' || A.foreignAssets === 'unplanned') risks.push({ level: 'low', title: 'Cross-border tax planning is still incomplete', detail: 'RNOR and foreign asset planning may not block the move, but handling them late can create avoidable tax and compliance friction.', action: 'Review RNOR and foreign assets with an NRI-focused CA before you move.' })
+
+  return risks.sort((a, b) => ['high', 'medium', 'low'].indexOf(a.level) - ['high', 'medium', 'low'].indexOf(b.level)).slice(0, 3)
+}
+
+function computeRefinedFinancial(A: Answers): FinancialSnapshot {
+  const monthly = CITY_BASE[A.city] || 200000
+  const fmt = (n: number) => n >= 100000 ? 'â‚¹' + (n / 100000).toFixed(1) + 'L/mo' : 'â‚¹' + Math.round(n / 1000) + 'K/mo'
+  const runwayMonths = calcRefinedRunwayMonths(A.savings, A.city, A.commitments)
+  const runway = runwayMonths >= 12 ? Math.floor(runwayMonths / 12) + ' yr' + (runwayMonths % 12 > 0 ? ' ' + runwayMonths % 12 + ' mo' : '') : runwayMonths + ' months'
+  return {
+    monthlyCost: fmt(monthly),
+    runway,
+    runwayMonths,
+    rnorSaving: 'â‚¹18â€“40L',
+    savingsLabel: ({ '200000+': '$200K+', '150000': '$150K', '100000': '$100K', '50000': '$50K' } as Record<string, string>)[A.savings] || 'â€“',
+    commitmentsLabel: ({ 'none': 'No major fixed payments', 'moderate': '< $500/mo', 'high': '~$1000/mo', 'very_high': '~$1500/mo' } as Record<string, string>)[A.commitments] || 'â€“',
+  }
+}
+
+function computeRefinedRecommendation(A: Answers, score: number): Rec {
+  const noIncome = A.hasJob === 'no'
+  const searching = A.hasJob === 'searching'
+  const lowerSavings = A.savings === '50000'
+  const remote = A.hasJob === 'remote_us'
+  const ownBiz = A.hasJob === 'own_business'
+  const noHousing = A.housing === 'no'
+  const taxPlanningGap = A.knowsRNOR === 'no' || A.foreignAssets === 'unplanned'
+
+  if (score >= 80 && !noIncome && !searching && !lowerSavings) {
+    const incomeStr = remote ? 'keeping your US salary' : ownBiz ? 'running your own business' : 'a confirmed job in India'
+    return {
+      icon: 'âœ…', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
+      verdict: 'You look ready to move.',
+      directTalk: `With ${incomeStr}, ${A.savings === '200000+' || A.savings === '150000' ? 'strong liquidity' : 'solid liquidity'}, and a defined city plan, your profile looks prepared rather than hopeful.`,
+      actions: [
+        taxPlanningGap ? 'Close RNOR and foreign-asset planning before departure so the move stays financially clean.' : 'Finalize execution details such as tax paperwork, fund transfers, and first-month logistics.',
+        noHousing ? 'Lock housing before landing so your first 30â€“60 days feel stable, not reactive.' : 'Keep the move disciplined and avoid introducing late uncertainty.',
+      ],
+    }
+  }
+
+  if (searching && !lowerSavings) {
+    return {
+      icon: 'âš ï¸', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
+      verdict: 'You are close, but income is still the missing piece.',
+      directTalk: 'Your profile has enough underlying strength that this is mostly an execution problem now. The most important remaining gap is still unconfirmed income.',
+      actions: [
+        'Do not lock flights or resign until income is confirmed in writing.',
+        noHousing ? 'Keep housing work moving in parallel so you can execute quickly once income is secured.' : 'Once income is secured, your readiness should improve materially.',
+      ],
+    }
+  }
+
+  return {
+    icon: 'â¸ï¸', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
+    verdict: 'Strengthen the foundation before you move.',
+    directTalk: 'Your result suggests the move is still too fragile today. Focus first on income certainty, usable runway, and the planning gaps most likely to create pressure after relocation.',
+    actions: [
+      'Secure confirmed income or a credible income plan before committing to timing.',
+      'Build liquidity and reduce fixed financial pressure so you have real runway.',
+      'Use the extra time to finalize city, housing, tax, and family planning.',
+    ],
+  }
+}
+
+function computeRefinedResult(A: Answers): Result {
+  const score = computeRefinedScore(A)
+  const financial = computeRefinedFinancial(A)
+  const risks = computeRefinedRisks(A)
+  const recommendation = computeRefinedRecommendation(A, score.total)
+  const statusColor = score.total >= 80 ? T.green : score.total >= 60 ? '#CC7A00' : '#C0392B'
+  const status = score.total >= 80 ? 'Ready to Return' : score.total >= 60 ? 'Moderately Ready' : 'Not Ready Yet'
+  const statusBg = score.total >= 80 ? T.greenLight : score.total >= 60 ? T.saffronLight : '#FCEBEB'
+  const headline = score.total >= 80 ? "you're ready to move" : score.total >= 60 ? "you're getting close" : 'build the fundamentals first'
+  const subheadline = score.total >= 80 ? 'Your profile looks grounded, practical, and ready for execution.' : score.total >= 60 ? 'The move is plausible, but a few gaps still need to be closed first.' : 'Treat this as a pre-decision signal to strengthen the plan before you commit.'
+  const cityName = A.city && A.city !== 'undecided' ? A.city : 'your target city'
+  return { score, status, statusColor, statusBg, headline, subheadline, risks, financial, cityName, recommendation }
+}
+
 // ─── SIMULATOR COMPONENT ──────────────────────────────────────────────────────
 
 // ADD THIS COMPONENT TO YOUR PLANNER FILE (before the main Planner component)
@@ -290,12 +486,12 @@ function UpdateSimulator({
   const [emailSending, setEmailSending] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
 
-  const simResult = computeResult(simAnswers)
+  const simResult = computeRefinedResult(simAnswers)
   const hasChanges = JSON.stringify(simAnswers) !== JSON.stringify(originalAnswers)
   const scoreDelta = simResult.score.total - originalResult.score.total
 
-  const visibleQs = QUESTIONS.filter(q => !q.skipIf || simAnswers[q.skipIf.key] !== q.skipIf.value)
-  const sections: { name: string; qs: typeof QUESTIONS }[] = []
+  const visibleQs = REFINED_QUESTIONS
+  const sections: { name: string; qs: typeof REFINED_QUESTIONS }[] = []
   visibleQs.forEach(q => {
     const last = sections[sections.length - 1]
     if (!last || last.name !== q.section) sections.push({ name: q.section, qs: [q] })
@@ -359,7 +555,7 @@ function UpdateSimulator({
                 <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '14px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {section.qs.map(q => {
                     const isChanged = simAnswers[q.key] !== originalAnswers[q.key]
-                    const points = OPTION_POINTS[q.key]
+                    const points = REFINED_OPTION_POINTS[q.key]
                     const currentPts = points?.[simAnswers[q.key] || ''] || 0
                     const originalPts = points?.[originalAnswers[q.key] || ''] || 0
                     const ptsDelta = currentPts - originalPts
@@ -462,10 +658,10 @@ function UpdateSimulator({
             <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '16px', padding: '1.25rem', marginBottom: '1rem' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Breakdown</div>
               {[
-                { label: 'Financial', orig: originalResult.score.financial, sim: simResult.score.financial, max: 40, color: T.saffron },
-                { label: 'Life', orig: originalResult.score.lifeComplexity, sim: simResult.score.lifeComplexity, max: 25, color: '#7C5CBF' },
+                { label: 'Financial', orig: originalResult.score.financial, sim: simResult.score.financial, max: 24, color: T.saffron },
+                { label: 'Life', orig: originalResult.score.lifeComplexity, sim: simResult.score.lifeComplexity, max: 18, color: '#7C5CBF' },
                 { label: 'Career', orig: originalResult.score.career, sim: simResult.score.career, max: 20, color: T.green },
-                { label: 'Planning', orig: originalResult.score.planning, sim: simResult.score.planning, max: 20, color: T.navy },
+                { label: 'Planning', orig: originalResult.score.planning, sim: simResult.score.planning, max: 27, color: T.navy },
               ].map(s => {
                 const d = s.sim - s.orig
                 return (
@@ -515,7 +711,7 @@ function UpdateSimulator({
                   {changedKeys.length} change{changedKeys.length > 1 ? 's' : ''}
                 </div>
                 {changedKeys.slice(0, 3).map(k => {
-                  const q = QUESTIONS.find(x => x.key === k)
+                  const q = REFINED_QUESTIONS.find(x => x.key === k)
                   const origLabel = q?.opts.find(o => o.k === originalAnswers[k])?.label || originalAnswers[k]
                   const simLabel = q?.opts.find(o => o.k === simAnswers[k])?.label || simAnswers[k]
                   return (
@@ -691,7 +887,7 @@ function UpdateSimulator({
 // For brevity, I'll just note they go here
 
 function QSelect({ value, onChange, opts, questionKey }: { value: string; onChange: (v: string) => void; opts: { k: string; label: string }[]; questionKey: keyof Answers }) {
-  const points = OPTION_POINTS[questionKey] || {}
+  const points = REFINED_OPTION_POINTS[questionKey] || {}
   
   return (
     <div className="planner-option-grid" style={{ display: 'grid', gap: '0.7rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
@@ -719,7 +915,7 @@ function QSelect({ value, onChange, opts, questionKey }: { value: string; onChan
                 <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, lineHeight: 1.45 }}>{o.label}</div>
                 {pts !== undefined ? (
                   <div style={{ marginTop: 6, fontSize: 12, color: selected ? T.saffron : T.muted, lineHeight: 1.5 }}>
-                    {pts > 0 ? `Adds ${pts} readiness point${pts === 1 ? '' : 's'}` : 'No readiness points'}
+                    {pts > 0 ? `Adds ${pts} readiness point${pts === 1 ? '' : 's'}` : pts < 0 ? `Reduces readiness by ${Math.abs(pts)} point${Math.abs(pts) === 1 ? '' : 's'}` : 'Neutral impact'}
                   </div>
                 ) : null}
               </div>
@@ -883,9 +1079,10 @@ export default function Planner() {
       }
 
       if (data?.answers_json && data?.result_json) {
-        const savedAnswers = data.answers_json as Partial<Answers>
+        const savedAnswers = normalizeAnswers(data.answers_json as Partial<Record<string, unknown>>)
+        const normalizedResult = computeRefinedResult(savedAnswers as Answers)
         setAnswers(savedAnswers)
-        setResult(data.result_json as Result)
+        setResult(normalizedResult)
         setPlannerMoveDate(defaultMoveDateForTimeline(savedAnswers.timeline))
       } else {
         setAnswers({})
@@ -912,7 +1109,7 @@ export default function Planner() {
 
   if (shouldBlock) return null
 
-  const visibleQs = QUESTIONS.filter(q => !q.skipIf || answers[q.skipIf.key] !== q.skipIf.value)
+  const visibleQs = REFINED_QUESTIONS
   const answered = visibleQs.filter(q => answers[q.key]).length
   const total = visibleQs.length
   const progress = Math.round((answered / total) * 100)
@@ -938,7 +1135,7 @@ export default function Planner() {
 
     setLoading(true)
     setSubmitError('')
-    const computedResult = computeResult(answers as Answers)
+    const computedResult = computeRefinedResult(answers as Answers)
     
     try {
       await submitPlannerReport({
@@ -1131,10 +1328,10 @@ export default function Planner() {
   if (result && user) {
     const r = result
     const scoreBreakdown = [
-      { label: 'Financial', s: r.score.financial, max: 40, c: T.saffron, note: 'Buffer, runway, and tax timing' },
-      { label: 'Life Complexity', s: r.score.lifeComplexity, max: 25, c: '#7C5CBF', note: 'Family, housing, and move friction' },
+      { label: 'Financial', s: r.score.financial, max: 24, c: T.saffron, note: 'Liquidity, fixed pressure, and confidence' },
+      { label: 'Life Complexity', s: r.score.lifeComplexity, max: 18, c: '#7C5CBF', note: 'Family complexity and housing readiness' },
       { label: 'Career', s: r.score.career, max: 20, c: T.green, note: 'Income continuity after the move' },
-      { label: 'Planning', s: r.score.planning, max: 20, c: T.navy, note: 'City clarity, RNOR, and timing' },
+      { label: 'Planning', s: r.score.planning, max: 27, c: T.navy, note: 'Country, timing, city, RNOR, and asset planning' },
     ]
     const topRisk = r.risks[0]
     const nextMove = r.recommendation.actions[0] || 'Keep refining the move plan before you commit.'
@@ -1541,9 +1738,35 @@ export default function Planner() {
                     <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                       {q.section}
                     </div>
-                    <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4 }}>
-                      {index + 1}. {q.q}
-                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 }}>
+                      <h3 style={{ fontSize: '1.15rem', marginBottom: 0, color: T.ink, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4, flex: 1 }}>
+                        {index + 1}. {q.q}
+                      </h3>
+                      {'tooltip' in q ? (
+                        <span
+                          title={q.tooltip}
+                          aria-label={q.tooltip}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 22,
+                            height: 22,
+                            borderRadius: '50%',
+                            border: `1px solid ${T.border}`,
+                            background: 'rgba(29,22,15,0.02)',
+                            color: T.soft,
+                            fontSize: 12,
+                            fontWeight: 700,
+                            flexShrink: 0,
+                            cursor: 'help',
+                            boxShadow: '0 4px 10px rgba(29,22,15,0.04)',
+                          }}
+                        >
+                          ?
+                        </span>
+                      ) : null}
+                    </div>
                     <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>{q.hint}</p>
                   </div>
                   {answers[q.key] ? (
