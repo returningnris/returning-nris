@@ -10,37 +10,60 @@ type Answers = {
   country: string
   savings: string
   yearsAbroad: string
-  hasKids: string
-  kidsAge: string
+  commitments: string
+  netWorth: string
   hasJob: string
   city: string
   timeline: string
+  childrenCount: string
+  teenageChildren: string
   knowsRNOR: string
+  foreignAssets: string
   housing: string
   moveDate: string
   alreadyMoved: string
+  hasKids: string
+  kidsAge: string
 }
 
 const CITY_BASE: Record<string, number> = {
-  Hyderabad: 180000,
-  Bangalore: 240000,
-  Pune: 160000,
-  Chennai: 170000,
-  Mumbai: 280000,
-  Other: 185000,
-  undecided: 185000,
+  Hyderabad: 190000,
+  Bangalore: 250000,
+  Pune: 185000,
+  Chennai: 180000,
+  Mumbai: 300000,
+  DelhiNCR: 240000,
+  Tier2: 160000,
+  undecided: 200000,
 }
 
 const SAVINGS_USD: Record<string, number> = {
   '200000+': 200000,
-  '100000': 150000,
-  '50000': 75000,
+  '150000': 150000,
+  '100000': 100000,
+  '50000': 50000,
   'under50': 35000,
 }
 
 function calcRunwayMonths(savings: string, city: string): number {
   const monthly = CITY_BASE[city] || 185000
   return Math.round(((SAVINGS_USD[savings] || 75000) * 83) / monthly)
+}
+
+function getHasKidsAnswer(A: Partial<Answers>): string {
+  if (A.childrenCount) {
+    return A.childrenCount === 'none' ? 'no' : 'yes'
+  }
+  return A.hasKids || ''
+}
+
+function getKidsAgeAnswer(A: Partial<Answers>): string {
+  if (A.teenageChildren) {
+    if (A.teenageChildren === 'one' || A.teenageChildren === 'two_plus') return 'teen'
+    if (A.childrenCount === 'one' || A.childrenCount === 'two_plus') return '5to12'
+    return ''
+  }
+  return A.kidsAge || ''
 }
 
 type ScoreBreakdown = {
@@ -56,65 +79,71 @@ function computeScore(A: Answers): ScoreBreakdown {
   let life = 0
   let career = 0
   let planning = 0
+  const commitmentsPenalty =
+    A.commitments === 'very_high' ? 9 : A.commitments === 'high' ? 5 : A.commitments === 'moderate' ? 2 : 0
+  const runway = calcRunwayMonths(A.savings, A.city)
 
   if (A.savings === '200000+') financial += 20
+  else if (A.savings === '150000') financial += 16
   else if (A.savings === '100000') financial += 15
   else if (A.savings === '50000') financial += 10
   else financial += 5
 
-  if (A.yearsAbroad === '10+' || A.yearsAbroad === '7') financial += 10
-  else if (A.yearsAbroad === '5') financial += 7
-  else if (A.yearsAbroad === '3') financial += 5
-  else financial += 2
+  financial -= commitmentsPenalty
+  if (A.netWorth === '1000000+') financial += 10
+  else if (A.netWorth === '750000') financial += 8
+  else if (A.netWorth === '500000') financial += 5
+  else if (A.netWorth === '250000') financial += 3
 
   if (A.country === 'USA' || A.country === 'UK') financial += 5
   else if (A.country === 'UAE') financial += 4
   else financial += 3
 
-  const runway = calcRunwayMonths(A.savings, A.city)
-  if (runway >= 30) financial += 5
-  else if (runway >= 24) financial += 4
-  else if (runway >= 18) financial += 3
-  else if (runway >= 12) financial += 2
-  else financial += 1
+  if (runway >= 18) financial += 5
+  else if (runway >= 12) financial += 3
+  else if (runway >= 9) financial += 1
 
-  if (A.hasKids === 'no') life += 15
-  else life += 8
+  if (A.childrenCount === 'none') life += 12
+  else if (A.childrenCount === 'one') life += 8
+  else if (A.childrenCount === 'two_plus') life += 4
 
-  if (A.hasKids === 'no') life += 7
-  else if (A.kidsAge === 'under5') life += 6
-  else if (A.kidsAge === '5to12') life += 4
-  else if (A.kidsAge === 'adult') life += 6
-  else life += 2
+  if (A.teenageChildren === 'one') life -= 2
+  else if (A.teenageChildren === 'two_plus') life -= 4
 
   if (A.housing === 'owned') life += 3
   else if (A.housing === 'arranged') life += 2
 
   if (A.hasJob === 'remote_us') career = 20
-  else if (A.hasJob === 'own_business') career = 17
   else if (A.hasJob === 'india_job') career = 15
-  else if (A.hasJob === 'searching') career = 8
-  else career = 4
-
-  if (A.city && A.city !== 'undecided') planning += 6
-  else planning += 2
+  else if (A.hasJob === 'own_business') career = 10
+  else if (A.hasJob === 'searching') career = 0
+  else career = -5
 
   if (A.timeline === 'within6') planning += 6
   else if (A.timeline === '6to12') planning += 5
   else if (A.timeline === '1to2') planning += 4
   else planning += 2
 
+  if (A.city === 'Tier2') planning += 7
+  else if (A.city === 'Hyderabad' || A.city === 'Pune' || A.city === 'Chennai') planning += 6
+  else if (A.city === 'Bangalore' || A.city === 'DelhiNCR') planning += 4
+  else if (A.city === 'Mumbai') planning += 3
+  else planning += 2
+
   if (A.knowsRNOR === 'yes_filed') planning += 8
   else if (A.knowsRNOR === 'yes_aware') planning += 5
   else if (A.knowsRNOR === 'partial') planning += 3
-  else planning += 1
+  else planning += 0
+
+  if (A.foreignAssets === 'planned') planning += 3
+  else if (A.foreignAssets === 'minimal') planning += 2
 
   return {
     financial,
     lifeComplexity: life,
     career,
     planning,
-    total: Math.min(100, financial + life + career + planning),
+    total: Math.max(0, Math.min(100, financial + life + career + planning)),
   }
 }
 
@@ -170,7 +199,7 @@ const MILESTONES: Milestone[] = [
     pillar: 'Financial',
     description: '$100K or more in liquid savings, with at least 18 months of runway.',
     answerKey: 'savings',
-    completedWhen: (a) => ['200000+', '100000'].includes(a.savings),
+    completedWhen: (a) => ['200000+', '150000', '100000'].includes(a.savings),
   },
   {
     id: 'rnor',
@@ -209,9 +238,9 @@ const MILESTONES: Milestone[] = [
     scoreImpact: 6,
     pillar: 'Life',
     description: 'Schooling or family timing has been discussed and the move window is realistic.',
-    answerKey: 'hasKids',
+    answerKey: 'childrenCount',
     completedWhen: (a) =>
-      a.hasKids === 'no' || (a.hasKids === 'yes' && ['under5', '5to12', 'adult'].includes(a.kidsAge)),
+      getHasKidsAnswer(a) === 'no' || (getHasKidsAnswer(a) === 'yes' && ['under5', '5to12', 'adult'].includes(getKidsAgeAnswer(a))),
   },
 ]
 
@@ -220,6 +249,7 @@ type Question = {
   section: string
   q: string
   hint: string
+  tooltip?: string
   opts: { k: string; label: string; sub?: string }[]
   skipIf?: { key: keyof Answers; value: string }
 }
@@ -227,115 +257,148 @@ type Question = {
 const SETUP_QUESTIONS: Question[] = [
   {
     key: 'country',
-    section: 'Where you are',
+    section: 'Where You Are',
     q: 'Where are you currently based?',
-    hint: 'Country influences RNOR context and return planning assumptions.',
+    hint: 'A small modifier tied to tax complexity and move structure.',
+    tooltip: 'A minor factor. It slightly changes tax complexity and move setup.',
     opts: [
       { k: 'USA', label: 'United States' },
       { k: 'UK', label: 'United Kingdom' },
       { k: 'UAE', label: 'UAE / Middle East' },
       { k: 'Canada', label: 'Canada' },
-      { k: 'Other', label: 'Other' },
-    ],
-  },
-  {
-    key: 'yearsAbroad',
-    section: 'Where you are',
-    q: 'How long have you lived abroad?',
-    hint: 'More time abroad often means a stronger RNOR window.',
-    opts: [
-      { k: '10+', label: '10+ years' },
-      { k: '7', label: '7-10 years' },
-      { k: '5', label: '5-7 years' },
-      { k: '3', label: '3-5 years' },
-      { k: 'under3', label: 'Under 3 years' },
+      { k: 'Other', label: 'Other country' },
     ],
   },
   {
     key: 'savings',
     section: 'Finances',
-    q: 'How much liquid savings do you have?',
-    hint: 'Savings are the biggest shock absorber during the move.',
+    q: 'Total liquid savings?',
+    hint: 'Your strongest financial readiness signal and primary runway input.',
+    tooltip: 'Your main readiness driver. More liquid cash means more runway.',
     opts: [
-      { k: '200000+', label: '$200,000+' },
-      { k: '100000', label: '$100K-$200K' },
-      { k: '50000', label: '$50K-$100K' },
-      { k: 'under50', label: 'Under $50K' },
+      { k: '200000+', label: '$200K+' },
+      { k: '150000', label: '$150K' },
+      { k: '100000', label: '$100K' },
+      { k: '50000', label: '$50K' },
+    ],
+  },
+  {
+    key: 'commitments',
+    section: 'Finances',
+    q: 'Do you have significant monthly financial commitments (EMIs, loans, etc.)?',
+    hint: 'Fixed obligations reduce how long your savings can actually support the move.',
+    tooltip: 'Higher fixed payments reduce usable runway.',
+    opts: [
+      { k: 'none', label: 'No significant commitments' },
+      { k: 'moderate', label: 'Moderate commitments (< $500/month)' },
+      { k: 'high', label: 'High commitments ($1000/month)' },
+      { k: 'very_high', label: 'Very high commitments ($1500/month)' },
+    ],
+  },
+  {
+    key: 'netWorth',
+    section: 'Finances',
+    q: 'Total net worth / other assets?',
+    hint: 'A secondary confidence modifier, not a replacement for liquidity.',
+    tooltip: 'A confidence boost, but less important than liquid savings.',
+    opts: [
+      { k: '1000000+', label: '$1M+' },
+      { k: '750000', label: '$750K' },
+      { k: '500000', label: '$500K' },
+      { k: '250000', label: '$250K' },
     ],
   },
   {
     key: 'hasJob',
     section: 'Career',
-    q: 'What does income look like after the move?',
-    hint: 'Income continuity is the single biggest readiness lever.',
+    q: 'Career situation after moving to India?',
+    hint: 'Income continuity is the single biggest factor in readiness.',
+    tooltip: 'The biggest readiness factor. Stable income lowers risk fast.',
     opts: [
-      { k: 'remote_us', label: 'Remote job retained', sub: 'Same employer or same salary band' },
-      { k: 'own_business', label: 'Location independent business' },
-      { k: 'india_job', label: 'India job already confirmed' },
-      { k: 'searching', label: 'Actively searching' },
-      { k: 'no', label: 'No plan yet' },
+      { k: 'remote_us', label: 'Keeping remote US / abroad job - same salary' },
+      { k: 'india_job', label: 'India job confirmed - offer letter in hand' },
+      { k: 'own_business', label: 'Running my own business - location independent' },
+      { k: 'searching', label: 'Actively job hunting in India - no offer yet' },
+      { k: 'no', label: 'No income plan yet - will figure it out after moving' },
     ],
   },
   {
-    key: 'hasKids',
+    key: 'childrenCount',
     section: 'Family',
-    q: 'Are children part of this move?',
-    hint: 'School timing can reshape the entire return plan.',
+    q: 'How many children are you planning for?',
+    hint: 'More children increase admissions, coordination, and planning complexity.',
+    tooltip: 'More children usually means more planning complexity.',
     opts: [
-      { k: 'no', label: 'No children involved' },
-      { k: 'yes', label: 'Yes, children are involved' },
+      { k: 'none', label: 'None' },
+      { k: 'one', label: '1' },
+      { k: 'two_plus', label: '2+' },
     ],
   },
   {
-    key: 'kidsAge',
+    key: 'teenageChildren',
     section: 'Family',
-    q: 'What is the age range?',
-    hint: 'Teen transitions usually need the most lead time.',
+    q: 'Do you have teenage children (13-17)?',
+    hint: 'Teen transitions are the most likely to disrupt an otherwise solid move plan.',
+    tooltip: 'Teen moves are usually the hardest school and social transition.',
     opts: [
-      { k: 'under5', label: 'Under 5' },
-      { k: '5to12', label: '5-12 years' },
-      { k: 'teen', label: '13-17 years' },
-      { k: 'adult', label: '18+ adults' },
+      { k: 'none', label: 'None' },
+      { k: 'one', label: '1' },
+      { k: 'two_plus', label: '2+' },
     ],
-    skipIf: { key: 'hasKids', value: 'no' },
   },
   {
     key: 'city',
-    section: 'Where you are going',
-    q: 'Which city are you targeting?',
-    hint: 'City choice changes cost, schools, housing, and hiring rhythm.',
+    section: "Where You're Going",
+    q: 'Target city in India?',
+    hint: 'City changes cost and logistics, but should not overpower savings or income.',
+    tooltip: 'City affects monthly burn and lifestyle trade-offs.',
     opts: [
       { k: 'Hyderabad', label: 'Hyderabad' },
       { k: 'Bangalore', label: 'Bangalore' },
       { k: 'Pune', label: 'Pune' },
       { k: 'Chennai', label: 'Chennai' },
       { k: 'Mumbai', label: 'Mumbai' },
-      { k: 'Other', label: 'Another city' },
-      { k: 'undecided', label: 'Still undecided' },
+      { k: 'DelhiNCR', label: 'Delhi NCR' },
+      { k: 'Tier2', label: 'Tier 2 city (Kochi, Vizag, etc.)' },
+      { k: 'undecided', label: 'Not decided yet' },
     ],
   },
   {
     key: 'housing',
-    section: 'Where you are going',
-    q: 'How far along is housing?',
-    hint: 'The first 60-90 days feel very different with housing sorted.',
+    section: "Where You're Going",
+    q: 'Housing situation in India?',
+    hint: 'Housing readiness reduces both cost pressure and move stress.',
+    tooltip: 'Arranged housing reduces stress and early uncertainty.',
     opts: [
-      { k: 'owned', label: 'Home already owned' },
-      { k: 'arranged', label: 'Rental or temporary stay arranged' },
+      { k: 'owned', label: 'Own home - ready to move in' },
+      { k: 'arranged', label: 'Rental finalized' },
       { k: 'searching', label: 'Actively searching' },
       { k: 'no', label: 'Not started yet' },
     ],
   },
   {
     key: 'knowsRNOR',
-    section: 'Tax planning',
-    q: 'How ready are you on RNOR planning?',
-    hint: 'RNOR timing can materially change tax outcomes after the move.',
+    section: 'Tax Planning',
+    q: 'Aware of RNOR tax status?',
+    hint: 'A planning-maturity signal that can materially affect post-move taxes.',
+    tooltip: 'RNOR planning can reduce avoidable tax in the first years back.',
     opts: [
-      { k: 'yes_filed', label: 'Planned with a specialist CA' },
-      { k: 'yes_aware', label: 'Aware and researching' },
-      { k: 'partial', label: 'Heard of it, not confident yet' },
-      { k: 'no', label: 'New topic for me' },
+      { k: 'yes_filed', label: 'Yes - already planned with a CA specialist' },
+      { k: 'yes_aware', label: 'Yes - aware but not planned yet' },
+      { k: 'partial', label: 'Heard of it, not sure what it means' },
+      { k: 'no', label: 'No - first time hearing this' },
+    ],
+  },
+  {
+    key: 'foreignAssets',
+    section: 'Tax Planning',
+    q: 'Do you have foreign financial assets (401k, RSUs, stocks, etc.) that need planning?',
+    hint: 'Captures cross-border planning complexity without expanding the form too much.',
+    tooltip: 'Foreign assets need tax and compliance planning before you move.',
+    opts: [
+      { k: 'planned', label: 'Yes - planned or being handled' },
+      { k: 'unplanned', label: 'Yes - not yet planned' },
+      { k: 'minimal', label: 'No / minimal' },
     ],
   },
 ]
@@ -750,10 +813,10 @@ function journeyPct(completedTaskCount: number, totalTaskCount: number) {
 
 function getPostMoveRecommendation(A: Answers) {
   const noIncome = A.hasJob === 'no' || A.hasJob === 'searching'
-  const lowSavings = A.savings === 'under50'
+  const lowSavings = A.savings === '50000'
   const rnorBlind = A.knowsRNOR === 'no' || A.knowsRNOR === 'partial'
   const noHousing = A.housing === 'no' || A.housing === 'searching'
-  const hasTeens = A.hasKids === 'yes' && A.kidsAge === 'teen'
+  const hasTeens = getKidsAgeAnswer(A) === 'teen'
 
   if (noIncome && lowSavings) {
     return {
@@ -1029,7 +1092,31 @@ function QuestionBlock({
           <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
             {question.section}
           </div>
-          <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4 }}>{index + 1}. {question.q}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4 }}>{index + 1}. {question.q}</h3>
+            {question.tooltip ? (
+              <span
+                title={question.tooltip}
+                aria-label={question.tooltip}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 20,
+                  height: 20,
+                  borderRadius: '50%',
+                  border: `1px solid ${T.borderStrong}`,
+                  color: T.soft,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'help',
+                  userSelect: 'none',
+                }}
+              >
+                i
+              </span>
+            ) : null}
+          </div>
           <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>{question.hint}</p>
         </div>
         {value ? <Pill tone="green">Set</Pill> : null}
@@ -1050,11 +1137,13 @@ function QuestionBlock({
 }
 
 function TimelinePicker({
+  index,
   value,
   alreadyMoved,
   onMoveDate,
   onAlreadyMoved,
 }: {
+  index: number
   value: string
   alreadyMoved: string
   onMoveDate: (value: string) => void
@@ -1070,9 +1159,31 @@ function TimelinePicker({
           <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
             Timeline
           </div>
-          <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink }}>When are you planning to move?</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <h3 style={{ fontSize: '1.15rem', marginBottom: 6, color: T.ink }}>{index}. When are you planning to move?</h3>
+            <span
+              title="Shorter timelines need stronger finances, planning, and job certainty."
+              aria-label="Shorter timelines need stronger finances, planning, and job certainty."
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 20,
+                height: 20,
+                borderRadius: '50%',
+                border: `1px solid ${T.borderStrong}`,
+                color: T.soft,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'help',
+                userSelect: 'none',
+              }}
+            >
+              i
+            </span>
+          </div>
           <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>
-            Choose a likely date if you have one. A rough estimate is enough to shape the journey.
+            A shorter timeline demands stronger readiness before departure.
           </p>
         </div>
         {value ? <Pill tone="saffron">{formatMoveDate(value)}</Pill> : null}
@@ -1176,6 +1287,8 @@ function TimelinePicker({
 
 function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: React.Dispatch<Action> }) {
   const visibleQuestions = SETUP_QUESTIONS.filter((q) => !q.skipIf || state.answers[q.skipIf.key] !== q.skipIf.value)
+  const beforeTimelineQuestions = visibleQuestions.slice(0, 1)
+  const afterTimelineQuestions = visibleQuestions.slice(1)
   const answered = visibleQuestions.filter((q) => state.answers[q.key]).length
   const moveDateAnswered = !!state.answers.moveDate
   const alreadyMovedRequired = isMoveDatePast(state.answers.moveDate || '')
@@ -1187,9 +1300,23 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
   const projectedAnswers = state.answers as Answers
 
   const projectedScore = useMemo(() => {
-    const requiredKeys: (keyof Answers)[] = ['country', 'savings', 'yearsAbroad', 'hasKids', 'hasJob', 'city', 'timeline', 'knowsRNOR', 'housing', 'moveDate', 'alreadyMoved', 'kidsAge']
+    const requiredKeys: (keyof Answers)[] = [
+      'country',
+      'savings',
+      'commitments',
+      'netWorth',
+      'hasJob',
+      'city',
+      'housing',
+      'childrenCount',
+      'teenageChildren',
+      'knowsRNOR',
+      'foreignAssets',
+      'timeline',
+      'moveDate',
+      'alreadyMoved',
+    ]
     const completeEnough = requiredKeys.every((key) => {
-      if (key === 'kidsAge' && state.answers.hasKids === 'no') return true
       if (key === 'alreadyMoved' && !alreadyMovedRequired) return true
       return !!state.answers[key]
     })
@@ -1312,7 +1439,7 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
               </div>
             </SurfaceCard>
 
-            {visibleQuestions.map((question, index) => (
+            {beforeTimelineQuestions.map((question, index) => (
               <QuestionBlock
                 key={question.key}
                 index={index}
@@ -1323,11 +1450,22 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
             ))}
 
             <TimelinePicker
+              index={beforeTimelineQuestions.length + 1}
               value={state.answers.moveDate || ''}
               alreadyMoved={state.answers.alreadyMoved || ''}
               onMoveDate={(value) => dispatch({ type: 'SET_MOVE_DATE', value })}
               onAlreadyMoved={(value) => dispatch({ type: 'SET_ANSWER', key: 'alreadyMoved', value })}
             />
+
+            {afterTimelineQuestions.map((question, index) => (
+              <QuestionBlock
+                key={question.key}
+                index={beforeTimelineQuestions.length + 2 + index}
+                question={question}
+                value={state.answers[question.key] || ''}
+                onChange={(value) => dispatch({ type: 'SET_ANSWER', key: question.key, value })}
+              />
+            ))}
 
             {allDone ? (
               <button
