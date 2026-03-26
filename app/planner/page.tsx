@@ -418,7 +418,7 @@ function computeRefinedRecommendation(A: Answers, score: number): Rec {
   if (score >= 80 && !noIncome && !searching && !lowerSavings) {
     const incomeStr = remote ? 'keeping your US salary' : ownBiz ? 'running your own business' : 'a confirmed job in India'
     return {
-      icon: 'Ready', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
+      icon: '', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
       verdict: 'You look ready to move.',
       directTalk: `With ${incomeStr}, ${A.savings === '200000+' || A.savings === '150000' ? 'strong liquidity' : 'solid liquidity'}, and a defined city plan, your profile looks prepared rather than hopeful.`,
       actions: [
@@ -430,7 +430,7 @@ function computeRefinedRecommendation(A: Answers, score: number): Rec {
 
   if (searching && !lowerSavings) {
     return {
-      icon: 'Watch', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
+      icon: '', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
       verdict: 'You are close, but income is still the missing piece.',
       directTalk: 'Your profile has enough underlying strength that this is mostly an execution problem now. The most important remaining gap is still unconfirmed income.',
       actions: [
@@ -441,7 +441,7 @@ function computeRefinedRecommendation(A: Answers, score: number): Rec {
   }
 
   return {
-    icon: 'Pause', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
+    icon: '', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
     verdict: 'Strengthen the foundation before you move.',
     directTalk: 'Your result suggests the move is still too fragile today. Focus first on income certainty, usable runway, and the planning gaps most likely to create pressure after relocation.',
     actions: [
@@ -739,7 +739,7 @@ function UpdateSimulator({
                     Updated Recommendation
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '1.5rem', flexShrink: 0, lineHeight: 1 }}>{simResult.recommendation.icon}</span>
+                    {simResult.recommendation.icon ? <span style={{ fontSize: '1.5rem', flexShrink: 0, lineHeight: 1 }}>{simResult.recommendation.icon}</span> : null}
                     <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1rem', color: simResult.recommendation.color, lineHeight: 1.35 }}>
                       {simResult.recommendation.verdict}
                     </div>
@@ -1334,8 +1334,6 @@ export default function Planner() {
       { label: 'Career', s: r.score.career, max: 20, c: T.green, note: 'Income continuity after the move' },
       { label: 'Life Complexity', s: r.score.lifeComplexity, max: 18, c: '#7C5CBF', note: 'Family complexity and housing readiness' },
     ]
-    const topRisk = r.risks[0]
-    const nextMove = r.recommendation.actions[0] || 'Keep refining the move plan before you commit.'
 
     return (
       <div className="planner-page" style={{ background: T.bg, backgroundImage: T.heroGrad, minHeight: '100vh', fontFamily: 'DM Sans, sans-serif' }} ref={reportRef}>
@@ -1399,39 +1397,14 @@ export default function Planner() {
             </div>
 
             <div style={{ display: 'grid', gap: '0.9rem' }}>
-              <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 22, padding: '1.05rem 1.1rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                      Next best action
-                    </div>
-                    <h2 style={{ fontSize: '1.15rem', color: T.ink, marginBottom: 6 }}>{topRisk ? topRisk.title : r.recommendation.verdict}</h2>
-                  </div>
-                  <div style={{ background: r.statusBg, color: r.statusColor, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 999, alignSelf: 'flex-start' }}>
-                    {r.status}
-                  </div>
-                </div>
-
-                <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 14 }}>
-                  {topRisk ? topRisk.detail : r.recommendation.directTalk}
-                </p>
-
-                <div
-                  style={{
-                    padding: '1rem',
-                    borderRadius: 18,
-                    background: T.saffronLight,
-                    border: `1px solid ${T.saffronBorder}`,
-                  }}
-                >
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#8d5c22', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                    Why this matters
-                  </div>
-                  <div style={{ fontSize: 14, color: '#8d5c22', lineHeight: 1.75 }}>
-                    {nextMove}
-                  </div>
-                </div>
-              </div>
+              <FounderConsultationCard
+                variant="results"
+                source="readiness_results"
+                email={user?.email}
+                firstName={user?.firstName}
+                lastName={user?.lastName}
+                readinessStatus={r.status}
+              />
 
               <div style={{ display: 'grid', gap: 10 }}>
                 <Link
@@ -1513,7 +1486,7 @@ export default function Planner() {
                 Recommendation
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-                <span style={{ fontSize: '1.75rem', flexShrink: 0, lineHeight: 1 }}>{r.recommendation.icon}</span>
+                {r.recommendation.icon ? <span style={{ fontSize: '1.75rem', flexShrink: 0, lineHeight: 1 }}>{r.recommendation.icon}</span> : null}
                 <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.25rem', color: r.recommendation.color, lineHeight: 1.35 }}>
                   {r.recommendation.verdict}
                 </div>
@@ -1555,17 +1528,6 @@ export default function Planner() {
                 ))}
               </div>
             </div>
-          </div>
-
-          <div style={{ marginTop: '1rem' }}>
-            <FounderConsultationCard
-              variant="results"
-              source="readiness_results"
-              email={user?.email}
-              firstName={user?.firstName}
-              lastName={user?.lastName}
-              readinessStatus={r.status}
-            />
           </div>
 
           <div className="planner-result-cards-grid">
