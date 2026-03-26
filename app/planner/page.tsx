@@ -137,18 +137,18 @@ const REFINED_QUESTIONS: {
   key: keyof Answers; section: string; q: string; hint: string; tooltip: string
   opts: { k: string; label: string }[]
 }[] = [
-  { key: 'country', section: 'Where You Are', q: 'Where are you currently based?', hint: 'A small modifier tied to tax complexity and move structure.', tooltip: 'Your current country slightly affects readiness because it changes tax complexity, likely savings profile, and how easily you can structure your move. It is only a minor modifier, not a major decision factor.', opts: [{ k: 'USA', label: 'United States' }, { k: 'UK', label: 'United Kingdom' }, { k: 'UAE', label: 'UAE / Middle East' }, { k: 'Canada', label: 'Canada' }, { k: 'Other', label: 'Other country' }] },
-  { key: 'timeline', section: 'Timeline', q: 'When are you planning to move?', hint: 'A shorter timeline demands stronger readiness before departure.', tooltip: 'Your timeline determines how urgently you need to prepare. A shorter timeline requires stronger financial readiness, job certainty, and planning before your move.', opts: [{ k: 'within6', label: 'Within 6 months' }, { k: '6to12', label: '6â€“12 months' }, { k: '1to2', label: '1â€“2 years' }] },
-  { key: 'savings', section: 'Finances', q: 'Total liquid savings?', hint: 'Your strongest financial readiness signal and primary runway input.', tooltip: 'Liquid savings is the most important factor for a smooth return. It determines how long you can manage expenses without income. Ideally, you should have at least 12â€“18 months of runway.', opts: [{ k: '200000+', label: '$200K+' }, { k: '150000', label: '$150K' }, { k: '100000', label: '$100K' }, { k: '50000', label: '$50K' }] },
-  { key: 'commitments', section: 'Finances', q: 'Do you have significant monthly financial commitments (EMIs, loans, etc.)?', hint: 'Fixed obligations reduce how long your savings can actually support the move.', tooltip: 'Monthly financial commitments reduce your available financial buffer. Higher fixed expenses can shorten your runway and increase pressure during your transition.', opts: [{ k: 'none', label: 'No significant commitments' }, { k: 'moderate', label: 'Moderate commitments (< $500/month)' }, { k: 'high', label: 'High commitments ($1000/month)' }, { k: 'very_high', label: 'Very high commitments ($1500/month)' }] },
-  { key: 'netWorth', section: 'Finances', q: 'Total net worth / other assets?', hint: 'A secondary confidence modifier, not a replacement for liquidity.', tooltip: 'Total assets increase your confidence and financial security during the move. Even if not immediately accessible, they reduce long-term risk and give you flexibility in decision-making.', opts: [{ k: '1000000+', label: '$1M+' }, { k: '750000', label: '$750K' }, { k: '500000', label: '$500K' }, { k: '250000', label: '$250K' }] },
-  { key: 'hasJob', section: 'Career', q: 'Career situation after moving to India?', hint: 'Income continuity is the single biggest factor in readiness.', tooltip: 'Your income after moving is the single biggest factor in your readiness. Having a stable income significantly reduces risk. Uncertain or no income increases financial pressure and can force difficult decisions after moving.', opts: [{ k: 'remote_us', label: 'Keeping remote US / abroad job â€” same salary' }, { k: 'india_job', label: 'India job confirmed â€” offer letter in hand' }, { k: 'own_business', label: 'Running my own business â€” location independent' }, { k: 'searching', label: 'Actively job hunting in India â€” no offer yet' }, { k: 'no', label: 'No income plan yet â€” will figure it out after moving' }] },
-  { key: 'city', section: "Where You're Going", q: 'Target city in India?', hint: 'City changes cost and logistics, but should not overpower savings or income.', tooltip: 'City choice directly affects your monthly expenses and financial runway. Lower-cost cities allow your savings to last longer, while higher-cost cities may offer better infrastructure, schools, and job opportunities. Choosing the right city is a balance between financial comfort and lifestyle needs.', opts: [{ k: 'Hyderabad', label: 'Hyderabad' }, { k: 'Bangalore', label: 'Bangalore' }, { k: 'Pune', label: 'Pune' }, { k: 'Chennai', label: 'Chennai' }, { k: 'Mumbai', label: 'Mumbai' }, { k: 'DelhiNCR', label: 'Delhi NCR' }, { k: 'Tier2', label: 'Tier 2 city (Kochi, Vizag, etc.)' }, { k: 'undecided', label: 'Not decided yet' }] },
-  { key: 'housing', section: "Where You're Going", q: 'Housing situation in India?', hint: 'Housing readiness reduces both cost pressure and move stress.', tooltip: 'Having housing arranged significantly reduces both financial pressure and relocation stress. Owning a home provides the strongest advantage by eliminating rental costs. A finalized rental reduces uncertainty, while searching or not starting can delay your move.', opts: [{ k: 'owned', label: 'Own home â€” ready to move in' }, { k: 'arranged', label: 'Rental finalized' }, { k: 'searching', label: 'Actively searching' }, { k: 'no', label: 'Not started yet' }] },
-  { key: 'childrenCount', section: 'Family', q: 'How many children are you planning for?', hint: 'More children increase admissions, coordination, and planning complexity.', tooltip: 'More children increase planning complexity, including school admissions and coordination. Larger families typically require more preparation before moving.', opts: [{ k: 'none', label: 'None' }, { k: 'one', label: '1' }, { k: 'two_plus', label: '2+' }] },
-  { key: 'teenageChildren', section: 'Family', q: 'Do you have teenage children (13â€“17)?', hint: 'Teen transitions are the most likely to disrupt an otherwise solid move plan.', tooltip: 'Teenagers typically face the most difficulty adjusting to a move due to academic and social transitions. Having teenage children can significantly increase planning complexity.', opts: [{ k: 'none', label: 'None' }, { k: 'one', label: '1' }, { k: 'two_plus', label: '2+' }] },
-  { key: 'knowsRNOR', section: 'Tax Planning', q: 'Aware of RNOR tax status?', hint: 'A planning-maturity signal that can materially affect post-move taxes.', tooltip: 'RNOR status can significantly reduce your tax liability for 2â€“3 years after returning to India. Planning this before your move can help avoid unnecessary taxes on foreign income and assets.', opts: [{ k: 'yes_filed', label: 'Yes â€” already planned with a CA specialist' }, { k: 'yes_aware', label: 'Yes â€” aware but not planned yet' }, { k: 'partial', label: 'Heard of it, not sure what it means' }, { k: 'no', label: 'No â€” first time hearing this' }] },
-  { key: 'foreignAssets', section: 'Tax Planning', q: 'Do you have foreign financial assets (401k, RSUs, stocks, etc.) that need planning?', hint: 'Captures cross-border planning complexity without expanding the form too much.', tooltip: 'Foreign assets like 401k, stocks, and RSUs may have tax and compliance implications when you move. Proper planning helps avoid double taxation and ensures smooth transition of your finances.', opts: [{ k: 'planned', label: 'Yes â€” planned or being handled' }, { k: 'unplanned', label: 'Yes â€” not yet planned' }, { k: 'minimal', label: 'No / minimal' }] },
+  { key: 'country', section: 'Where You Are', q: 'Where are you currently based?', hint: 'A small modifier tied to tax complexity and move structure.', tooltip: 'A minor factor. It slightly changes tax complexity and move setup.', opts: [{ k: 'USA', label: 'United States' }, { k: 'UK', label: 'United Kingdom' }, { k: 'UAE', label: 'UAE / Middle East' }, { k: 'Canada', label: 'Canada' }, { k: 'Other', label: 'Other country' }] },
+  { key: 'timeline', section: 'Timeline', q: 'When are you planning to move?', hint: 'A shorter timeline demands stronger readiness before departure.', tooltip: 'Shorter timelines need stronger finances, planning, and job certainty.', opts: [{ k: 'within6', label: 'Within 6 months' }, { k: '6to12', label: '6–12 months' }, { k: '1to2', label: '1–2 years' }] },
+  { key: 'savings', section: 'Finances', q: 'Total liquid savings?', hint: 'Your strongest financial readiness signal and primary runway input.', tooltip: 'Your main readiness driver. More liquid cash means more runway.', opts: [{ k: '200000+', label: '$200K+' }, { k: '150000', label: '$150K' }, { k: '100000', label: '$100K' }, { k: '50000', label: '$50K' }] },
+  { key: 'commitments', section: 'Finances', q: 'Do you have significant monthly financial commitments (EMIs, loans, etc.)?', hint: 'Fixed obligations reduce how long your savings can actually support the move.', tooltip: 'Higher fixed payments reduce usable runway.', opts: [{ k: 'none', label: 'No significant commitments' }, { k: 'moderate', label: 'Moderate commitments (< $500/month)' }, { k: 'high', label: 'High commitments ($1000/month)' }, { k: 'very_high', label: 'Very high commitments ($1500/month)' }] },
+  { key: 'netWorth', section: 'Finances', q: 'Total net worth / other assets?', hint: 'A secondary confidence modifier, not a replacement for liquidity.', tooltip: 'A confidence boost, but less important than liquid savings.', opts: [{ k: '1000000+', label: '$1M+' }, { k: '750000', label: '$750K' }, { k: '500000', label: '$500K' }, { k: '250000', label: '$250K' }] },
+  { key: 'hasJob', section: 'Career', q: 'Career situation after moving to India?', hint: 'Income continuity is the single biggest factor in readiness.', tooltip: 'The biggest readiness factor. Stable income lowers risk fast.', opts: [{ k: 'remote_us', label: 'Keeping remote US / abroad job — same salary' }, { k: 'india_job', label: 'India job confirmed — offer letter in hand' }, { k: 'own_business', label: 'Running my own business — location independent' }, { k: 'searching', label: 'Actively job hunting in India — no offer yet' }, { k: 'no', label: 'No income plan yet — will figure it out after moving' }] },
+  { key: 'city', section: "Where You're Going", q: 'Target city in India?', hint: 'City changes cost and logistics, but should not overpower savings or income.', tooltip: 'City affects monthly burn and lifestyle trade-offs.', opts: [{ k: 'Hyderabad', label: 'Hyderabad' }, { k: 'Bangalore', label: 'Bangalore' }, { k: 'Pune', label: 'Pune' }, { k: 'Chennai', label: 'Chennai' }, { k: 'Mumbai', label: 'Mumbai' }, { k: 'DelhiNCR', label: 'Delhi NCR' }, { k: 'Tier2', label: 'Tier 2 city (Kochi, Vizag, etc.)' }, { k: 'undecided', label: 'Not decided yet' }] },
+  { key: 'housing', section: "Where You're Going", q: 'Housing situation in India?', hint: 'Housing readiness reduces both cost pressure and move stress.', tooltip: 'Arranged housing reduces stress and early uncertainty.', opts: [{ k: 'owned', label: 'Own home — ready to move in' }, { k: 'arranged', label: 'Rental finalized' }, { k: 'searching', label: 'Actively searching' }, { k: 'no', label: 'Not started yet' }] },
+  { key: 'childrenCount', section: 'Family', q: 'How many children are you planning for?', hint: 'More children increase admissions, coordination, and planning complexity.', tooltip: 'More children usually means more planning complexity.', opts: [{ k: 'none', label: 'None' }, { k: 'one', label: '1' }, { k: 'two_plus', label: '2+' }] },
+  { key: 'teenageChildren', section: 'Family', q: 'Do you have teenage children (13–17)?', hint: 'Teen transitions are the most likely to disrupt an otherwise solid move plan.', tooltip: 'Teen moves are usually the hardest school and social transition.', opts: [{ k: 'none', label: 'None' }, { k: 'one', label: '1' }, { k: 'two_plus', label: '2+' }] },
+  { key: 'knowsRNOR', section: 'Tax Planning', q: 'Aware of RNOR tax status?', hint: 'A planning-maturity signal that can materially affect post-move taxes.', tooltip: 'RNOR planning can reduce avoidable tax in the first years back.', opts: [{ k: 'yes_filed', label: 'Yes — already planned with a CA specialist' }, { k: 'yes_aware', label: 'Yes — aware but not planned yet' }, { k: 'partial', label: 'Heard of it, not sure what it means' }, { k: 'no', label: 'No — first time hearing this' }] },
+  { key: 'foreignAssets', section: 'Tax Planning', q: 'Do you have foreign financial assets (401k, RSUs, stocks, etc.) that need planning?', hint: 'Captures cross-border planning complexity without expanding the form too much.', tooltip: 'Foreign assets need tax and compliance planning before you move.', opts: [{ k: 'planned', label: 'Yes — planned or being handled' }, { k: 'unplanned', label: 'Yes — not yet planned' }, { k: 'minimal', label: 'No / minimal' }] },
 ]
 
 const SECTION_COLORS: Record<string, string> = {
@@ -393,16 +393,16 @@ function computeRefinedRisks(A: Answers): RiskItem[] {
 
 function computeRefinedFinancial(A: Answers): FinancialSnapshot {
   const monthly = CITY_BASE[A.city] || 200000
-  const fmt = (n: number) => n >= 100000 ? 'â‚¹' + (n / 100000).toFixed(1) + 'L/mo' : 'â‚¹' + Math.round(n / 1000) + 'K/mo'
+  const fmt = (n: number) => n >= 100000 ? '?' + (n / 100000).toFixed(1) + 'L/mo' : '?' + Math.round(n / 1000) + 'K/mo'
   const runwayMonths = calcRefinedRunwayMonths(A.savings, A.city, A.commitments)
   const runway = runwayMonths >= 12 ? Math.floor(runwayMonths / 12) + ' yr' + (runwayMonths % 12 > 0 ? ' ' + runwayMonths % 12 + ' mo' : '') : runwayMonths + ' months'
   return {
     monthlyCost: fmt(monthly),
     runway,
     runwayMonths,
-    rnorSaving: 'â‚¹18â€“40L',
-    savingsLabel: ({ '200000+': '$200K+', '150000': '$150K', '100000': '$100K', '50000': '$50K' } as Record<string, string>)[A.savings] || 'â€“',
-    commitmentsLabel: ({ 'none': 'No major fixed payments', 'moderate': '< $500/mo', 'high': '~$1000/mo', 'very_high': '~$1500/mo' } as Record<string, string>)[A.commitments] || 'â€“',
+    rnorSaving: '?18?40L',
+    savingsLabel: ({ '200000+': '$200K+', '150000': '$150K', '100000': '$100K', '50000': '$50K' } as Record<string, string>)[A.savings] || '?',
+    commitmentsLabel: ({ 'none': 'No major fixed payments', 'moderate': '< $500/mo', 'high': '~$1000/mo', 'very_high': '~$1500/mo' } as Record<string, string>)[A.commitments] || '?',
   }
 }
 
@@ -418,19 +418,19 @@ function computeRefinedRecommendation(A: Answers, score: number): Rec {
   if (score >= 80 && !noIncome && !searching && !lowerSavings) {
     const incomeStr = remote ? 'keeping your US salary' : ownBiz ? 'running your own business' : 'a confirmed job in India'
     return {
-      icon: 'âœ…', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
+      icon: '?', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
       verdict: 'You look ready to move.',
       directTalk: `With ${incomeStr}, ${A.savings === '200000+' || A.savings === '150000' ? 'strong liquidity' : 'solid liquidity'}, and a defined city plan, your profile looks prepared rather than hopeful.`,
       actions: [
         taxPlanningGap ? 'Close RNOR and foreign-asset planning before departure so the move stays financially clean.' : 'Finalize execution details such as tax paperwork, fund transfers, and first-month logistics.',
-        noHousing ? 'Lock housing before landing so your first 30â€“60 days feel stable, not reactive.' : 'Keep the move disciplined and avoid introducing late uncertainty.',
+        noHousing ? 'Lock housing before landing so your first 30?60 days feel stable, not reactive.' : 'Keep the move disciplined and avoid introducing late uncertainty.',
       ],
     }
   }
 
   if (searching && !lowerSavings) {
     return {
-      icon: 'âš ï¸', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
+      icon: '?', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
       verdict: 'You are close, but income is still the missing piece.',
       directTalk: 'Your profile has enough underlying strength that this is mostly an execution problem now. The most important remaining gap is still unconfirmed income.',
       actions: [
@@ -441,7 +441,7 @@ function computeRefinedRecommendation(A: Answers, score: number): Rec {
   }
 
   return {
-    icon: 'â¸ï¸', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
+    icon: '?', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
     verdict: 'Strengthen the foundation before you move.',
     directTalk: 'Your result suggests the move is still too fragile today. Focus first on income certainty, usable runway, and the planning gaps most likely to create pressure after relocation.',
     actions: [
@@ -658,7 +658,7 @@ function UpdateSimulator({
             <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '16px', padding: '1.25rem', marginBottom: '1rem' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Breakdown</div>
               {[
-                { label: 'Financial', orig: originalResult.score.financial, sim: simResult.score.financial, max: 24, color: T.saffron },
+                { label: 'Financial', orig: originalResult.score.financial, sim: simResult.score.financial, max: 33, color: T.saffron },
                 { label: 'Life', orig: originalResult.score.lifeComplexity, sim: simResult.score.lifeComplexity, max: 18, color: '#7C5CBF' },
                 { label: 'Career', orig: originalResult.score.career, sim: simResult.score.career, max: 20, color: T.green },
                 { label: 'Planning', orig: originalResult.score.planning, sim: simResult.score.planning, max: 27, color: T.navy },
@@ -1035,6 +1035,7 @@ export default function Planner() {
   const userId = user?.id ?? null
   
   const [answers, setAnswers] = useState<Partial<Answers>>({})
+  const [activeTooltip, setActiveTooltip] = useState<keyof Answers | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingSavedResult, setLoadingSavedResult] = useState(true)
   const [submitError, setSubmitError] = useState('')
@@ -1328,7 +1329,7 @@ export default function Planner() {
   if (result && user) {
     const r = result
     const scoreBreakdown = [
-      { label: 'Financial', s: r.score.financial, max: 24, c: T.saffron, note: 'Liquidity, fixed pressure, and confidence' },
+      { label: 'Financial', s: r.score.financial, max: 33, c: T.saffron, note: 'Liquidity, fixed pressure, and confidence' },
       { label: 'Life Complexity', s: r.score.lifeComplexity, max: 18, c: '#7C5CBF', note: 'Family complexity and housing readiness' },
       { label: 'Career', s: r.score.career, max: 20, c: T.green, note: 'Income continuity after the move' },
       { label: 'Planning', s: r.score.planning, max: 27, c: T.navy, note: 'Country, timing, city, RNOR, and asset planning' },
@@ -1363,7 +1364,7 @@ export default function Planner() {
                   <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                     <div style={{ minWidth: 92 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Score</div>
-                      <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.4rem', color: '#fff', lineHeight: 1 }}>{r.score.total}</div>
+                      <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.4rem', color: '#fff', lineHeight: 1 }}>{r.score.total}/100</div>
                     </div>
                     <div style={{ minWidth: 92 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Status</div>
@@ -1738,14 +1739,19 @@ export default function Planner() {
                     <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                       {q.section}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6, position: 'relative' }}>
                       <h3 style={{ fontSize: '1.15rem', marginBottom: 0, color: T.ink, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, lineHeight: 1.4, flex: 1 }}>
                         {index + 1}. {q.q}
                       </h3>
                       {'tooltip' in q ? (
-                        <span
-                          title={q.tooltip}
+                        <button
+                          type="button"
                           aria-label={q.tooltip}
+                          onMouseEnter={() => setActiveTooltip(q.key)}
+                          onMouseLeave={() => setActiveTooltip((current) => current === q.key ? null : current)}
+                          onFocus={() => setActiveTooltip(q.key)}
+                          onBlur={() => setActiveTooltip((current) => current === q.key ? null : current)}
+                          onClick={() => setActiveTooltip((current) => current === q.key ? null : q.key)}
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1761,10 +1767,32 @@ export default function Planner() {
                             flexShrink: 0,
                             cursor: 'help',
                             boxShadow: '0 4px 10px rgba(29,22,15,0.04)',
+                            fontFamily: 'DM Sans, sans-serif',
                           }}
                         >
                           ?
-                        </span>
+                        </button>
+                      ) : null}
+                      {'tooltip' in q && activeTooltip === q.key ? (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 30,
+                            right: 0,
+                            maxWidth: 260,
+                            padding: '0.7rem 0.8rem',
+                            borderRadius: 14,
+                            background: T.white,
+                            border: `1px solid ${T.border}`,
+                            boxShadow: '0 14px 30px rgba(29,22,15,0.08)',
+                            fontSize: 12,
+                            lineHeight: 1.55,
+                            color: T.muted,
+                            zIndex: 2,
+                          }}
+                        >
+                          {q.tooltip}
+                        </div>
                       ) : null}
                     </div>
                     <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65 }}>{q.hint}</p>
