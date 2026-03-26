@@ -35,6 +35,7 @@ type CalendlyPopupButtonProps = {
 
 const CALENDLY_SCRIPT_ID = 'calendly-widget-script'
 const CALENDLY_STYLESHEET_ID = 'calendly-widget-stylesheet'
+const FALLBACK_CALENDLY_URL = 'https://calendly.com/returningnris/30min'
 
 function buildCalendlyUrl(baseUrl: string, source: CalendlyPopupButtonProps['source'], readinessStatus?: string) {
   if (!baseUrl) return ''
@@ -78,7 +79,7 @@ export default function CalendlyPopupButton({
   readinessStatus,
   style,
 }: CalendlyPopupButtonProps) {
-  const [runtimeCalendlyUrl, setRuntimeCalendlyUrl] = useState<string>(() => process.env.NEXT_PUBLIC_CALENDLY_URL?.trim() || '')
+  const [runtimeCalendlyUrl, setRuntimeCalendlyUrl] = useState<string>(() => process.env.NEXT_PUBLIC_CALENDLY_URL?.trim() || FALLBACK_CALENDLY_URL)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -128,7 +129,7 @@ export default function CalendlyPopupButton({
       }
     }
 
-    if (!runtimeCalendlyUrl) {
+    if (!runtimeCalendlyUrl || runtimeCalendlyUrl === FALLBACK_CALENDLY_URL) {
       void loadCalendlyUrl()
     }
 
@@ -144,7 +145,6 @@ export default function CalendlyPopupButton({
   return (
     <button
       type="button"
-      disabled={!isConfigured}
       onClick={() => {
         if (!calendlyUrl) return
 
@@ -171,14 +171,13 @@ export default function CalendlyPopupButton({
         color: '#fff',
         fontSize: 14,
         fontWeight: 700,
-        cursor: isConfigured ? 'pointer' : 'not-allowed',
-        opacity: isConfigured ? 1 : 0.55,
+        cursor: isConfigured ? 'pointer' : 'default',
+        opacity: 1,
         boxShadow: '0 10px 24px rgba(240,138,36,0.24)',
         transition: 'transform 0.18s ease, box-shadow 0.18s ease',
         ...style,
       }}
       aria-label={buttonLabel}
-      title={!isConfigured ? 'Add NEXT_PUBLIC_CALENDLY_URL to enable booking.' : undefined}
     >
       <span>{buttonLabel}</span>
       <span style={{ fontSize: 15, lineHeight: 1 }}>→</span>
