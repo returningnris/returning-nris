@@ -1215,6 +1215,12 @@ export default function Planner() {
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
+    .planner-result-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+      margin-top: 1rem;
+    }
     .planner-option-grid {
       display: grid;
       gap: 0.7rem;
@@ -1226,7 +1232,8 @@ export default function Planner() {
       }
       .planner-result-hero-grid,
       .planner-result-overview-grid,
-      .planner-result-cards-grid {
+      .planner-result-cards-grid,
+      .planner-result-actions {
         grid-template-columns: 1fr;
       }
       .planner-sticky-panel {
@@ -1405,50 +1412,6 @@ export default function Planner() {
                 lastName={user?.lastName}
                 readinessStatus={r.status}
               />
-
-              <div style={{ display: 'grid', gap: 10 }}>
-                <Link
-                  href="/journey"
-                  className="planner-journey-link"
-                  style={{
-                    display: 'inline-flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: '1rem 1.15rem',
-                    background: T.green,
-                    color: '#fff',
-                    fontSize: 14,
-                    fontWeight: 700,
-                    borderRadius: 999,
-                    textDecoration: 'none',
-                  }}
-                >
-                  Start Journey with Saved Profile
-                </Link>
-
-                <button
-                  onClick={restart}
-                  style={{
-                    width: '100%',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    padding: '1rem 1.15rem',
-                    borderRadius: 999,
-                    border: `1px solid ${T.saffronBorder}`,
-                    background: 'linear-gradient(180deg, #FFF8F0 0%, #FFF2E2 100%)',
-                    color: T.ink,
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: 'DM Sans, sans-serif',
-                  }}
-                >
-                  <span style={{ fontSize: '16px', lineHeight: 1 }}>??</span>
-                  <span>Update Milestone Changes</span>
-                </button>
-              </div>
             </div>
           </div>
 
@@ -1598,6 +1561,48 @@ export default function Planner() {
                 })}
               </div>
             </div>
+          </div>
+
+          <div className="planner-result-actions">
+            <button
+              onClick={restart}
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem 1.15rem',
+                borderRadius: 999,
+                border: `1px solid ${T.saffronBorder}`,
+                background: 'linear-gradient(180deg, #FFF8F0 0%, #FFF2E2 100%)',
+                color: T.ink,
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'DM Sans, sans-serif',
+              }}
+            >
+              Update Milestone Changes
+            </button>
+
+            <Link
+              href="/journey"
+              className="planner-journey-link"
+              style={{
+                display: 'inline-flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '1rem 1.15rem',
+                background: T.green,
+                color: '#fff',
+                fontSize: 14,
+                fontWeight: 700,
+                borderRadius: 999,
+                textDecoration: 'none',
+              }}
+            >
+              Start Journey with Saved Profile
+            </Link>
           </div>
         </div>
       </div>
