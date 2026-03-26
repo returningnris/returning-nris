@@ -134,7 +134,7 @@ with check (auth.uid() = user_id);
 
 create table if not exists public.consultation_requests (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
   email text not null,
   first_name text not null default '',
   last_name text not null default '',
@@ -170,4 +170,4 @@ create policy "consultation_requests_insert_own"
 on public.consultation_requests
 for insert
 to authenticated
-with check (auth.uid() = user_id);
+with check (user_id is null or auth.uid() = user_id);

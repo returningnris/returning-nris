@@ -149,28 +149,33 @@ export default function CalendlyPopupButton({
       onClick={async () => {
         if (!calendlyUrl) return
 
+        let accessToken = ''
+
         try {
           const {
             data: { session },
           } = await supabase.auth.getSession()
+          accessToken = session?.access_token || ''
+        } catch (error) {
+          console.error('Failed to read consultation session:', error)
+        }
 
-          if (session?.access_token) {
-            await fetch('/api/consultation-requests', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${session.access_token}`,
-              },
-              body: JSON.stringify({
-                source,
-                email,
-                firstName,
-                lastName,
-                readinessStatus,
-                calendlyUrl,
-              }),
-            })
-          }
+        try {
+          await fetch('/api/consultation-requests', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+            },
+            body: JSON.stringify({
+              source,
+              email,
+              firstName,
+              lastName,
+              readinessStatus,
+              calendlyUrl,
+            }),
+          })
         } catch (error) {
           console.error('Failed to log consultation request:', error)
         }
