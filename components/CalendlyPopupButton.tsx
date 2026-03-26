@@ -35,7 +35,7 @@ type CalendlyPopupButtonProps = {
 
 const CALENDLY_SCRIPT_ID = 'calendly-widget-script'
 const CALENDLY_STYLESHEET_ID = 'calendly-widget-stylesheet'
-const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL || ''
+const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL?.trim() || ''
 
 function buildCalendlyUrl(source: CalendlyPopupButtonProps['source'], readinessStatus?: string) {
   if (!CALENDLY_URL) return ''

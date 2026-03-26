@@ -965,26 +965,6 @@ function Pill({
   )
 }
 
-function LabeledMetric({
-  label,
-  value,
-  tone = 'neutral',
-}: {
-  label: string
-  value: string
-  tone?: 'neutral' | 'green' | 'saffron' | 'navy'
-}) {
-  const color = tone === 'green' ? T.green : tone === 'saffron' ? T.saffron : tone === 'navy' ? T.navy : T.white
-  return (
-    <div className="journey-metric" style={{ minWidth: 116 }}>
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-        {label}
-      </div>
-      <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2rem', color, lineHeight: 1 }}>{value}</div>
-    </div>
-  )
-}
-
 function OptionButton({
   selected,
   label,
@@ -1466,7 +1446,7 @@ function JourneyDashboard({
     <div style={{ minHeight: '100vh', background: T.hero }}>
       <style>{`
         .dashboard-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.72fr); gap: 1rem; align-items: stretch; }
+        .hero-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: stretch; }
         .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(240px, 320px)); gap: 0.9rem; justify-content: start; }
         .overview-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; }
         .milestone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; }
@@ -1496,115 +1476,91 @@ function JourneyDashboard({
 
       <div className="dashboard-shell">
         <div className="hero-grid" style={{ marginBottom: '1rem' }}>
-          <SurfaceCard style={{ overflow: 'hidden', background: T.dark, border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ padding: '1.15rem 1.2rem', background: T.dark }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 14 }}>
-                <div>
-                  <Pill tone="saffron">Back2India dashboard</Pill>
-                  <h1 style={{ fontSize: 'clamp(1.7rem, 4vw, 3rem)', lineHeight: 0.98, color: T.white, marginTop: 12, marginBottom: 8 }}>
-                    {state.firstName ? `${state.firstName}'s journey` : 'Your journey'}
-                  </h1>
-                  <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, maxWidth: 620 }}>
-                    {alreadyMoved
-                      ? 'The move has happened. The journey now focuses on settling in, sequencing the first year well, and reducing post-move friction.'
-                      : 'Your retained relocation flow from decision through arrival and the first year back in India.'}
-                  </p>
+          <SurfaceCard style={{ padding: '1.15rem 1.15rem 1.1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                  Next best action
                 </div>
-
-                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                  <LabeledMetric label="Journey" value={`${pct}%`} tone="saffron" />
-                  <LabeledMetric label="Phase" value={`${journeyPhaseIndex + 1}`} tone="navy" />
-                  <LabeledMetric label="Milestones" value={`${completedMsCount}/${MILESTONES.length}`} tone="green" />
-                </div>
+                <h2 style={{ fontSize: '1.15rem', color: T.ink, marginBottom: 6 }}>{nextTask ? nextTask.title : alreadyMoved ? postMove.title : 'Stay on the current path'}</h2>
               </div>
+              {nextTask?.priority === 'critical' ? <Pill tone="saffron">Critical now</Pill> : <Pill tone="navy">Guided flow</Pill>}
+            </div>
 
-              <div className="stats-grid">
-                {[
-                  { label: 'Current phase', value: `${currentPhaseLabel}` },
-                  { label: 'Move target', value: formatMoveDate(A.moveDate) },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    style={{
-                      padding: '1rem',
-                      borderRadius: 18,
-                      background: 'rgba(255,255,255,0.08)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      minHeight: 126,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                      {item.label}
-                    </div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: T.white, lineHeight: 1.35, maxWidth: 240 }}>{item.value}</div>
+            <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 10 }}>
+              {nextTask
+                ? nextTask.desc
+                : alreadyMoved
+                  ? postMove.text
+                  : highImpact
+                    ? highImpact.description
+                    : 'You have already closed the main risk areas and can keep working through the remaining phases.'}
+            </p>
+
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: '-2px', marginBottom: 2 }}>
+              <Pill tone="saffron">{currentPhaseLabel}</Pill>
+              {!alreadyMoved && highImpact ? <Pill tone="navy">{highImpact.pillar}</Pill> : null}
+              <Pill tone="green">{completedMsCount}/{MILESTONES.length} milestones</Pill>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                gap: 10,
+              }}
+            >
+              {[
+                { label: 'Journey', value: `${pct}%` },
+                { label: 'Phase', value: `${journeyPhaseIndex + 1}` },
+                { label: 'Move target', value: formatMoveDate(A.moveDate) },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    padding: '0.9rem',
+                    borderRadius: 18,
+                    background: 'rgba(29,22,15,0.03)',
+                    border: `1px solid ${T.border}`,
+                  }}
+                >
+                  <div style={{ fontSize: 11, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                    {item.label}
                   </div>
-                ))}
+                  <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, lineHeight: 1.4 }}>{item.value}</div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                padding: '0.95rem 1rem',
+                borderRadius: 18,
+                background: alreadyMoved ? postMove.bg : T.saffronSoft,
+                border: `1px solid ${alreadyMoved ? postMove.border : T.border}`,
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 700, color: alreadyMoved ? postMove.color : T.bronze, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                {alreadyMoved ? 'Recommendation' : 'Why this matters'}
+              </div>
+              <div style={{ fontSize: 14, color: alreadyMoved ? postMove.color : T.bronze, lineHeight: 1.75 }}>
+                {alreadyMoved
+                  ? postMove.actions[0]
+                  : nextTask
+                    ? `This is the cleanest move to keep the relocation plan advancing without creating avoidable downstream stress.`
+                    : 'Your journey is in a stable position right now.'}
               </div>
             </div>
           </SurfaceCard>
 
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            <SurfaceCard style={{ padding: '1.15rem 1.15rem 1.1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                    Next best action
-                  </div>
-                  <h2 style={{ fontSize: '1.15rem', color: T.ink, marginBottom: 6 }}>{nextTask ? nextTask.title : alreadyMoved ? postMove.title : 'Stay on the current path'}</h2>
-                </div>
-                {nextTask?.priority === 'critical' ? <Pill tone="saffron">Critical now</Pill> : <Pill tone="navy">Guided flow</Pill>}
-              </div>
-
-              <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 10 }}>
-                {nextTask
-                  ? nextTask.desc
-                  : alreadyMoved
-                    ? postMove.text
-                    : highImpact
-                      ? highImpact.description
-                      : 'You have already closed the main risk areas and can keep working through the remaining phases.'}
-              </p>
-
-              {!alreadyMoved && highImpact ? (
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: '-2px', marginBottom: 2 }}>
-                  <Pill tone="saffron">{currentPhaseLabel}</Pill>
-                  <Pill tone="navy">{highImpact.pillar}</Pill>
-                </div>
-              ) : null}
-
-              <div
-                style={{
-                  padding: '0.95rem 1rem',
-                  borderRadius: 18,
-                  background: alreadyMoved ? postMove.bg : T.saffronSoft,
-                  border: `1px solid ${alreadyMoved ? postMove.border : T.border}`,
-                }}
-              >
-                <div style={{ fontSize: 12, fontWeight: 700, color: alreadyMoved ? postMove.color : T.bronze, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                  {alreadyMoved ? 'Recommendation' : 'Why this matters'}
-                </div>
-                <div style={{ fontSize: 14, color: alreadyMoved ? postMove.color : T.bronze, lineHeight: 1.75 }}>
-                  {alreadyMoved
-                    ? postMove.actions[0]
-                    : nextTask
-                      ? `This is the cleanest move to keep the relocation plan advancing without creating avoidable downstream stress.`
-                      : 'Your journey is in a stable position right now.'}
-                </div>
-              </div>
-            </SurfaceCard>
-
-            <FounderConsultationCard
-              variant="dashboard"
-              source="journey_dashboard"
-              email={userEmail}
-              firstName={state.firstName}
-              lastName={userLastName}
-              readinessStatus={readinessStatus}
-            />
-          </div>
+          <FounderConsultationCard
+            variant="dashboard"
+            source="journey_dashboard"
+            email={userEmail}
+            firstName={state.firstName}
+            lastName={userLastName}
+            readinessStatus={readinessStatus}
+          />
         </div>
 
         <div className="journey-top-actions" style={{ marginBottom: '1rem' }}>
