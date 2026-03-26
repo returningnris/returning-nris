@@ -60,6 +60,13 @@ type ScoreBreakdown = {
   total: number
 }
 
+type JourneySubmissionResult = {
+  score: ScoreBreakdown
+  status: string
+  headline: string
+  subheadline: string
+}
+
 function computeScore(A: Answers): ScoreBreakdown {
   let financial = 0
   let life = 0
@@ -417,6 +424,100 @@ function isMoveDatePast(moveDate: string): boolean {
   const now = new Date()
   const [y, mo] = moveDate.split('-').map(Number)
   return new Date(y, mo - 1, 1) < new Date(now.getFullYear(), now.getMonth(), 1)
+}
+
+function hasCompleteJourneyProfile(answers: Partial<Answers>): answers is Answers {
+  const requiredKeys: (keyof Answers)[] = [
+    'country',
+    'savings',
+    'commitments',
+    'netWorth',
+    'hasJob',
+    'city',
+    'housing',
+    'childrenCount',
+    'teenageChildren',
+    'knowsRNOR',
+    'foreignAssets',
+    'timeline',
+    'moveDate',
+    'alreadyMoved',
+  ]
+
+  return requiredKeys.every((key) => {
+    if (key === 'alreadyMoved' && !isMoveDatePast(answers.moveDate || '')) {
+      return true
+    }
+
+    return Boolean(answers[key])
+  })
+}
+
+function buildJourneySubmissionResult(answers: Answers): JourneySubmissionResult {
+  const score = computeScore(answers)
+
+  if (score.total >= 80) {
+    return {
+      score,
+      status: 'Ready to Return',
+      headline: "you're ready to move",
+      subheadline: 'Your answers suggest a stable transition plan with strong execution readiness.',
+    }
+  }
+
+  if (score.total >= 60) {
+    return {
+      score,
+      status: 'Moderately Ready',
+      headline: "you're getting close",
+      subheadline: 'The move looks plausible, but a few gaps still need to be tightened before execution.',
+    }
+  }
+
+  return {
+    score,
+    status: 'Not Ready Yet',
+    headline: 'build the fundamentals first',
+    subheadline: 'Use the dashboard as a working plan while you improve the most fragile parts of the move.',
+  }
+}
+
+async function saveJourneySubmission(params: {
+  answers: Answers
+  firstName: string
+  lastName: string
+  email: string
+}) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session?.access_token) {
+    throw new Error('AUTH_REQUIRED')
+  }
+
+  const response = await fetch('/api/save-journey-profile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      userDetails: {
+        firstName: params.firstName,
+        lastName: params.lastName,
+        email: params.email,
+      },
+      answers: params.answers,
+      result: buildJourneySubmissionResult(params.answers),
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error('SAVE_JOURNEY_PROFILE_FAILED')
+  }
+
+  return response.json()
 }
 
 type Task = {
@@ -2175,7 +2276,7 @@ export default function JourneyPage() {
         Object.keys(savedAnswers).length > 0
 
       let persisted: Partial<JourneyState> = {}
-      if (hasSavedReadiness && typeof window !== 'undefined') {
+      if (typeof window !== 'undefined') {
         try {
           const raw = window.localStorage.getItem(`journey:state:${user.id}`)
           if (raw) {
@@ -2186,6 +2287,8 @@ export default function JourneyPage() {
               manualMilestoneIds?: string[]
               customTasks?: CustomTask[]
               currentPhase?: number
+              step?: JourneyState['step']
+              editingProfile?: boolean
             }
             persisted = {
               answers: parsed.answers || {},
@@ -2194,16 +2297,12 @@ export default function JourneyPage() {
               manualMilestones: new Set(parsed.manualMilestoneIds || []),
               customTasks: parsed.customTasks || [],
               currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : 0,
+              step: parsed.step === 'journey' ? 'journey' : 'profile',
+              editingProfile: Boolean(parsed.editingProfile),
             }
           }
         } catch {
           persisted = {}
-        }
-      } else if (typeof window !== 'undefined') {
-        try {
-          window.localStorage.removeItem(`journey:state:${user.id}`)
-        } catch {
-          // Ignore storage cleanup errors and continue with server-only state.
         }
       }
 
@@ -2211,20 +2310,29 @@ export default function JourneyPage() {
         console.error('Error loading journey initialization:', error)
       }
 
-      const mergedAnswers = hasSavedReadiness ? { ...savedAnswers, ...(persisted.answers || {}) } : {}
+      const restoredAnswers =
+        hasSavedReadiness || persisted.answers
+          ? { ...savedAnswers, ...(persisted.answers || {}) }
+          : {}
+      const restoredStep =
+        persisted.step ||
+        (hasSavedReadiness || hasCompleteJourneyProfile(restoredAnswers) ? 'journey' : 'profile')
 
       dispatch({
         type: 'LOAD_SAVED',
         payload: {
           firstName: user.firstName || '',
-          answers: mergedAnswers,
-          step: hasSavedReadiness ? 'journey' : 'profile',
-          editingProfile: false,
+          answers: restoredAnswers,
+          step: restoredStep,
+          editingProfile: persisted.editingProfile ?? false,
           completedTasks: persisted.completedTasks,
           completedCustomTaskIds: persisted.completedCustomTaskIds,
           manualMilestones: persisted.manualMilestones,
           customTasks: persisted.customTasks,
-          currentPhase: typeof persisted.currentPhase === 'number' ? persisted.currentPhase : getDefaultJourneyPhase(mergedAnswers),
+          currentPhase:
+            typeof persisted.currentPhase === 'number'
+              ? persisted.currentPhase
+              : getDefaultJourneyPhase(restoredAnswers),
         },
       })
       setLoadingSavedJourney(false)
@@ -2243,18 +2351,40 @@ export default function JourneyPage() {
       window.localStorage.setItem(
         `journey:state:${user.id}`,
         JSON.stringify({
-            answers: state.answers,
-            completedTaskIds: [...state.completedTasks],
-            completedCustomTaskIds: [...state.completedCustomTaskIds],
-            manualMilestoneIds: [...state.manualMilestones],
-            customTasks: state.customTasks,
-            currentPhase: state.currentPhase,
-          })
-        )
+          answers: state.answers,
+          completedTaskIds: [...state.completedTasks],
+          completedCustomTaskIds: [...state.completedCustomTaskIds],
+          manualMilestoneIds: [...state.manualMilestones],
+          customTasks: state.customTasks,
+          currentPhase: state.currentPhase,
+          step: state.step,
+          editingProfile: state.editingProfile,
+        })
+      )
     } catch {
       return
     }
   }, [loadingSavedJourney, state.answers, state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.editingProfile, state.manualMilestones, state.step, user?.id])
+
+  useEffect(() => {
+    if (authLoading || loadingSavedJourney || !user || !hasCompleteJourneyProfile(state.answers)) return
+    const completeAnswers = state.answers as Answers
+
+    const timeoutId = window.setTimeout(() => {
+      void saveJourneySubmission({
+        answers: completeAnswers,
+        firstName: user.firstName,
+        lastName: user.lastName || '',
+        email: user.email,
+      }).catch((error) => {
+        console.error('Error saving journey profile:', error)
+      })
+    }, 700)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [authLoading, loadingSavedJourney, state.answers, state.step, user])
 
   useEffect(() => {
     if (loadingSavedJourney || typeof window === 'undefined') return
