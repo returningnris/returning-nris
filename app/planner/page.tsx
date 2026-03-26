@@ -359,7 +359,7 @@ function computeRefinedScore(A: Answers): ScoreBreakdown {
   financial += REFINED_OPTION_POINTS.savings?.[A.savings] || 0
   financial += REFINED_OPTION_POINTS.commitments?.[A.commitments] || 0
   financial += REFINED_OPTION_POINTS.netWorth?.[A.netWorth] || 0
-  financial += runwayMonths >= 18 ? 3 : runwayMonths >= 12 ? 2 : runwayMonths >= 9 ? 1 : 0
+  financial += runwayMonths >= 18 ? 5 : runwayMonths >= 12 ? 3 : runwayMonths >= 9 ? 1 : 0
 
   life += REFINED_OPTION_POINTS.childrenCount?.[A.childrenCount] || 0
   life += REFINED_OPTION_POINTS.teenageChildren?.[A.teenageChildren] || 0
@@ -393,16 +393,16 @@ function computeRefinedRisks(A: Answers): RiskItem[] {
 
 function computeRefinedFinancial(A: Answers): FinancialSnapshot {
   const monthly = CITY_BASE[A.city] || 200000
-  const fmt = (n: number) => n >= 100000 ? '?' + (n / 100000).toFixed(1) + 'L/mo' : '?' + Math.round(n / 1000) + 'K/mo'
+  const fmt = (n: number) => n >= 100000 ? 'Rs ' + (n / 100000).toFixed(1) + 'L/mo' : 'Rs ' + Math.round(n / 1000) + 'K/mo'
   const runwayMonths = calcRefinedRunwayMonths(A.savings, A.city, A.commitments)
   const runway = runwayMonths >= 12 ? Math.floor(runwayMonths / 12) + ' yr' + (runwayMonths % 12 > 0 ? ' ' + runwayMonths % 12 + ' mo' : '') : runwayMonths + ' months'
   return {
     monthlyCost: fmt(monthly),
     runway,
     runwayMonths,
-    rnorSaving: '?18?40L',
-    savingsLabel: ({ '200000+': '$200K+', '150000': '$150K', '100000': '$100K', '50000': '$50K' } as Record<string, string>)[A.savings] || '?',
-    commitmentsLabel: ({ 'none': 'No major fixed payments', 'moderate': '< $500/mo', 'high': '~$1000/mo', 'very_high': '~$1500/mo' } as Record<string, string>)[A.commitments] || '?',
+    rnorSaving: 'Rs 18-40L',
+    savingsLabel: ({ '200000+': '$200K+', '150000': '$150K', '100000': '$100K', '50000': '$50K' } as Record<string, string>)[A.savings] || '-',
+    commitmentsLabel: ({ 'none': 'No major fixed payments', 'moderate': '< $500/mo', 'high': '~$1000/mo', 'very_high': '~$1500/mo' } as Record<string, string>)[A.commitments] || '-',
   }
 }
 
@@ -418,19 +418,19 @@ function computeRefinedRecommendation(A: Answers, score: number): Rec {
   if (score >= 80 && !noIncome && !searching && !lowerSavings) {
     const incomeStr = remote ? 'keeping your US salary' : ownBiz ? 'running your own business' : 'a confirmed job in India'
     return {
-      icon: '?', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
+      icon: 'Ready', color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.2)',
       verdict: 'You look ready to move.',
       directTalk: `With ${incomeStr}, ${A.savings === '200000+' || A.savings === '150000' ? 'strong liquidity' : 'solid liquidity'}, and a defined city plan, your profile looks prepared rather than hopeful.`,
       actions: [
         taxPlanningGap ? 'Close RNOR and foreign-asset planning before departure so the move stays financially clean.' : 'Finalize execution details such as tax paperwork, fund transfers, and first-month logistics.',
-        noHousing ? 'Lock housing before landing so your first 30?60 days feel stable, not reactive.' : 'Keep the move disciplined and avoid introducing late uncertainty.',
+        noHousing ? 'Lock housing before landing so your first 30-60 days feel stable, not reactive.' : 'Keep the move disciplined and avoid introducing late uncertainty.',
       ],
     }
   }
 
   if (searching && !lowerSavings) {
     return {
-      icon: '?', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
+      icon: 'Watch', color: '#CC7A00', bg: T.saffronLight, border: T.saffronBorder,
       verdict: 'You are close, but income is still the missing piece.',
       directTalk: 'Your profile has enough underlying strength that this is mostly an execution problem now. The most important remaining gap is still unconfirmed income.',
       actions: [
@@ -441,7 +441,7 @@ function computeRefinedRecommendation(A: Answers, score: number): Rec {
   }
 
   return {
-    icon: '?', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
+    icon: 'Pause', color: '#C0392B', bg: '#FCEBEB', border: 'rgba(192,57,43,0.2)',
     verdict: 'Strengthen the foundation before you move.',
     directTalk: 'Your result suggests the move is still too fragile today. Focus first on income certainty, usable runway, and the planning gaps most likely to create pressure after relocation.',
     actions: [
@@ -658,10 +658,10 @@ function UpdateSimulator({
             <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '16px', padding: '1.25rem', marginBottom: '1rem' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Breakdown</div>
               {[
-                { label: 'Financial', orig: originalResult.score.financial, sim: simResult.score.financial, max: 33, color: T.saffron },
-                { label: 'Life', orig: originalResult.score.lifeComplexity, sim: simResult.score.lifeComplexity, max: 18, color: '#7C5CBF' },
-                { label: 'Career', orig: originalResult.score.career, sim: simResult.score.career, max: 20, color: T.green },
+                { label: 'Financial', orig: originalResult.score.financial, sim: simResult.score.financial, max: 35, color: T.saffron },
                 { label: 'Planning', orig: originalResult.score.planning, sim: simResult.score.planning, max: 27, color: T.navy },
+                { label: 'Career', orig: originalResult.score.career, sim: simResult.score.career, max: 20, color: T.green },
+                { label: 'Life', orig: originalResult.score.lifeComplexity, sim: simResult.score.lifeComplexity, max: 18, color: '#7C5CBF' },
               ].map(s => {
                 const d = s.sim - s.orig
                 return (
@@ -677,9 +677,9 @@ function UpdateSimulator({
                     </div>
                     <div style={{ height: '6px', background: '#EDE9E0', borderRadius: '100px', overflow: 'hidden', position: 'relative' }}>
                       {/* Original score (faded) */}
-                      <div style={{ position: 'absolute', height: '100%', background: s.color, borderRadius: '100px', opacity: 0.25, width: `${(s.orig / s.max) * 100}%` }} />
+                      <div style={{ position: 'absolute', height: '100%', background: s.color, borderRadius: '100px', opacity: 0.25, width: `${Math.max(0, Math.min(100, (s.orig / s.max) * 100))}%` }} />
                       {/* New score */}
-                      <div style={{ position: 'absolute', height: '100%', background: s.color, borderRadius: '100px', width: `${(s.sim / s.max) * 100}%`, transition: 'width 0.35s ease' }} />
+                      <div style={{ position: 'absolute', height: '100%', background: s.color, borderRadius: '100px', width: `${Math.max(0, Math.min(100, (s.sim / s.max) * 100))}%`, transition: 'width 0.35s ease' }} />
                     </div>
                   </div>
                 )
@@ -1329,10 +1329,10 @@ export default function Planner() {
   if (result && user) {
     const r = result
     const scoreBreakdown = [
-      { label: 'Financial', s: r.score.financial, max: 33, c: T.saffron, note: 'Liquidity, fixed pressure, and confidence' },
-      { label: 'Life Complexity', s: r.score.lifeComplexity, max: 18, c: '#7C5CBF', note: 'Family complexity and housing readiness' },
-      { label: 'Career', s: r.score.career, max: 20, c: T.green, note: 'Income continuity after the move' },
+      { label: 'Financial', s: r.score.financial, max: 35, c: T.saffron, note: 'Liquidity, fixed pressure, and runway strength' },
       { label: 'Planning', s: r.score.planning, max: 27, c: T.navy, note: 'Country, timing, city, RNOR, and asset planning' },
+      { label: 'Career', s: r.score.career, max: 20, c: T.green, note: 'Income continuity after the move' },
+      { label: 'Life Complexity', s: r.score.lifeComplexity, max: 18, c: '#7C5CBF', note: 'Family complexity and housing readiness' },
     ]
     const topRisk = r.risks[0]
     const nextMove = r.recommendation.actions[0] || 'Keep refining the move plan before you commit.'
@@ -1501,7 +1501,7 @@ export default function Planner() {
                       <div style={{ fontSize: 13, fontWeight: 700, color: item.c }}>{item.s}/{item.max}</div>
                     </div>
                     <div style={{ height: 10, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden' }}>
-                      <div style={{ width: `${Math.round((item.s / item.max) * 100)}%`, height: '100%', background: item.c }} />
+                      <div style={{ width: `${Math.max(0, Math.min(100, Math.round((item.s / item.max) * 100)))}%`, height: '100%', background: item.c }} />
                     </div>
                   </div>
                 ))}
