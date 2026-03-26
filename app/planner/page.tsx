@@ -1005,11 +1005,6 @@ export default function Planner() {
       align-items: start;
       margin-bottom: 1rem;
     }
-    .planner-result-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 0.9rem;
-    }
     .planner-result-overview-grid {
       display: grid;
       grid-template-columns: 1.05fr 0.95fr;
@@ -1034,9 +1029,6 @@ export default function Planner() {
       .planner-result-overview-grid,
       .planner-result-cards-grid {
         grid-template-columns: 1fr;
-      }
-      .planner-result-stats-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       .planner-sticky-panel {
         position: static;
@@ -1077,9 +1069,6 @@ export default function Planner() {
       .planner-journey-row {
         flex-direction: column !important;
         align-items: flex-start !important;
-      }
-      .planner-result-stats-grid {
-        grid-template-columns: 1fr !important;
       }
       .planner-section-card,
       .planner-question-card,
@@ -1147,8 +1136,6 @@ export default function Planner() {
       { label: 'Planning', s: r.score.planning, max: 20, c: T.navy, note: 'City clarity, RNOR, and timing' },
     ]
     const topRisk = r.risks[0]
-    const readinessLabel =
-      r.score.total >= 80 ? 'Execution window open' : r.score.total >= 60 ? 'Close the remaining gaps' : 'Foundation needs work'
     const nextMove = r.recommendation.actions[0] || 'Keep refining the move plan before you commit.'
 
     return (
@@ -1158,8 +1145,8 @@ export default function Planner() {
         <div className="planner-result-shell">
           <div className="planner-result-hero-grid">
             <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 26, overflow: 'hidden', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
-              <div style={{ padding: '1.2rem 1.25rem', background: '#20160f' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 14 }}>
+              <div style={{ padding: '1.2rem 1.25rem', background: '#20160f', display: 'grid', gap: '1.1rem', minHeight: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                   <div>
                     <div className="planner-result-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '999px', padding: '0.45rem 0.85rem', marginBottom: '1rem' }}>
                       <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: T.saffron }} />
@@ -1191,28 +1178,23 @@ export default function Planner() {
                   </div>
                 </div>
 
-                <div className="planner-result-stats-grid">
-                  {[
-                    { label: 'Readiness', value: readinessLabel },
-                    { label: 'Financial runway', value: r.financial.runway },
-                    { label: 'Top risk count', value: `${r.risks.length} active` },
-                    { label: 'Next move', value: nextMove },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      style={{
-                        padding: '1rem',
-                        borderRadius: 18,
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                      }}
-                    >
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: T.white, lineHeight: 1.45 }}>{item.value}</div>
-                    </div>
-                  ))}
+                <div
+                  style={{
+                    display: 'grid',
+                    gap: 10,
+                    paddingTop: '1rem',
+                    borderTop: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                >
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.52)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Planner summary
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: T.white, lineHeight: 1.55 }}>
+                    {r.headline.charAt(0).toUpperCase() + r.headline.slice(1)}, with {r.financial.runway} of runway around a {r.cityName} plan.
+                  </div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.68)', lineHeight: 1.7, maxWidth: 640 }}>
+                    Your readiness score blends finances, life complexity, career stability, and planning signals into one view so you can focus on the next decision instead of chasing scattered metrics.
+                  </div>
                 </div>
               </div>
             </div>
