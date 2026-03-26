@@ -1073,9 +1073,57 @@ export default function Planner() {
         setResult(normalizedResult)
         setPlannerMoveDate(defaultMoveDateForTimeline(savedAnswers.timeline))
       } else {
-        setAnswers({})
-        setResult(null)
-        setPlannerMoveDate('')
+        let journeyAnswers: Partial<Record<string, unknown>> = {}
+
+        if (typeof window !== 'undefined') {
+          try {
+            const rawJourneyState = window.localStorage.getItem(`journey:state:${userId}`)
+            if (rawJourneyState) {
+              const parsedJourneyState = JSON.parse(rawJourneyState) as {
+                answers?: Partial<Record<string, unknown>>
+              }
+              journeyAnswers = parsedJourneyState.answers || {}
+            }
+          } catch {
+            journeyAnswers = {}
+          }
+        }
+
+        const normalizedJourneyAnswers = normalizeAnswers(journeyAnswers)
+        const hasJourneyAnswers = REFINED_READINESS_QUESTIONS.every((q) => {
+          if (q.key === 'timeline') {
+            return Boolean(
+              normalizedJourneyAnswers.timeline ||
+              (typeof journeyAnswers.moveDate === 'string' && journeyAnswers.moveDate)
+            )
+          }
+          return Boolean(normalizedJourneyAnswers[q.key])
+        })
+
+        if (hasJourneyAnswers) {
+          const timelineFromJourney =
+            normalizedJourneyAnswers.timeline ||
+            (typeof journeyAnswers.moveDate === 'string'
+              ? plannerTimelineFromMoveDate(journeyAnswers.moveDate)
+              : '')
+
+          const hydratedJourneyAnswers = {
+            ...normalizedJourneyAnswers,
+            timeline: timelineFromJourney,
+          }
+
+          setAnswers(hydratedJourneyAnswers)
+          setResult(computeRefinedResult(hydratedJourneyAnswers as Answers))
+          setPlannerMoveDate(
+            typeof journeyAnswers.moveDate === 'string' && journeyAnswers.moveDate
+              ? journeyAnswers.moveDate
+              : defaultMoveDateForTimeline(timelineFromJourney)
+          )
+        } else {
+          setAnswers({})
+          setResult(null)
+          setPlannerMoveDate('')
+        }
       }
 
       setLoadingSavedResult(false)
