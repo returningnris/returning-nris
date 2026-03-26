@@ -1,0 +1,157 @@
+'use client'
+
+import type { CSSProperties } from 'react'
+import { useEffect } from 'react'
+
+type CalendlyPrefill = {
+  email?: string
+  firstName?: string
+  lastName?: string
+  name?: string
+}
+
+type CalendlyPopupOptions = {
+  url: string
+  prefill?: CalendlyPrefill
+}
+
+declare global {
+  interface Window {
+    Calendly?: {
+      initPopupWidget: (options: CalendlyPopupOptions) => void
+    }
+  }
+}
+
+type CalendlyPopupButtonProps = {
+  buttonLabel: string
+  source: 'readiness_results' | 'journey_dashboard'
+  email?: string
+  firstName?: string
+  lastName?: string
+  readinessStatus?: string
+  style?: CSSProperties
+}
+
+const CALENDLY_SCRIPT_ID = 'calendly-widget-script'
+const CALENDLY_STYLESHEET_ID = 'calendly-widget-stylesheet'
+const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL || ''
+
+function buildCalendlyUrl(source: CalendlyPopupButtonProps['source'], readinessStatus?: string) {
+  if (!CALENDLY_URL) return ''
+
+  try {
+    const url = new URL(CALENDLY_URL)
+    url.searchParams.set('hide_gdpr_banner', '1')
+    url.searchParams.set('hide_event_type_details', '1')
+    url.searchParams.set('source', source)
+
+    if (readinessStatus) {
+      url.searchParams.set('readiness_status', readinessStatus)
+    }
+
+    return url.toString()
+  } catch {
+    return ''
+  }
+}
+
+function buildPrefill(firstName?: string, lastName?: string, email?: string) {
+  const safeFirst = firstName?.trim() || ''
+  const safeLast = lastName?.trim() || ''
+  const safeEmail = email?.trim() || ''
+  const name = [safeFirst, safeLast].filter(Boolean).join(' ').trim()
+
+  return {
+    ...(safeEmail ? { email: safeEmail } : {}),
+    ...(safeFirst ? { firstName: safeFirst } : {}),
+    ...(safeLast ? { lastName: safeLast } : {}),
+    ...(name ? { name } : {}),
+  }
+}
+
+export default function CalendlyPopupButton({
+  buttonLabel,
+  source,
+  email,
+  firstName,
+  lastName,
+  readinessStatus,
+  style,
+}: CalendlyPopupButtonProps) {
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const existingStylesheet = document.getElementById(CALENDLY_STYLESHEET_ID) as HTMLLinkElement | null
+    if (!existingStylesheet) {
+      const link = document.createElement('link')
+      link.id = CALENDLY_STYLESHEET_ID
+      link.rel = 'stylesheet'
+      link.href = 'https://calendly.com/assets/external/widget.css'
+      document.head.appendChild(link)
+    }
+
+    const existingScript = document.getElementById(CALENDLY_SCRIPT_ID) as HTMLScriptElement | null
+    if (window.Calendly?.initPopupWidget) return
+
+    if (existingScript) {
+      const handleLoad = () => undefined
+      existingScript.addEventListener('load', handleLoad)
+      return () => existingScript.removeEventListener('load', handleLoad)
+    }
+
+    const script = document.createElement('script')
+    script.id = CALENDLY_SCRIPT_ID
+    script.src = 'https://calendly.com/assets/external/widget.js'
+    script.async = true
+    document.body.appendChild(script)
+  }, [])
+
+  const calendlyUrl = buildCalendlyUrl(source, readinessStatus)
+  const prefill = buildPrefill(firstName, lastName, email)
+  const isConfigured = Boolean(calendlyUrl)
+
+  return (
+    <button
+      type="button"
+      disabled={!isConfigured}
+      onClick={() => {
+        if (!calendlyUrl) return
+
+        if (window.Calendly?.initPopupWidget) {
+          window.Calendly.initPopupWidget({
+            url: calendlyUrl,
+            prefill: Object.keys(prefill).length ? prefill : undefined,
+          })
+          return
+        }
+
+        window.open(calendlyUrl, '_blank', 'noopener,noreferrer')
+      }}
+      style={{
+        width: '100%',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        padding: '0.95rem 1.15rem',
+        borderRadius: 999,
+        border: 'none',
+        background: 'linear-gradient(180deg, #F08A24 0%, #DA7716 100%)',
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 700,
+        cursor: isConfigured ? 'pointer' : 'not-allowed',
+        opacity: isConfigured ? 1 : 0.55,
+        boxShadow: '0 10px 24px rgba(240,138,36,0.24)',
+        transition: 'transform 0.18s ease, box-shadow 0.18s ease',
+        ...style,
+      }}
+      aria-label={buttonLabel}
+      title={!isConfigured ? 'Add NEXT_PUBLIC_CALENDLY_URL to enable booking.' : undefined}
+    >
+      <span>{buttonLabel}</span>
+      <span style={{ fontSize: 15, lineHeight: 1 }}>→</span>
+    </button>
+  )
+}

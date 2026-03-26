@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useReducer, useState } from 'react'
+import FounderConsultationCard from '../../components/FounderConsultationCard'
 import { useAuth } from '../../components/useAuth'
 import { useProtectedRoute } from '../../components/useProtectedRoute'
 import { supabase } from '../../lib/supabase'
@@ -1373,13 +1374,26 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
   )
 }
 
-function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: React.Dispatch<Action> }) {
+function JourneyDashboard({
+  state,
+  dispatch,
+  userEmail,
+  userLastName,
+}: {
+  state: JourneyState
+  dispatch: React.Dispatch<Action>
+  userEmail?: string
+  userLastName?: string
+}) {
   const [tab, setTab] = useState<'tasks' | 'guidance'>('tasks')
   const [draftTaskTitle, setDraftTaskTitle] = useState('')
   const [draftTaskDesc, setDraftTaskDesc] = useState('')
 
   const A = state.answers as Answers
   const alreadyMoved = A.alreadyMoved === 'yes'
+  const readinessScore = computeScore(A).total
+  const readinessStatus =
+    readinessScore >= 80 ? 'ready_to_return' : readinessScore >= 60 ? 'moderately_ready' : 'not_ready_yet'
 
   const msCompleted = useMemo(
     () =>
@@ -1532,54 +1546,65 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
             </div>
           </SurfaceCard>
 
-          <SurfaceCard style={{ padding: '1.15rem 1.15rem 1.1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 14 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                  Next best action
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            <SurfaceCard style={{ padding: '1.15rem 1.15rem 1.1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                    Next best action
+                  </div>
+                  <h2 style={{ fontSize: '1.15rem', color: T.ink, marginBottom: 6 }}>{nextTask ? nextTask.title : alreadyMoved ? postMove.title : 'Stay on the current path'}</h2>
                 </div>
-                <h2 style={{ fontSize: '1.15rem', color: T.ink, marginBottom: 6 }}>{nextTask ? nextTask.title : alreadyMoved ? postMove.title : 'Stay on the current path'}</h2>
+                {nextTask?.priority === 'critical' ? <Pill tone="saffron">Critical now</Pill> : <Pill tone="navy">Guided flow</Pill>}
               </div>
-              {nextTask?.priority === 'critical' ? <Pill tone="saffron">Critical now</Pill> : <Pill tone="navy">Guided flow</Pill>}
-            </div>
 
-            <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 10 }}>
-              {nextTask
-                ? nextTask.desc
-                : alreadyMoved
-                  ? postMove.text
-                  : highImpact
-                    ? highImpact.description
-                    : 'You have already closed the main risk areas and can keep working through the remaining phases.'}
-            </p>
+              <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 10 }}>
+                {nextTask
+                  ? nextTask.desc
+                  : alreadyMoved
+                    ? postMove.text
+                    : highImpact
+                      ? highImpact.description
+                      : 'You have already closed the main risk areas and can keep working through the remaining phases.'}
+              </p>
 
-            {!alreadyMoved && highImpact ? (
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: '-2px', marginBottom: 2 }}>
-                <Pill tone="saffron">{currentPhaseLabel}</Pill>
-                <Pill tone="navy">{highImpact.pillar}</Pill>
-              </div>
-            ) : null}
+              {!alreadyMoved && highImpact ? (
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: '-2px', marginBottom: 2 }}>
+                  <Pill tone="saffron">{currentPhaseLabel}</Pill>
+                  <Pill tone="navy">{highImpact.pillar}</Pill>
+                </div>
+              ) : null}
 
-            <div
-              style={{
-                padding: '0.95rem 1rem',
-                borderRadius: 18,
-                background: alreadyMoved ? postMove.bg : T.saffronSoft,
-                border: `1px solid ${alreadyMoved ? postMove.border : T.border}`,
-              }}
-            >
-              <div style={{ fontSize: 12, fontWeight: 700, color: alreadyMoved ? postMove.color : T.bronze, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                {alreadyMoved ? 'Recommendation' : 'Why this matters'}
+              <div
+                style={{
+                  padding: '0.95rem 1rem',
+                  borderRadius: 18,
+                  background: alreadyMoved ? postMove.bg : T.saffronSoft,
+                  border: `1px solid ${alreadyMoved ? postMove.border : T.border}`,
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 700, color: alreadyMoved ? postMove.color : T.bronze, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                  {alreadyMoved ? 'Recommendation' : 'Why this matters'}
+                </div>
+                <div style={{ fontSize: 14, color: alreadyMoved ? postMove.color : T.bronze, lineHeight: 1.75 }}>
+                  {alreadyMoved
+                    ? postMove.actions[0]
+                    : nextTask
+                      ? `This is the cleanest move to keep the relocation plan advancing without creating avoidable downstream stress.`
+                      : 'Your journey is in a stable position right now.'}
+                </div>
               </div>
-              <div style={{ fontSize: 14, color: alreadyMoved ? postMove.color : T.bronze, lineHeight: 1.75 }}>
-                {alreadyMoved
-                  ? postMove.actions[0]
-                  : nextTask
-                    ? `This is the cleanest move to keep the relocation plan advancing without creating avoidable downstream stress.`
-                    : 'Your journey is in a stable position right now.'}
-              </div>
-            </div>
-          </SurfaceCard>
+            </SurfaceCard>
+
+            <FounderConsultationCard
+              variant="dashboard"
+              source="journey_dashboard"
+              email={userEmail}
+              firstName={state.firstName}
+              lastName={userLastName}
+              readinessStatus={readinessStatus}
+            />
+          </div>
         </div>
 
         <div className="journey-top-actions" style={{ marginBottom: '1rem' }}>
@@ -2152,5 +2177,5 @@ export default function JourneyPage() {
 
   if (shouldBlock || loadingSavedJourney) return null
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
-  return <JourneyDashboard state={state} dispatch={dispatch} />
+  return <JourneyDashboard state={state} dispatch={dispatch} userEmail={user?.email} userLastName={user?.lastName} />
 }

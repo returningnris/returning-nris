@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../components/useAuth'
 import { useProtectedRoute } from '../../components/useProtectedRoute'
+import FounderConsultationCard from '../../components/FounderConsultationCard'
 import { supabase } from '../../lib/supabase'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -1356,6 +1357,17 @@ export default function Planner() {
                 ))}
               </div>
             </div>
+          </div>
+
+          <div style={{ marginTop: '1rem' }}>
+            <FounderConsultationCard
+              variant="results"
+              source="readiness_results"
+              email={user?.email}
+              firstName={user?.firstName}
+              lastName={user?.lastName}
+              readinessStatus={r.status}
+            />
           </div>
 
           <div className="planner-result-cards-grid">
