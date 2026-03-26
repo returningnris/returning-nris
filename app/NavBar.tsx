@@ -33,7 +33,8 @@ export default function NavBar() {
 
   const isToolActive = TOOLS.some(t => pathname === t.href) || pathname === '/Tools'
   const isResourcesActive = GUIDES.some(g => pathname === g.href) || pathname === '/resources' || pathname.startsWith('/resources/')
-  const protectedHref = (href: string) => (isAuthenticated ? href : `/auth?mode=signup&next=${encodeURIComponent(href)}`)
+  const isPublicNavHref = (href: string) => href === '/planner'
+  const protectedHref = (href: string) => (isAuthenticated || isPublicNavHref(href) ? href : `/auth?mode=signup&next=${encodeURIComponent(href)}`)
 
   useEffect(() => {
     if (!mobileOpen) return
