@@ -1185,8 +1185,11 @@ export default function Planner() {
       align-items: start;
     }
     .planner-sticky-panel {
+      position: -webkit-sticky;
       position: sticky;
       top: 96px;
+      align-self: start;
+      height: fit-content;
     }
     .planner-question-stack {
       display: grid;
