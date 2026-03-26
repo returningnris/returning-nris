@@ -97,6 +97,7 @@ export async function POST(request: Request) {
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
     const password = typeof body.password === 'string' ? body.password : ''
+    const readiness = body.readiness || null
     const siteUrl = getSiteUrl(request)
     const next = typeof body.next === 'string' && body.next.startsWith('/') ? body.next : '/'
     const supabaseAdmin = getSupabaseAdmin()
@@ -124,9 +125,49 @@ export async function POST(request: Request) {
     }
 
     const actionLink = data?.properties?.action_link || (data as { action_link?: string } | null)?.action_link
+    const generatedUserId = (data as { user?: { id?: string } } | null)?.user?.id
 
     if (!actionLink) {
       return NextResponse.json({ success: false, error: 'Signup link could not be generated' }, { status: 500 })
+    }
+
+    if (readiness && !generatedUserId) {
+      return NextResponse.json({ success: false, error: 'We could not attach the readiness result to the new account.' }, { status: 500 })
+    }
+
+    if (readiness && generatedUserId) {
+      const answers = readiness.answers || {}
+      const result = readiness.result || {}
+
+      const { error: submissionError } = await supabaseAdmin.from('planner_submissions').insert({
+        user_id: generatedUserId,
+        first_name: name,
+        last_name: '',
+        email,
+        country: answers.country || '',
+        savings: answers.savings || '',
+        years_abroad: answers.yearsAbroad || '',
+        has_kids: answers.hasKids || (answers.childrenCount && answers.childrenCount !== 'none' ? 'yes' : 'no'),
+        kids_age: answers.kidsAge || (answers.teenageChildren && answers.teenageChildren !== 'none' ? 'teen' : null),
+        has_job: answers.hasJob || '',
+        city: answers.city || '',
+        timeline: answers.timeline || '',
+        knows_rnor: answers.knowsRNOR || '',
+        housing: answers.housing || '',
+        total_score: result?.score?.total || 0,
+        financial_score: result?.score?.financial || 0,
+        life_score: result?.score?.lifeComplexity || 0,
+        career_score: result?.score?.career || 0,
+        planning_score: result?.score?.planning || 0,
+        readiness_status: result?.status || '',
+        answers_json: answers,
+        result_json: result,
+      })
+
+      if (submissionError) {
+        console.error('Signup readiness save error:', submissionError)
+        return NextResponse.json({ success: false, error: 'Account created, but we could not save your readiness result.' }, { status: 500 })
+      }
     }
 
     const { error: emailError } = await resend.emails.send({

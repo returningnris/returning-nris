@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '../../components/useAuth'
-import { useProtectedRoute } from '../../components/useProtectedRoute'
 import FounderConsultationCard from '../../components/FounderConsultationCard'
 import { REFINED_READINESS_QUESTIONS, type ReadinessAnswers } from '../../lib/readinessQuestions'
 import { supabase } from '../../lib/supabase'
@@ -25,7 +23,15 @@ export type Rec = {
 type Result = { score: ScoreBreakdown; status: string; statusColor: string; statusBg: string; headline: string; subheadline: string; risks: RiskItem[]; financial: FinancialSnapshot; cityName: string; recommendation: Rec }
 type PlannerUser = { firstName: string; lastName: string; email: string }
 
-async function submitPlannerReport(params: {
+type GuestPlannerState = {
+  answers: Partial<Answers>
+  result: Result | null
+  moveDate: string
+}
+
+const GUEST_PLANNER_STORAGE_KEY = 'planner:guest-state'
+
+async function savePlannerProfile(params: {
   answers: Partial<Answers>
   result: Result
   user: PlannerUser
@@ -38,7 +44,7 @@ async function submitPlannerReport(params: {
     throw new Error('AUTH_REQUIRED')
   }
 
-  const response = await fetch('/api/submit-planner', {
+  const response = await fetch('/api/save-planner-profile', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -63,6 +69,47 @@ async function submitPlannerReport(params: {
 
   return response.json()
 }
+
+async function emailReadinessReport(params: {
+  answers: Partial<Answers>
+  result: Result
+  user: PlannerUser
+}) {
+  const response = await fetch('/api/send-readiness-report', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userDetails: {
+        firstName: params.user.firstName,
+        lastName: params.user.lastName,
+        email: params.user.email,
+      },
+      answers: params.answers,
+      result: params.result,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error('EMAIL_SEND_FAILED')
+  }
+
+  return response.json()
+}
+
+function loadGuestPlannerState(): GuestPlannerState | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = window.localStorage.getItem(GUEST_PLANNER_STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as GuestPlannerState
+  } catch {
+    return null
+  }
+}
+
 
 // ─── THEME TOKENS ─────────────────────────────────────────────────────────────
 
@@ -494,7 +541,7 @@ function UpdateSimulator({
   async function sendEmail() {
     setEmailSending(true)
     try {
-      await submitPlannerReport({
+      await emailReadinessReport({
         answers: simAnswers,
         result: simResult,
         user: {
@@ -1014,10 +1061,116 @@ function PlannerTimelinePicker({
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
-export default function Planner() {
-  const { shouldBlock } = useProtectedRoute()
+function PlannerGuestActionModal({
+  open,
+  emailName,
+  emailAddress,
+  emailSending,
+  emailSent,
+  signupName,
+  signupEmail,
+  signupPassword,
+  signupConfirmPassword,
+  signupLoading,
+  signupSuccess,
+  signupError,
+  onClose,
+  onEmailNameChange,
+  onEmailAddressChange,
+  onSendEmail,
+  onSignupNameChange,
+  onSignupEmailChange,
+  onSignupPasswordChange,
+  onSignupConfirmPasswordChange,
+  onCreateAccount,
+}: {
+  open: boolean
+  emailName: string
+  emailAddress: string
+  emailSending: boolean
+  emailSent: boolean
+  signupName: string
+  signupEmail: string
+  signupPassword: string
+  signupConfirmPassword: string
+  signupLoading: boolean
+  signupSuccess: string
+  signupError: string
+  onClose: () => void
+  onEmailNameChange: (value: string) => void
+  onEmailAddressChange: (value: string) => void
+  onSendEmail: () => void
+  onSignupNameChange: (value: string) => void
+  onSignupEmailChange: (value: string) => void
+  onSignupPasswordChange: (value: string) => void
+  onSignupConfirmPasswordChange: (value: string) => void
+  onCreateAccount: () => void
+}) {
+  if (!open) return null
 
-  const router = useRouter()
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(26,18,8,0.48)', backdropFilter: 'blur(6px)', zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem' }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        style={{ width: '100%', maxWidth: 980, background: T.white, borderRadius: 24, border: `1px solid ${T.border}`, boxShadow: '0 30px 80px rgba(29,22,15,0.18)', overflow: 'hidden' }}
+      >
+        <div style={{ padding: '1.25rem 1.35rem', background: '#20160f', color: T.white }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)', marginBottom: 10 }}>Readiness results</div>
+              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.9rem', lineHeight: 1.1, marginBottom: 8 }}>Keep this report or send it to yourself</h2>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.72)', lineHeight: 1.7, margin: 0 }}>
+                You can email the report now, or create an account so the readiness result stays saved in your profile for later.
+              </p>
+            </div>
+            <button type="button" onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.8)', fontSize: 24, lineHeight: 1, cursor: 'pointer' }} aria-label="Close readiness actions">×</button>
+          </div>
+        </div>
+
+        <div style={{ padding: '1.35rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ border: `1px solid ${T.border}`, borderRadius: 20, padding: '1.15rem', background: 'linear-gradient(180deg, #FFF9F3 0%, #FFFFFF 100%)' }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#CC7A00', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Email my report</div>
+            <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.7, marginTop: 0, marginBottom: 14 }}>Send the readiness summary to any inbox without creating an account.</p>
+            {emailSent ? (
+              <div style={{ padding: '0.95rem', borderRadius: 16, background: T.greenLight, color: T.green, fontSize: 14, fontWeight: 700 }}>
+                Readiness report sent to {emailAddress}.
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: 10 }}>
+                <input value={emailName} onChange={(event) => onEmailNameChange(event.target.value)} placeholder="Your name" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+                <input value={emailAddress} onChange={(event) => onEmailAddressChange(event.target.value)} placeholder="Email address" type="email" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+                <button type="button" onClick={onSendEmail} disabled={emailSending || !emailAddress.includes('@')} style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: 'none', background: T.saffron, color: '#fff', fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 700, cursor: emailSending || !emailAddress.includes('@') ? 'not-allowed' : 'pointer', opacity: emailSending || !emailAddress.includes('@') ? 0.6 : 1 }}>
+                  {emailSending ? 'Sending report…' : 'Send readiness report'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ border: `1px solid ${T.border}`, borderRadius: 20, padding: '1.15rem', background: 'linear-gradient(180deg, #F7FAFF 0%, #FFFFFF 100%)' }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Create account and save</div>
+            <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.7, marginTop: 0, marginBottom: 14 }}>We&apos;ll create your account, save this readiness result to Supabase, and send a secure verification link to your inbox.</p>
+            <div style={{ display: 'grid', gap: 10 }}>
+              <input value={signupName} onChange={(event) => onSignupNameChange(event.target.value)} placeholder="Full name" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+              <input value={signupEmail} onChange={(event) => onSignupEmailChange(event.target.value)} placeholder="Email address" type="email" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+              <input value={signupPassword} onChange={(event) => onSignupPasswordChange(event.target.value)} placeholder="Password" type="password" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+              <input value={signupConfirmPassword} onChange={(event) => onSignupConfirmPasswordChange(event.target.value)} placeholder="Confirm password" type="password" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+              {signupError ? <div style={{ fontSize: 13, color: '#C0392B', lineHeight: 1.6 }}>{signupError}</div> : null}
+              {signupSuccess ? <div style={{ fontSize: 13, color: T.green, lineHeight: 1.6 }}>{signupSuccess}</div> : null}
+              <button type="button" onClick={onCreateAccount} disabled={signupLoading} style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: 'none', background: T.navy, color: '#fff', fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 700, cursor: signupLoading ? 'not-allowed' : 'pointer', opacity: signupLoading ? 0.6 : 1 }}>
+                {signupLoading ? 'Creating account…' : 'Create account and save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function Planner() {
   const { user, isAuthenticated, loading: authLoading } = useAuth()
   const userId = user?.id ?? null
   
@@ -1028,6 +1181,18 @@ export default function Planner() {
   const [submitError, setSubmitError] = useState('')
   const [result, setResult] = useState<Result | null>(null)
   const [plannerMoveDate, setPlannerMoveDate] = useState(() => defaultMoveDateForTimeline(''))
+  const [guestModalOpen, setGuestModalOpen] = useState(false)
+  const [guestEmailName, setGuestEmailName] = useState('')
+  const [guestEmailAddress, setGuestEmailAddress] = useState('')
+  const [guestEmailSending, setGuestEmailSending] = useState(false)
+  const [guestEmailSent, setGuestEmailSent] = useState(false)
+  const [signupName, setSignupName] = useState('')
+  const [signupEmail, setSignupEmail] = useState('')
+  const [signupPassword, setSignupPassword] = useState('')
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('')
+  const [signupLoading, setSignupLoading] = useState(false)
+  const [signupError, setSignupError] = useState('')
+  const [signupSuccess, setSignupSuccess] = useState('')
   const reportRef = useRef<HTMLDivElement>(null)
 
   // Load saved readiness data from Supabase for the logged-in user
@@ -1041,9 +1206,10 @@ export default function Planner() {
 
       if (!isAuthenticated || !userId) {
         if (!active) return
-        setAnswers({})
-        setResult(null)
-        setPlannerMoveDate('')
+        const guestState = loadGuestPlannerState()
+        setAnswers(guestState?.answers || {})
+        setResult(guestState?.result || null)
+        setPlannerMoveDate(guestState?.moveDate || '')
         setLoadingSavedResult(false)
         return
       }
@@ -1136,14 +1302,29 @@ export default function Planner() {
     }
   }, [authLoading, isAuthenticated, userId])
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || isAuthenticated) return
+
+    try {
+      window.localStorage.setItem(
+        GUEST_PLANNER_STORAGE_KEY,
+        JSON.stringify({
+          answers,
+          result,
+          moveDate: plannerMoveDate,
+        } satisfies GuestPlannerState)
+      )
+    } catch {
+      return
+    }
+  }, [answers, isAuthenticated, plannerMoveDate, result])
+
   // Scroll to top when result is set
   useEffect(() => {
     if (result) {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }, [result])
-
-  if (shouldBlock) return null
 
   const visibleQs = REFINED_READINESS_QUESTIONS
   const answered = visibleQs.filter(q => answers[q.key]).length
@@ -1163,37 +1344,126 @@ export default function Planner() {
   }
 
   async function handleGenerateReport() {
-    if (!isAuthenticated || !user) {
-      // Redirect to auth page
-      router.push('/auth')
-      return
-    }
-
     setLoading(true)
     setSubmitError('')
     const computedResult = computeRefinedResult(answers as Answers)
     
-    try {
-      await submitPlannerReport({
-        answers,
-        result: computedResult,
-        user: {
-          firstName: user.firstName,
-          lastName: user.lastName || '',
-          email: user.email,
-        },
-      })
-    } catch (err) { 
-      console.error('Error:', err) 
-      setSubmitError('We could not save your report to Supabase. Please try again.')
-      setLoading(false)
-      return
+    if (isAuthenticated && user) {
+      try {
+        await savePlannerProfile({
+          answers,
+          result: computedResult,
+          user: {
+            firstName: user.firstName,
+            lastName: user.lastName || '',
+            email: user.email,
+          },
+        })
+      } catch (err) {
+        console.error('Error:', err)
+        setSubmitError('We could not save your report to Supabase. Please try again.')
+        setLoading(false)
+        return
+      }
     }
     
     setTimeout(() => { 
       setResult(computedResult)
+      if (!isAuthenticated) {
+        setGuestModalOpen(true)
+      }
       setLoading(false)
     }, 1800)
+  }
+
+  async function handleGuestEmailSend() {
+    if (!result) return
+
+    setGuestEmailSending(true)
+    setSubmitError('')
+
+    try {
+      await emailReadinessReport({
+        answers,
+        result,
+        user: {
+          firstName: guestEmailName.trim(),
+          lastName: '',
+          email: guestEmailAddress.trim(),
+        },
+      })
+      setGuestEmailSent(true)
+    } catch (error) {
+      console.error('Guest readiness email failed:', error)
+      setSubmitError('We could not send the report email right now. Please try again.')
+    } finally {
+      setGuestEmailSending(false)
+    }
+  }
+
+  async function handleGuestSignupSave() {
+    if (!result) return
+
+    setSignupError('')
+    setSignupSuccess('')
+
+    if (!signupName.trim()) {
+      setSignupError('Please enter your name.')
+      return
+    }
+
+    if (!signupEmail.includes('@')) {
+      setSignupError('Please enter a valid email address.')
+      return
+    }
+
+    if (signupPassword.length < 8) {
+      setSignupError('Password must be at least 8 characters.')
+      return
+    }
+
+    if (signupPassword !== signupConfirmPassword) {
+      setSignupError('Passwords do not match.')
+      return
+    }
+
+    setSignupLoading(true)
+
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: signupName.trim(),
+          email: signupEmail.trim(),
+          password: signupPassword,
+          next: '/planner',
+          readiness: {
+            answers,
+            result,
+          },
+        }),
+      })
+
+      let payload: { error?: string } | null = null
+      try {
+        payload = await response.json()
+      } catch {
+        payload = null
+      }
+
+      if (!response.ok) {
+        setSignupError(payload?.error || 'We could not create your account right now.')
+        return
+      }
+
+      setSignupSuccess('Check your inbox to verify your account. Your readiness report has already been saved to your profile.')
+    } catch (error) {
+      console.error('Signup and save failed:', error)
+      setSignupError('We could not create your account right now. Please try again.')
+    } finally {
+      setSignupLoading(false)
+    }
   }
 
   function restart() {
@@ -1363,16 +1633,17 @@ export default function Planner() {
       <div style={{ textAlign: 'center' }}>
         <div style={{ width: '52px', height: '52px', border: `3px solid ${T.saffronBorder}`, borderTopColor: T.saffron, borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 1.5rem' }} />
         <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.75rem', color: T.ink, marginBottom: '0.5rem' }}>Generating your report…</h2>
-        <p style={{ color: T.muted }}>Saving to {user?.email}</p>
+        <p style={{ color: T.muted }}>{isAuthenticated ? `Saving to ${user?.email}` : 'Preparing your readiness results'}</p>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     </div>
   )
 
   // ── RESULT ──
-  if (result && user) {
+  if (result) {
     const r = result
     const scoreColor = r.score.total < 50 ? '#C0392B' : r.score.total < 75 ? T.saffron : T.green
+    const displayName = user?.firstName || guestEmailName.trim() || signupName.trim()
     const scoreBreakdown = [
       { label: 'Financial', s: r.score.financial, max: 35, c: T.saffron, note: 'Liquidity, fixed pressure, and runway strength' },
       { label: 'Planning', s: r.score.planning, max: 27, c: T.navy, note: 'Country, timing, city, RNOR, and asset planning' },
@@ -1397,7 +1668,7 @@ export default function Planner() {
                       </span>
                     </div>
                     <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.9rem, 4vw, 3rem)', lineHeight: 0.98, color: T.white, marginBottom: 8 }}>
-                      {user?.firstName ? `${user.firstName}'s readiness` : 'Your readiness'}
+                      {displayName ? `${displayName}'s readiness` : 'Your readiness'}
                     </h1>
                     <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, maxWidth: 620 }}>
                       {r.subheadline}
@@ -1626,26 +1897,74 @@ export default function Planner() {
               Update Milestone Changes
             </button>
 
-            <Link
-              href="/journey"
-              className="planner-journey-link"
-              style={{
-                display: 'inline-flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '1rem 1.15rem',
-                background: T.green,
-                color: '#fff',
-                fontSize: 14,
-                fontWeight: 700,
-                borderRadius: 999,
-                textDecoration: 'none',
-              }}
-            >
-              Start Journey with Saved Profile
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/journey"
+                className="planner-journey-link"
+                style={{
+                  display: 'inline-flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '1rem 1.15rem',
+                  background: T.green,
+                  color: '#fff',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  borderRadius: 999,
+                  textDecoration: 'none',
+                }}
+              >
+                Start Journey with Saved Profile
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setGuestModalOpen(true)}
+                style={{
+                  width: '100%',
+                  display: 'inline-flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '1rem 1.15rem',
+                  background: T.green,
+                  color: '#fff',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  borderRadius: 999,
+                  textDecoration: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'DM Sans, sans-serif',
+                }}
+              >
+                Email Or Save This Report
+              </button>
+            )}
           </div>
         </div>
+        <PlannerGuestActionModal
+          open={!isAuthenticated && guestModalOpen}
+          emailName={guestEmailName}
+          emailAddress={guestEmailAddress}
+          emailSending={guestEmailSending}
+          emailSent={guestEmailSent}
+          signupName={signupName}
+          signupEmail={signupEmail}
+          signupPassword={signupPassword}
+          signupConfirmPassword={signupConfirmPassword}
+          signupLoading={signupLoading}
+          signupSuccess={signupSuccess}
+          signupError={signupError}
+          onClose={() => setGuestModalOpen(false)}
+          onEmailNameChange={setGuestEmailName}
+          onEmailAddressChange={setGuestEmailAddress}
+          onSendEmail={handleGuestEmailSend}
+          onSignupNameChange={setSignupName}
+          onSignupEmailChange={setSignupEmail}
+          onSignupPasswordChange={setSignupPassword}
+          onSignupConfirmPasswordChange={setSignupConfirmPassword}
+          onCreateAccount={handleGuestSignupSave}
+        />
       </div>
     )
   }
@@ -1827,7 +2146,7 @@ export default function Planner() {
           )}
           {allAnswered ? (
             <button onClick={handleGenerateReport} style={{ width: '100%', padding: '15px', background: T.saffron, color: '#fff', border: 'none', borderRadius: '12px', fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(255,153,51,0.4)' }}>
-              {!isAuthenticated ? 'Sign In to Generate Report →' : (result ? 'Save Updated Assessment →' : 'Generate My Readiness Report →')}
+              {isAuthenticated ? (result ? 'Save Updated Assessment →' : 'Generate My Readiness Report →') : 'Generate My Readiness Report →'}
             </button>
           ) : (
             <div className="planner-progress-row planner-question-card" style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
