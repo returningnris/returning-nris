@@ -1453,7 +1453,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
       <style>{`
         .dashboard-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
         .hero-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.72fr); gap: 1rem; align-items: stretch; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(240px, 320px)); gap: 0.9rem; justify-content: start; }
         .overview-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; }
         .milestone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; }
         .phase-grid { display: grid; gap: 10px; }
@@ -1461,7 +1461,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
         .journey-toolbar-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
         @media (max-width: 980px) {
           .hero-grid, .overview-grid { grid-template-columns: 1fr; }
-          .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .stats-grid { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
         }
         @media (max-width: 640px) {
           .dashboard-shell { padding: 1rem 0.9rem 2rem; }
@@ -1516,12 +1516,16 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                       borderRadius: 18,
                       background: 'rgba(255,255,255,0.08)',
                       border: '1px solid rgba(255,255,255,0.1)',
+                      minHeight: 126,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
                     }}
                   >
                     <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                       {item.label}
                     </div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: T.white }}>{item.value}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: T.white, lineHeight: 1.35, maxWidth: 240 }}>{item.value}</div>
                   </div>
                 ))}
               </div>
