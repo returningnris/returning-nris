@@ -1,7 +1,7 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 type CalendlyPrefill = {
   email?: string
@@ -35,13 +35,12 @@ type CalendlyPopupButtonProps = {
 
 const CALENDLY_SCRIPT_ID = 'calendly-widget-script'
 const CALENDLY_STYLESHEET_ID = 'calendly-widget-stylesheet'
-const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL?.trim() || ''
 
-function buildCalendlyUrl(source: CalendlyPopupButtonProps['source'], readinessStatus?: string) {
-  if (!CALENDLY_URL) return ''
+function buildCalendlyUrl(baseUrl: string, source: CalendlyPopupButtonProps['source'], readinessStatus?: string) {
+  if (!baseUrl) return ''
 
   try {
-    const url = new URL(CALENDLY_URL)
+    const url = new URL(baseUrl)
     url.searchParams.set('hide_gdpr_banner', '1')
     url.searchParams.set('hide_event_type_details', '1')
     url.searchParams.set('source', source)
@@ -79,6 +78,8 @@ export default function CalendlyPopupButton({
   readinessStatus,
   style,
 }: CalendlyPopupButtonProps) {
+  const [runtimeCalendlyUrl, setRuntimeCalendlyUrl] = useState<string>(() => process.env.NEXT_PUBLIC_CALENDLY_URL?.trim() || '')
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -107,7 +108,36 @@ export default function CalendlyPopupButton({
     document.body.appendChild(script)
   }, [])
 
-  const calendlyUrl = buildCalendlyUrl(source, readinessStatus)
+  useEffect(() => {
+    let active = true
+
+    async function loadCalendlyUrl() {
+      try {
+        const response = await fetch('/api/calendly', { cache: 'no-store' })
+        if (!response.ok) return
+
+        const data = (await response.json()) as { calendlyUrl?: string }
+        if (!active) return
+
+        const nextUrl = data.calendlyUrl?.trim() || ''
+        if (nextUrl) {
+          setRuntimeCalendlyUrl(nextUrl)
+        }
+      } catch {
+        return
+      }
+    }
+
+    if (!runtimeCalendlyUrl) {
+      void loadCalendlyUrl()
+    }
+
+    return () => {
+      active = false
+    }
+  }, [runtimeCalendlyUrl])
+
+  const calendlyUrl = buildCalendlyUrl(runtimeCalendlyUrl, source, readinessStatus)
   const prefill = buildPrefill(firstName, lastName, email)
   const isConfigured = Boolean(calendlyUrl)
 
