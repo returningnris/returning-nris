@@ -1452,11 +1452,13 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
     <div style={{ minHeight: '100vh', background: T.hero }}>
       <style>{`
         .dashboard-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.8fr); gap: 0.9rem; align-items: start; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; }
+        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.72fr); gap: 1rem; align-items: stretch; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; }
         .overview-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; }
         .milestone-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; }
         .phase-grid { display: grid; gap: 10px; }
+        .journey-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .journey-toolbar-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
         @media (max-width: 980px) {
           .hero-grid, .overview-grid { grid-template-columns: 1fr; }
           .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1467,7 +1469,9 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
           .phase-grid { grid-template-columns: 1fr !important; }
           .journey-phase-panel { display: none; }
           .journey-metric { min-width: 0 !important; width: calc(50% - 8px); }
-          .journey-top-actions { align-items: stretch !important; }
+          .journey-top-actions,
+          .journey-toolbar,
+          .journey-toolbar-tabs { align-items: stretch !important; }
           .journey-edit-button { margin-left: 0 !important; width: 100%; }
           .journey-task-row {
             grid-template-columns: 1fr !important;
@@ -1504,8 +1508,6 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
                 {[
                   { label: 'Current phase', value: `${currentPhaseLabel}` },
                   { label: 'When', value: PHASE_WINDOWS[journeyPhaseIndex] },
-                  { label: 'Next best action', value: nextTask ? nextTask.title : 'Maintain momentum' },
-                  { label: 'Target move', value: formatMoveDate(A.moveDate) },
                 ].map((item) => (
                   <div
                     key={item.label}
@@ -1526,8 +1528,8 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
             </div>
           </SurfaceCard>
 
-          <SurfaceCard style={{ padding: '1.05rem 1.1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+          <SurfaceCard style={{ padding: '1.15rem 1.15rem 1.1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                   Next best action
@@ -1537,7 +1539,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
               {nextTask?.priority === 'critical' ? <Pill tone="saffron">Critical now</Pill> : <Pill tone="navy">Guided flow</Pill>}
             </div>
 
-            <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 14 }}>
+            <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 10 }}>
               {nextTask
                 ? nextTask.desc
                 : alreadyMoved
@@ -1548,7 +1550,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
             </p>
 
             {!alreadyMoved && highImpact ? (
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: '-2px', marginBottom: 2 }}>
                 <Pill tone="saffron">{currentPhaseLabel}</Pill>
                 <Pill tone="navy">{highImpact.pillar}</Pill>
               </div>
@@ -1556,7 +1558,7 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
 
             <div
               style={{
-                padding: '1rem',
+                padding: '0.95rem 1rem',
                 borderRadius: 18,
                 background: alreadyMoved ? postMove.bg : T.saffronSoft,
                 border: `1px solid ${alreadyMoved ? postMove.border : T.border}`,
@@ -1576,49 +1578,54 @@ function JourneyDashboard({ state, dispatch }: { state: JourneyState; dispatch: 
           </SurfaceCard>
         </div>
 
-        <div className="journey-top-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1rem' }}>
-          {[
-            ['guidance', 'Guidance'],
-            ['tasks', 'Task flow'],
-          ].map(([value, label]) => {
-            const active = tab === value
-            return (
+        <div className="journey-top-actions" style={{ marginBottom: '1rem' }}>
+          <SurfaceCard style={{ padding: '0.8rem 0.9rem' }}>
+            <div className="journey-toolbar">
+              <div className="journey-toolbar-tabs">
+                {[
+                  ['guidance', 'Guidance'],
+                  ['tasks', 'Task flow'],
+                ].map(([value, label]) => {
+                  const active = tab === value
+                  return (
+                    <button
+                      type="button"
+                      key={value}
+                      onClick={() => setTab(value as 'guidance' | 'tasks')}
+                      style={{
+                        padding: '0.8rem 1.05rem',
+                        borderRadius: 999,
+                        border: `1px solid ${active ? T.ink : T.border}`,
+                        background: active ? T.ink : T.paper,
+                        color: active ? T.white : T.muted,
+                        fontSize: 13,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+
               <button
                 type="button"
-                key={value}
-                onClick={() => setTab(value as 'guidance' | 'tasks')}
+                onClick={() => dispatch({ type: 'EDIT_PROFILE' })}
+                className="journey-edit-button"
                 style={{
                   padding: '0.8rem 1.05rem',
                   borderRadius: 999,
-                  border: `1px solid ${active ? T.ink : T.border}`,
-                  background: active ? T.ink : T.paper,
-                  color: active ? T.white : T.muted,
+                  border: `1px solid ${T.border}`,
+                  background: T.paper,
+                  color: T.muted,
                   fontSize: 13,
-                  fontWeight: 800,
+                  fontWeight: 700,
                 }}
               >
-                {label}
+                Update profile answers
               </button>
-            )
-          })}
-
-          <button
-            type="button"
-            onClick={() => dispatch({ type: 'EDIT_PROFILE' })}
-            className="journey-edit-button"
-            style={{
-              marginLeft: 'auto',
-              padding: '0.8rem 1.05rem',
-              borderRadius: 999,
-              border: `1px solid ${T.border}`,
-              background: T.paper,
-              color: T.muted,
-              fontSize: 13,
-              fontWeight: 700,
-            }}
-          >
-            Update profile answers
-          </button>
+            </div>
+          </SurfaceCard>
         </div>
 
         {tab === 'guidance' ? (
