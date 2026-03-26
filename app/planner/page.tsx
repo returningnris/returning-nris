@@ -1170,9 +1170,6 @@ export default function Planner() {
   }
 
   const responsiveStyles = `
-    .planner-page {
-      overflow-x: hidden;
-    }
     .planner-shell {
       max-width: 1240px;
       margin: 0 auto;
