@@ -4,20 +4,33 @@ import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from './useAuth'
 
+const PUBLIC_PATHS = new Set([
+  '/planner',
+  '/Tools',
+  '/rnor',
+  '/city',
+  '/schools',
+  '/housing',
+  '/healthcare',
+  '/citylife',
+  '/jobs',
+])
+
 export function useProtectedRoute() {
   const router = useRouter()
   const pathname = usePathname()
   const { isAuthenticated, loading } = useAuth()
+  const isPublicPath = PUBLIC_PATHS.has(pathname)
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!isPublicPath && !loading && !isAuthenticated) {
       router.replace(`/auth?mode=signup&next=${encodeURIComponent(pathname)}`)
     }
-  }, [isAuthenticated, loading, pathname, router])
+  }, [isAuthenticated, isPublicPath, loading, pathname, router])
 
   return {
     isAuthenticated,
     loading,
-    shouldBlock: loading || !isAuthenticated,
+    shouldBlock: isPublicPath ? false : loading || !isAuthenticated,
   }
 }

@@ -22,6 +22,18 @@ const TOP_LINKS = [
   { href: '/journey', label: 'Back2India Journey' },
 ]
 
+const PUBLIC_NAV_PATHS = new Set([
+  '/planner',
+  '/Tools',
+  '/rnor',
+  '/city',
+  '/schools',
+  '/housing',
+  '/healthcare',
+  '/citylife',
+  '/jobs',
+])
+
 export default function NavBar() {
   const pathname = usePathname()
   const { isAuthenticated } = useAuth()
@@ -33,7 +45,7 @@ export default function NavBar() {
 
   const isToolActive = TOOLS.some(t => pathname === t.href) || pathname === '/Tools'
   const isResourcesActive = GUIDES.some(g => pathname === g.href) || pathname === '/resources' || pathname.startsWith('/resources/')
-  const isPublicNavHref = (href: string) => href === '/planner'
+  const isPublicNavHref = (href: string) => PUBLIC_NAV_PATHS.has(href)
   const protectedHref = (href: string) => (isAuthenticated || isPublicNavHref(href) ? href : `/auth?mode=signup&next=${encodeURIComponent(href)}`)
 
   useEffect(() => {
