@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -33,6 +33,11 @@ type TaxResult = {
   rnorWindowMonths: number
   isEligible: boolean
   eligibilityReason: string
+  headline: string
+  savingsOutlook: string
+  primaryLever: string
+  protectedCategoryCount: string
+  protectedCategorySummary: string
   taxFreeIncome: number
   taxableInIndia: number
   estimatedTaxSaved: number
@@ -46,7 +51,7 @@ type TaxResult = {
   yearByYear: { year: string; status: string; foreignIncomeTax: string; indiaIncomeTax: string; totalTax: string; saving: string; color: string }[]
   risks: { level: 'high' | 'medium' | 'low'; title: string; detail: string; action: string }[]
   insights: { icon: string; title: string; detail: string; type: 'positive' | 'warning' | 'info' }[]
-  incomeBreakdown: { source: string; amount: number; taxable: boolean; note: string }[]
+  incomeBreakdown: { source: string; profile: string; note: string; benefitHint: string; logic: string }[]
 }
 
 const LEGACY_STEPS = [
@@ -353,6 +358,15 @@ const DISPLAY_STEPS: Step[] = [
   },
 ]
 
+function InfoTip({ text }: { text: string }) {
+  return (
+    <span className="rnor-tooltip-wrap" tabIndex={0}>
+      <button type="button" className="rnor-tooltip-trigger" aria-label="How this works">i</button>
+      <span className="rnor-tooltip-bubble">{text}</span>
+    </span>
+  )
+}
+
 // ─── COMPUTATION ENGINE ───────────────────────────────────────────────────────
 
 function computeRNOR(I: Inputs): TaxResult {
@@ -383,14 +397,17 @@ function computeRNOR(I: Inputs): TaxResult {
 
   // ── Income Calculation ────────────────────────────────────────────────────────
   const salaryMap: Record<string, number> = { '300k+': 350000, '200k': 250000, '150k': 175000, '100k': 125000, '75k': 87500, 'under75': 60000 }
+  const salaryRangeLabel: Record<string, string> = { '300k+': '$300,000+', '200k': '$200,000-$300,000', '150k': '$150,000-$200,000', '100k': '$100,000-$150,000', '75k': '$75,000-$100,000', 'under75': 'under $75,000' }
   const annualSalaryUSD = I.employmentType === 'remote_us' ? (salaryMap[I.annualSalary] || 0) : 0
   const annualSalaryINR = annualSalaryUSD * 83
 
   const rsuMap: Record<string, number> = { 'yes_significant': 150000, 'yes_moderate': 60000, 'yes_small': 15000, 'no': 0 }
+  const rsuRangeLabel: Record<string, string> = { 'yes_significant': '$100,000+', 'yes_moderate': '$25,000-$100,000', 'yes_small': 'under $25,000', 'no': 'No RSUs' }
   const rsuValueUSD = rsuMap[I.hasRSUs] || 0
   const rsuValueINR = rsuValueUSD * 83
 
   const k401RangeLabel: Record<string, string> = { 'yes_large': 'over $500,000', 'yes_medium': '$100,000-$500,000', 'yes_small': 'under $100,000', 'no': 'No 401(k)' }
+  const dividendProfileLabel: Record<string, string> = { 'yes_significant': 'Large US portfolio', 'yes_moderate': 'Moderate US portfolio', 'no': 'No major US investment income' }
   const rentalUSD = I.hasRentalIncome === 'yes' ? 24000 : 0
   const rentalINR = rentalUSD * 83
 
@@ -398,10 +415,6 @@ function computeRNOR(I: Inputs): TaxResult {
   const dividendINR = dividendUSD * 83
 
   // ── Tax Calculations ──────────────────────────────────────────────────────────
-  const inrToLakh = (n: number) => (n / 100000)
-  const fmtLakh = (n: number) => '₹' + inrToLakh(n).toFixed(1) + 'L'
-  const fmtUSD = (n: number) => '$' + (n / 1000).toFixed(0) + 'K'
-
   // India tax rate on foreign income (30% surcharge for high income)
   const annualRecurringForeignIncome = annualSalaryINR + rentalINR + dividendINR
   const indiaTaxRate = annualRecurringForeignIncome > 10000000 ? 0.42 : annualRecurringForeignIncome > 5000000 ? 0.30 : annualRecurringForeignIncome > 0 ? 0.20 : 0
@@ -421,15 +434,46 @@ function computeRNOR(I: Inputs): TaxResult {
   const year2Saving = Math.round(yearlySalarySaving)
 
   const taxFreeIncome = isEligible ? Math.round(recurringProtectedIncomeTotal + rsuValueINR) : 0
+  const taxPer100kHint = indiaTaxRate >= 0.4
+    ? 'Rule of thumb: each USD 100K of qualifying foreign income protected for a full RNOR year can avoid roughly Rs35L of India tax at the top slab.'
+    : indiaTaxRate >= 0.3
+    ? 'Rule of thumb: each USD 100K of qualifying foreign income protected for a full RNOR year can avoid roughly Rs25L of India tax at common higher slabs.'
+    : 'Rule of thumb: each USD 100K of qualifying foreign income protected for a full RNOR year can avoid roughly Rs17L of India tax at lower slabs.'
+
+  const protectedCategories: string[] = []
+  if (annualSalaryINR > 0 && I.employmentType === 'remote_us') protectedCategories.push('US salary')
+  if (I.hasRSUs !== 'no') protectedCategories.push('RSU vesting')
+  if (I.hasRentalIncome === 'yes') protectedCategories.push('US rental income')
+  if (I.hasDividends !== 'no') protectedCategories.push('US dividends and gains')
+
+  const protectedCategoryCount = protectedCategories.length === 0 ? 'No categories flagged' : protectedCategories.length === 1 ? '1 category' : `${protectedCategories.length} categories`
+  const protectedCategorySummary = protectedCategories.length === 0 ? 'The main value here is timing, treaty awareness, and compliance.' : protectedCategories.join(' | ')
+  const savingsOutlook = !isEligible ? 'Needs review' : totalSaving >= 10000000 ? 'Very high' : totalSaving >= 3000000 ? 'High' : totalSaving >= 1000000 ? 'Moderate' : 'Focused'
+  const primaryLever = I.employmentType === 'remote_us'
+    ? 'US salary continuity'
+    : I.hasRSUs !== 'no'
+    ? 'RSU vesting timing'
+    : I.hasDividends !== 'no'
+    ? 'Investment income timing'
+    : I.hasRentalIncome === 'yes'
+    ? 'Rental income treatment'
+    : 'Move timing and compliance'
+  const headline = !isEligible
+    ? 'RNOR eligibility needs verification'
+    : I.employmentType === 'remote_us'
+    ? 'Remote foreign income is your biggest RNOR opportunity'
+    : protectedCategories.length > 0
+    ? 'Your RNOR window can protect selected foreign income categories'
+    : 'This RNOR window is most useful for planning, compliance, and timing'
 
   // ── RSU Strategy ─────────────────────────────────────────────────────────────
   let rsuStrategy = ''
   if (I.hasRSUs === 'no') {
     rsuStrategy = 'No RSUs — not applicable.'
   } else if (I.hasRSUs === 'yes_significant') {
-    rsuStrategy = `You have $${rsuMap['yes_significant'].toLocaleString()}+ in unvested RSUs. Time all vesting events to occur BEFORE you move OR within your RNOR window. Each vesting event during your RNOR window (${startStr}–${endStr}) is completely tax-free in India. If RSUs vest after your RNOR window ends, you'll pay India's 30%+ surcharge on the full value. Contact your employer's stock admin team to understand your vesting schedule immediately.`
+    rsuStrategy = `You selected the ${rsuRangeLabel[I.hasRSUs]} RSU bucket. Time vesting to occur before you move or within your RNOR window (${startStr}-${endStr}) where possible. Use actual vest dates and actual vest values with your CA before acting.`
   } else {
-    rsuStrategy = `Schedule RSU vesting events to fall within your RNOR window (${startStr}–${endStr}) where possible. Foreign-sourced RSU income during RNOR is not taxable in India. Check your grant agreement for vesting acceleration options.`
+    rsuStrategy = `Schedule RSU vesting events to fall within your RNOR window (${startStr}-${endStr}) where possible. Use actual vest dates and actual vest values with your CA for final tax math.`
   }
 
   // ── 401k Strategy ────────────────────────────────────────────────────────────
@@ -485,10 +529,10 @@ function computeRNOR(I: Inputs): TaxResult {
     yearByYear.push({
       year: `FY ${fy}-${(fy + 1).toString().slice(2)}`,
       status,
-      foreignIncomeTax: monthsInRNOR === 12 ? 'Rs0 (tax-free)' : monthsInRNOR > 0 ? `${fmtLakh(residentTaxForFY)} on resident-period months` : fmtLakh(yearlySalarySaving) + '/yr',
-      indiaIncomeTax: 'As per India slab',
-      totalTax: monthsInRNOR > 0 ? 'India tax applies only outside the RNOR months shown here' : 'Global income taxed',
-      saving: monthsInRNOR > 0 ? fmtLakh(totalSavingForFY) : '-',
+      foreignIncomeTax: monthsInRNOR === 12 ? 'Qualifying foreign income can stay outside India tax for the full FY, subject to source rules.' : monthsInRNOR > 0 ? `Only the ${monthsInRNOR} RNOR months get this treatment; activity outside them needs review.` : 'Resident year - global income usually returns to India tax scope.',
+      indiaIncomeTax: 'India-source income stays taxable under the normal slab rules.',
+      totalTax: monthsInRNOR > 0 ? 'Use the RNOR months carefully for salary, vesting, rent, dividends, and realized gains.' : 'Post-RNOR years need treaty review before withdrawals, gains, or retirement-account actions.',
+      saving: monthsInRNOR > 0 ? 'Window open - use actual amounts with your CA for final tax math.' : 'No RNOR shelter in this FY.',
       color: monthsInRNOR > 0 ? '#138808' : '#FF9933',
     })
   }
@@ -500,9 +544,9 @@ function computeRNOR(I: Inputs): TaxResult {
 
   if (I.filedForm12A === 'didnt_know') risks.push({ level: 'high', title: 'Form 12A not filed — RNOR at risk', detail: 'Without Form 12A filed within 30 days of arrival, your RNOR status may not be recognised by the Income Tax department.', action: 'File Form 12A on your first day in India. Carry it to your CA appointment.' })
 
-  if (I.hasRSUs !== 'no' && rsuValueINR > 5000000) risks.push({ level: 'high', title: `₹${inrToLakh(rsuValueINR).toFixed(0)}L in RSUs — vesting timing critical`, detail: 'RSUs vesting after your RNOR window ends will be fully taxable in India at 30%+. Wrong timing could cost you crores.', action: 'Map every vesting date against your RNOR window. Accelerate vesting where possible through employer.' })
+  if (I.hasRSUs !== 'no' && rsuValueINR > 5000000) risks.push({ level: 'high', title: `Large RSU exposure (${rsuRangeLabel[I.hasRSUs]}) — vesting timing critical`, detail: 'RSUs vesting after your RNOR window ends will be fully taxable in India at 30%+. Wrong timing could cost you crores.', action: 'Map every vesting date against your RNOR window. Accelerate vesting where possible through employer.' })
 
-  if (I.has401k === 'yes_large') risks.push({ level: 'medium', title: '$500K+ 401(k) — complex tax treatment', detail: 'Large 401(k) balances need careful planning. Early withdrawals can trigger US tax and penalties, and the India position after your move depends on treaty and residency facts.', action: 'Engage a cross-border tax specialist (US-India) before making any withdrawal decisions.' })
+  if (I.has401k === 'yes_large') risks.push({ level: 'medium', title: 'Large 401(k) balance — complex tax treatment', detail: 'Large 401(k) balances need careful planning. Early withdrawals can trigger US tax and penalties, and the India position after your move depends on treaty and residency facts.', action: 'Engage a cross-border tax specialist (US-India) before making any withdrawal decisions.' })
 
   if (I.hasNREAccount === 'no') risks.push({ level: 'medium', title: 'No NRE account — transfers unoptimised', detail: 'Without an NRE account, you cannot transfer foreign earnings to India tax-free. Every transfer through a regular account may be suboptimal.', action: 'Open NRE account this week. Takes 2–3 weeks for Indian banks with NRI branches.' })
 
@@ -522,7 +566,7 @@ function computeRNOR(I: Inputs): TaxResult {
     insights.push({
       icon: '🚀',
       title: 'Remote work + RNOR = maximum tax benefit',
-      detail: `Keeping your US job while on RNOR status means your entire salary (${fmtLakh(annualSalaryINR)}/yr) is tax-free in India for ${Math.round(rnorYears * 10) / 10} years. This is the single most powerful financial position for a returning NRI.`,
+      detail: `Keeping your US job while on RNOR status is usually the biggest lever in this tool. ${taxPer100kHint}`,
       type: 'positive',
     })
   }
@@ -531,7 +575,7 @@ function computeRNOR(I: Inputs): TaxResult {
     insights.push({
       icon: '📈',
       title: 'Accelerate RSU vesting before RNOR window closes',
-      detail: `Your ~${fmtUSD(rsuMap[I.hasRSUs])} in RSUs could vest completely tax-free in India if timed within your RNOR window (${startStr}–${endStr}). This is worth up to ${fmtLakh(rsuSaving)} in India tax savings alone.`,
+      detail: `Your selected RSU range (${rsuRangeLabel[I.hasRSUs]}) can benefit if vesting lands inside your RNOR window (${startStr}-${endStr}). Use actual vest values and vest dates with your CA for the final tax estimate.`,
       type: 'positive',
     })
   }
@@ -554,10 +598,10 @@ function computeRNOR(I: Inputs): TaxResult {
 
   // ── Income Breakdown ──────────────────────────────────────────────────────────
   const incomeBreakdown: TaxResult['incomeBreakdown'] = []
-  if (annualSalaryINR > 0 && I.employmentType === 'remote_us') incomeBreakdown.push({ source: 'US Salary', amount: annualSalaryINR * rnorYears, taxable: false, note: 'Foreign salary total across your RNOR window' })
-  if (rsuValueINR > 0) incomeBreakdown.push({ source: 'RSU Vesting', amount: rsuValueINR, taxable: false, note: 'Assumed to vest within your RNOR window' })
-  if (rentalINR > 0) incomeBreakdown.push({ source: 'US Rental Income', amount: rentalINR * rnorYears, taxable: false, note: 'Foreign property income total across your RNOR window' })
-  if (dividendINR > 0) incomeBreakdown.push({ source: 'US Dividends & Capital Gains', amount: dividendINR * rnorYears, taxable: false, note: 'Foreign investment income total across your RNOR window' })
+  if (annualSalaryINR > 0 && I.employmentType === 'remote_us') incomeBreakdown.push({ source: 'US Salary', profile: `Selected range: ${salaryRangeLabel[I.annualSalary]}/yr`, note: 'Best case when compensation remains foreign-sourced and sits inside RNOR.', benefitHint: taxPer100kHint, logic: 'We use your salary band, RNOR window length, and a broad India slab estimate. Exact savings still depend on your real salary and sourcing facts.' })
+  if (rsuValueINR > 0) incomeBreakdown.push({ source: 'RSU Vesting', profile: `Selected range: ${rsuRangeLabel[I.hasRSUs]}`, note: 'The benefit comes from vesting that lands inside the RNOR window.', benefitHint: 'Use actual vest values, not grant count. The same per-USD-100K heuristic can be a starting point.', logic: 'We only know the bucket, not the actual vest amount or vest dates, so this section stays range-based.' })
+  if (rentalINR > 0) incomeBreakdown.push({ source: 'US Rental Income', profile: 'Rental income present', note: 'Apply RNOR analysis to actual net taxable rent, not property value.', benefitHint: 'Use your real annual net rent to estimate savings. Property price alone is not enough.', logic: 'The questionnaire only captures whether rental income exists, not the actual rent or deductible expenses.' })
+  if (dividendINR > 0) incomeBreakdown.push({ source: 'US Dividends & Capital Gains', profile: dividendProfileLabel[I.hasDividends], note: 'Savings depend on actual dividend yield and realized gains, not portfolio size alone.', benefitHint: 'Estimate using actual annual dividends and realized gains. Do not assume the whole portfolio becomes tax-free income.', logic: 'The questionnaire does not ask for dividend rate, turnover, cost basis, or realized gain at sale, so we avoid exact rupee outputs here.' })
 
   return {
     rnorStartDate: startStr,
@@ -565,6 +609,11 @@ function computeRNOR(I: Inputs): TaxResult {
     rnorWindowMonths: rnorMonths,
     isEligible,
     eligibilityReason,
+    headline,
+    savingsOutlook,
+    primaryLever,
+    protectedCategoryCount,
+    protectedCategorySummary,
     taxFreeIncome,
     taxableInIndia: 0,
     estimatedTaxSaved: totalSaving,
@@ -718,12 +767,6 @@ export default function RNOROptimizer() {
     setAnswers({}); setResult(null); setLoading(false)
   }
 
-  const fmtLakh = (n: number) => {
-    if (n >= 10000000) return '₹' + (n / 10000000).toFixed(1) + ' Cr'
-    if (n >= 100000) return '₹' + (n / 100000).toFixed(1) + 'L'
-    return '₹' + Math.round(n / 1000) + 'K'
-  }
-
   // ── LOADING ──
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#1A1208', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -760,10 +803,13 @@ export default function RNOROptimizer() {
           .rnor-result-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
           .rnor-result-strategy-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem; }
           .rnor-result-cta-grid { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center; }
-          .rnor-income-row { display: flex; align-items: center; gap: 1rem; }
           .rnor-total-row { display: flex; align-items: center; justify-content: space-between; }
           .rnor-form-row { display: flex; gap: 1rem; align-items: flex-start; }
           .rnor-risk-row { display: flex; gap: 1rem; }
+          .rnor-tooltip-wrap { position: relative; display: inline-flex; vertical-align: middle; margin-left: 6px; }
+          .rnor-tooltip-trigger { width: 18px; height: 18px; border: none; border-radius: 999px; background: #1A1208; color: #fff; font-size: 11px; line-height: 1; cursor: pointer; padding: 0; }
+          .rnor-tooltip-bubble { position: absolute; left: 0; top: calc(100% + 8px); width: min(260px, calc(100vw - 3rem)); padding: 0.7rem 0.8rem; border-radius: 10px; background: #1A1208; color: rgba(255,255,255,0.88); font-size: 11px; line-height: 1.55; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 0.15s ease, transform 0.15s ease; z-index: 20; box-shadow: 0 14px 40px rgba(0,0,0,0.18); }
+          .rnor-tooltip-wrap:hover .rnor-tooltip-bubble, .rnor-tooltip-wrap:focus-within .rnor-tooltip-bubble { opacity: 1; pointer-events: auto; transform: translateY(0); }
           @media (max-width: 860px) {
             .rnor-result-shell { padding: 1rem; }
             .rnor-result-header-grid { grid-template-columns: 1fr; gap: 1rem; }
@@ -773,7 +819,7 @@ export default function RNOROptimizer() {
           }
           @media (max-width: 640px) {
             .rnor-result-summary-grid { grid-template-columns: 1fr; }
-            .rnor-income-row, .rnor-total-row, .rnor-form-row, .rnor-risk-row { flex-direction: column; align-items: flex-start; }
+            .rnor-total-row, .rnor-form-row, .rnor-risk-row { flex-direction: column; align-items: flex-start; }
           }
         `}</style>
 
@@ -784,9 +830,9 @@ export default function RNOROptimizer() {
             <div className="rnor-result-header-grid">
               <div>
                 <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.8rem,4vw,2.75rem)', color: '#fff', marginBottom: '0.75rem', lineHeight: 1.2 }}>
-                  {r.isEligible ? `You can save ${fmtLakh(r.rnorTotalSaving)} in India taxes` : 'RNOR eligibility needs verification'}
+                  {r.headline}
                 </h1>
-                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', lineHeight: 1.75, maxWidth: '560px' }}>{r.eligibilityReason}</p>
+                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', lineHeight: 1.75, maxWidth: '620px' }}>{r.eligibilityReason} We show ranges and rule-of-thumb guidance here because the questionnaire captures bands and yes/no answers, not exact money values.</p>
               </div>
               {r.isEligible && (
                 <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '20px', padding: '1.5rem 2rem', textAlign: 'center', minWidth: '180px' }}>
@@ -802,13 +848,13 @@ export default function RNOROptimizer() {
             {r.isEligible && (
               <div className="rnor-result-summary-grid">
                 {[
-                  { label: 'Total tax saved', val: fmtLakh(r.rnorTotalSaving), sub: 'Over RNOR window', color: '#FF9933' },
-                  { label: 'Year 1 saving', val: fmtLakh(r.rnorYear1Saving), sub: 'First year benefit', color: '#138808' },
-                  { label: 'Tax-free income', val: fmtLakh(r.taxFreeIncome), sub: 'Total foreign income', color: '#7C5CBF' },
-                  { label: 'Window ends', val: r.rnorEndDate, sub: 'Act before this date', color: '#FF9933' },
+                  { label: 'Savings outlook', val: r.savingsOutlook, sub: 'Range-based view from your selected profile', color: '#FF9933', tip: 'We use your RNOR window, salary band, and selected foreign-income categories. Exact rupee savings require real salary, vest values, rent, dividends, and realized gains.' },
+                  { label: 'Primary lever', val: r.primaryLever, sub: 'Your biggest planning opportunity', color: '#138808', tip: 'This is the category most likely to shape the RNOR opportunity for your answers.' },
+                  { label: 'Categories in play', val: r.protectedCategoryCount, sub: r.protectedCategorySummary, color: '#7C5CBF', tip: 'These are the categories the questionnaire flagged. Final treatment still depends on source, timing, and treaty facts.' },
+                  { label: 'Window ends', val: r.rnorEndDate, sub: 'Act before this date', color: '#FF9933', tip: 'The RNOR benefit depends on whether income, vesting, or withdrawals happen before this window closes.' },
                 ].map(s => (
                   <div key={s.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '14px', padding: '14px 16px' }}>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>{s.label}</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>{s.label}<InfoTip text={s.tip} /></div>
                     <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.3rem', color: s.color, marginBottom: '2px' }}>{s.val}</div>
                     <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>{s.sub}</div>
                   </div>
@@ -823,23 +869,22 @@ export default function RNOROptimizer() {
           {/* INCOME BREAKDOWN */}
           {r.incomeBreakdown.length > 0 && (
             <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '20px', padding: '1.75rem', marginBottom: '1.25rem' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.25rem' }}>Income Tax-Free During Your RNOR Window</div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '4px' }}>Potential RNOR-Protected Categories<InfoTip text='These cards stay range-based on purpose. The questionnaire does not ask for exact salary, vest values, rent, dividend yield, realized gains, or withdrawal amounts.' /></div>
+              <div style={{ fontSize: '12px', color: 'var(--ink-muted)', lineHeight: 1.65, marginBottom: '1rem' }}>We show ranges and heuristics here because the questionnaire does not ask for exact salary, vest values, rent, dividends, or realized gains.</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {r.incomeBreakdown.map((inc, i) => (
-                  <div key={i} className="rnor-income-row" style={{ padding: '12px 16px', background: '#E8F5E8', borderRadius: '12px', border: '0.5px solid rgba(19,136,8,0.15)' }}>
-                    <div style={{ flex: 1 }}>
+                  <div key={i} style={{ padding: '14px 16px', background: '#F7FAF7', borderRadius: '12px', border: '0.5px solid rgba(19,136,8,0.12)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                       <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)' }}>{inc.source}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '2px' }}>{inc.note}</div>
+                      <InfoTip text={inc.logic} />
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.25rem', color: '#138808' }}>{fmtLakh(inc.amount)}</div>
-                      <div style={{ fontSize: '11px', color: '#138808', fontWeight: 600 }}>TAX FREE ✓</div>
-                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#138808', marginBottom: '6px' }}>{inc.profile}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--ink-soft)', lineHeight: 1.6, marginBottom: '8px' }}>{inc.note}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--ink)', lineHeight: 1.6 }}>{inc.benefitHint}</div>
                   </div>
                 ))}
                 <div className="rnor-total-row" style={{ padding: '12px 16px', background: 'var(--india-white)', borderRadius: '12px', border: '0.5px solid var(--border)' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>Total India tax saved</div>
-                  <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.5rem', color: '#FF9933' }}>{fmtLakh(r.rnorTotalSaving)}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: 1.6 }}>Use actual salary, vest values, rent, dividends, and realized gains with a CA for final tax math.</div>
                 </div>
               </div>
             </div>
@@ -847,12 +892,12 @@ export default function RNOROptimizer() {
 
           {/* YEAR BY YEAR TABLE */}
           <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '20px', padding: '1.75rem', marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.25rem' }}>Year-by-Year Tax Status</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '4px' }}>Year-by-Year Planning View<InfoTip text='This section shows when the RNOR window is open in each Indian financial year. It explains treatment and timing, not final rupee tax numbers.' /></div>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Year', 'Status', 'Foreign Income Tax', 'India Income', 'Annual Saving'].map(h => (
+                    {['Year', 'Status', 'Foreign Income Treatment', 'India Income', 'Planning Focus'].map(h => (
                       <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{h}</th>
                     ))}
                   </tr>
@@ -864,7 +909,7 @@ export default function RNOROptimizer() {
                       <td style={{ padding: '10px 12px' }}><span style={{ background: yr.color === '#138808' ? '#E8F5E8' : '#FFF3E6', color: yr.color, fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '100px' }}>{yr.status}</span></td>
                       <td style={{ padding: '10px 12px', color: yr.color, fontWeight: 500 }}>{yr.foreignIncomeTax}</td>
                       <td style={{ padding: '10px 12px', color: 'var(--ink-muted)' }}>{yr.indiaIncomeTax}</td>
-                      <td style={{ padding: '10px 12px', color: '#138808', fontWeight: 600 }}>{yr.saving}</td>
+                      <td style={{ padding: '10px 12px', color: 'var(--ink-muted)', fontWeight: 500 }}>{yr.saving}</td>
                     </tr>
                   ))}
                 </tbody>
