@@ -1,7 +1,14 @@
 type ReadinessEmailParams = {
   firstName: string
-  result: Record<string, any>
+  result: Record<string, unknown>
 }
+
+const READINESS_EMAIL_BREAKDOWN = [
+  { label: 'Financial', scoreKey: 'financial', max: 35, color: '#FF9933' },
+  { label: 'Planning', scoreKey: 'planning', max: 27, color: '#0E138C' },
+  { label: 'Career', scoreKey: 'career', max: 20, color: '#138808' },
+  { label: 'Life Complexity', scoreKey: 'lifeComplexity', max: 18, color: '#7C5CBF' },
+] as const
 
 export function buildReadinessReportEmailHtml({ firstName, result }: ReadinessEmailParams) {
   const score = result?.score?.total || 0
@@ -47,21 +54,16 @@ export function buildReadinessReportEmailHtml({ firstName, result }: ReadinessEm
                 <div style="display:inline-block;background:${statusBg};color:${statusColor};font-size:11px;font-weight:600;padding:4px 12px;border-radius:100px;">${status}</div>
               </td>
               <td style="vertical-align:top;padding-left:28px;">
-                ${[
-                  { label: 'Financial', scoreValue: result?.score?.financial || 0, max: 40, color: '#FF9933' },
-                  { label: 'Life Complexity', scoreValue: result?.score?.lifeComplexity || 0, max: 25, color: '#7C5CBF' },
-                  { label: 'Career', scoreValue: result?.score?.career || 0, max: 20, color: '#138808' },
-                  { label: 'Planning', scoreValue: result?.score?.planning || 0, max: 20, color: '#6B8CFF' },
-                ]
+                ${READINESS_EMAIL_BREAKDOWN
                   .map(
                     (item) => `
                   <div style="margin-bottom:9px;">
                     <div style="overflow:hidden;margin-bottom:3px;">
                       <span style="font-size:11px;color:#888;float:left;">${item.label}</span>
-                      <span style="font-size:11px;font-weight:600;color:${item.color};float:right;">${item.scoreValue}/${item.max}</span>
+                      <span style="font-size:11px;font-weight:600;color:${item.color};float:right;">${result?.score?.[item.scoreKey] || 0}/${item.max}</span>
                     </div>
                     <div style="height:4px;background:#f0f0f0;border-radius:100px;">
-                      <div style="width:${Math.round((item.scoreValue / item.max) * 100)}%;height:4px;background:${item.color};border-radius:100px;"></div>
+                      <div style="width:${Math.max(0, Math.min(100, Math.round((((result?.score?.[item.scoreKey] || 0) / item.max) * 100))))}%;height:4px;background:${item.color};border-radius:100px;"></div>
                     </div>
                   </div>
                 `

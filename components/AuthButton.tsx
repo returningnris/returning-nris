@@ -5,7 +5,7 @@
 import { useAuth } from './useAuth'
 import Link from 'next/link'
 
-export default function AuthButton() {
+export default function AuthButton({ onNavigate }: { onNavigate?: () => void }) {
   const { user, isAuthenticated, loading, signOut } = useAuth()
 
   if (loading) {
@@ -60,7 +60,10 @@ export default function AuthButton() {
 
         {/* Sign Out Button */}
         <button
-          onClick={signOut}
+          onClick={() => {
+            onNavigate?.()
+            void signOut()
+          }}
           style={{
             padding: '6px 14px',
             background: 'rgba(255,255,255,0.05)',
@@ -90,7 +93,8 @@ export default function AuthButton() {
 
   return (
     <Link 
-      href="/auth" 
+      href="/auth"
+      onClick={onNavigate}
       style={{
         padding: '6px 18px',
         background: '#FF9933',

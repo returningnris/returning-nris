@@ -1369,9 +1369,6 @@ export default function Planner() {
     
     setTimeout(() => { 
       setResult(computedResult)
-      if (!isAuthenticated) {
-        setGuestModalOpen(true)
-      }
       setLoading(false)
     }, 1800)
   }

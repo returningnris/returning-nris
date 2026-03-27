@@ -233,7 +233,7 @@ export default function NavBar() {
 
             {/* AUTH BUTTON IN MOBILE */}
             <div style={{ paddingTop: '12px', paddingBottom: '4px' }}>
-              <AuthButton />
+              <AuthButton onNavigate={() => setMobileOpen(false)} />
             </div>
           </div>
           </div>
