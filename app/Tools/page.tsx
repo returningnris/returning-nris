@@ -162,6 +162,12 @@ export default function ToolsPage() {
           transform: translateY(-2px);
           box-shadow: 0 18px 38px rgba(29,22,15,0.08);
         }
+        .tools-card-header {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 16px;
+          align-items: start;
+        }
         @media (max-width: 980px) {
           .tools-grid,
           .tools-card-meta-grid {
@@ -237,7 +243,7 @@ export default function ToolsPage() {
                   <div style={{ display: 'grid', gap: 14 }}>
                     <div style={{ height: 6, borderRadius: 999, background: tone.color, opacity: 0.88 }} />
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'start', flexWrap: 'wrap' }}>
+                    <div className="tools-card-header">
                       <div style={{ maxWidth: 760 }}>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
                           <div style={{ fontSize: 11, color: tone.color, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{tool.group}</div>
@@ -248,7 +254,7 @@ export default function ToolsPage() {
                         <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.75, margin: 0 }}>{tool.description}</p>
                       </div>
 
-                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 1.15rem', borderRadius: 999, background: tone.bg, color: tone.color, fontSize: 13, fontWeight: 700, border: `1px solid ${tone.border}` }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 1.15rem', borderRadius: 999, background: tone.bg, color: tone.color, fontSize: 13, fontWeight: 700, border: `1px solid ${tone.border}`, alignSelf: 'start', whiteSpace: 'nowrap' }}>
                         Open tool
                       </div>
                     </div>
