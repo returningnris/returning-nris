@@ -1,29 +1,25 @@
 import Link from 'next/link'
 
 const REALITY_CARDS = [
-  'Too many tabs. Too much conflicting advice.',
-  'RNOR, taxes, 401k, RSUs, stocks, and what changes when you move.',
-  'Whether to rent first, buy later, or wait.',
-  'Health insurance, schools, timing, and what to handle before you leave.',
-  'The fear of missing one expensive thing that creates months of stress later.',
+  'You have 10+ tabs open and still no clear plan.',
+  'You are unsure what to do with RNOR, taxes, 401K, RSUs, and investments.',
+  'You do not know what to handle before leaving vs after landing.',
+  'You are stuck on rent first, buy later, or wait.',
+  'You are worried you might miss something expensive.',
 ]
 
 const OUTCOME_CARDS = [
   {
-    title: 'Your readiness score',
-    body: 'See how prepared you are right now.',
+    title: 'How ready you are',
+    body: 'See where you stand right now.',
   },
   {
-    title: 'Your biggest gaps',
-    body: 'Spot what still needs attention before the move.',
+    title: 'What you are missing',
+    body: 'Spot the gaps before they cost you later.',
   },
   {
-    title: 'Your next steps',
-    body: 'Know what to do first, next, and later.',
-  },
-  {
-    title: 'A clearer move-back plan',
-    body: 'Replace guesswork with a practical plan you can follow.',
+    title: 'What to do next',
+    body: 'Know your next move with clarity.',
   },
 ]
 
@@ -34,9 +30,8 @@ const STEPS = [
 ]
 
 const TRUST_POINTS = [
-  'Built by NRIs who have gone through this themselves.',
-  'Designed around real move-back decisions, not generic advice.',
-  'Start free. No signup required.',
+  'Built by NRIs who have been through this themselves.',
+  'Designed to avoid costly mistakes.',
 ]
 
 export default function Home() {
@@ -155,45 +150,29 @@ export default function Home() {
               </div>
 
               <h1 style={{ fontSize: 'clamp(2.7rem, 5.8vw, 5.1rem)', lineHeight: 0.94, color: '#1a1208', marginBottom: '1rem' }}>
-                Moving back to India is already hard.
+                Moving back to India is more complicated than it looks.
                 <br />
-                Figuring it out should not be this messy.
+                Do not figure it out the hard way.
               </h1>
 
               <p style={{ fontSize: 18, lineHeight: 1.7, color: '#5c5346', maxWidth: 720, marginBottom: '1rem' }}>
-                Taxes, housing, money, schools, insurance, timeline. It adds up fast. Check how ready you are, see what you may be missing, and get clear next steps.
+                Taxes, housing, money, schools, insurance, timing.
+                <br />
+                Check how ready you are and what to do next.
               </p>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem' }}>
-                {['Free readiness check', 'Results shown right away', 'No signup required'].map((item) => (
-                  <div
-                    key={item}
-                    style={{
-                      padding: '0.55rem 0.85rem',
-                      borderRadius: 999,
-                      background: '#fff',
-                      border: '1px solid rgba(26,18,8,0.08)',
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: '#1a1208',
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
 
               <div className="home-cta-row" style={{ display: 'flex', gap: '0.9rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.85rem' }}>
                 <Link href="/planner" className="btn-primary">
                   Check my readiness
                 </Link>
-                <Link href="#how-it-works" className="btn-ghost">
-                  See how it works
-                </Link>
               </div>
 
               <div style={{ fontSize: 14, color: '#7a6d5d' }}>
-                Built by people who went through the same move-back confusion themselves.
+                Free 3-min check. No signup required.
+              </div>
+
+              <div style={{ fontSize: 14, color: '#7a6d5d', marginTop: '0.55rem' }}>
+                Most people only realize what they missed after they move.
               </div>
             </div>
 
@@ -211,19 +190,19 @@ export default function Home() {
               </div>
 
               <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', lineHeight: 1.02, marginBottom: '1rem' }}>
-                Most people are not stuck because they are lazy.
+                You are not overthinking it.
               </h2>
 
               <p style={{ fontSize: 15, lineHeight: 1.7, color: 'rgba(255,255,255,0.74)', marginBottom: '1rem' }}>
-                They are stuck because every decision connects to five others, and the information is scattered.
+                Every decision affects five more, and the information is scattered.
               </p>
 
               <div style={{ display: 'grid', gap: '0.8rem' }}>
                 {[
-                  'RNOR status, taxes, and timing',
-                  '401k, RSUs, stocks, savings, and transfers',
-                  'Rent first or buy later',
-                  'Schools, health insurance, and the first 90 days',
+                  'RNOR, taxes, and timing',
+                  '401K, RSUs, investments, and transfers',
+                  'Rent first, buy later, or wait',
+                  'Schools, insurance, and the first 90 days',
                 ].map((item) => (
                   <div
                     key={item}
@@ -284,11 +263,11 @@ export default function Home() {
           <div className="home-card" style={{ padding: '1.6rem 1.5rem', background: '#fffaf3' }}>
             <div style={{ display: 'grid', gap: '0.5rem', maxWidth: 720 }}>
               <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.8rem)', lineHeight: 1.02, color: '#1a1208' }}>
-                We thought move-back planning would take a weekend.
+                We thought this would take a weekend.
               </h2>
               <p style={{ fontSize: 17, color: '#4f4639' }}>It turned into months of tabs, lists, calls, and second-guessing.</p>
-              <p style={{ fontSize: 17, color: '#4f4639' }}>We kept asking the same question: what are we missing?</p>
-              <p style={{ fontSize: 17, color: '#4f4639' }}>So we built the tool we wish we had when we were doing it ourselves.</p>
+              <p style={{ fontSize: 17, color: '#4f4639' }}>We kept asking: what are we missing?</p>
+              <p style={{ fontSize: 17, color: '#4f4639' }}>So we built the tool we wish we had.</p>
             </div>
           </div>
         </div>
@@ -297,35 +276,17 @@ export default function Home() {
       <section className="home-section" style={{ background: '#f7f1e8' }}>
         <div className="home-shell">
           <div style={{ marginBottom: '1.8rem' }}>
-            <div className="home-kicker">What you get in minutes</div>
-            <h2 className="home-title">What you will know after the check</h2>
-            <p className="home-sub">Short, practical, and useful right away.</p>
+            <div className="home-kicker">What you get</div>
+            <h2 className="home-title">In 3 minutes, you&apos;ll know:</h2>
           </div>
 
-          <div className="home-grid-4">
+          <div className="home-grid-3">
             {OUTCOME_CARDS.map((item) => (
               <div key={item.title} className="home-card" style={{ padding: '1.35rem', background: '#fff' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9a8c7d', marginBottom: '0.75rem' }}>
-                  Included
-                </div>
                 <h3 style={{ fontSize: 24, lineHeight: 1.05, color: '#1a1208', marginBottom: '0.65rem' }}>{item.title}</h3>
                 <p style={{ fontSize: 15, lineHeight: 1.6, color: '#5c5346' }}>{item.body}</p>
               </div>
             ))}
-          </div>
-
-          <div
-            style={{
-              marginTop: '1.25rem',
-              fontSize: 14,
-              color: '#6a5e50',
-              padding: '0.95rem 1rem',
-              borderRadius: 18,
-              border: '1px solid rgba(26,18,8,0.08)',
-              background: 'rgba(255,255,255,0.7)',
-            }}
-          >
-            See your readiness results first. Use Journey Tracker and deeper tools later if you want to save progress and keep going.
           </div>
         </div>
       </section>
@@ -353,27 +314,19 @@ export default function Home() {
           <div className="home-kicker" style={{ color: '#f0a048' }}>
             Why this matters
           </div>
-          <div className="home-grid-3">
-            {[
-              'Most people only realize what they missed after they move.',
-              'A small mistake can cost time, money, and a lot of stress.',
-              'A little clarity before the move can save months of confusion later.',
-            ].map((line) => (
-              <div
-                key={line}
-                style={{
-                  borderRadius: 24,
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  background: 'rgba(255,255,255,0.05)',
-                  padding: '1.35rem',
-                  fontSize: 22,
-                  lineHeight: 1.2,
-                  color: '#fff8ef',
-                }}
-              >
-                {line}
-              </div>
-            ))}
+          <div
+            className="home-card"
+            style={{
+              padding: '1.4rem',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <div style={{ display: 'grid', gap: '0.45rem', fontSize: 22, lineHeight: 1.2, color: '#fff8ef' }}>
+              <div>Most people only realize what they missed after they move.</div>
+              <div>A little clarity now can save months later.</div>
+              <div>Small misses get expensive fast.</div>
+            </div>
           </div>
         </div>
       </section>
@@ -418,7 +371,7 @@ export default function Home() {
               Check your readiness before you make the big move-back decisions.
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.65, color: '#5c5346', maxWidth: 680, margin: '0 auto 1.4rem' }}>
-              Free 3-minute check. No signup required. See your results right away.
+              Free 3-min check. No signup required.
             </p>
             <div className="home-cta-row" style={{ display: 'flex', justifyContent: 'center', gap: '0.9rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <Link href="/planner" className="btn-primary">
