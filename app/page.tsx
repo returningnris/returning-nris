@@ -2,42 +2,35 @@ import Link from 'next/link'
 
 const PLATFORM_PILLARS = [
   {
-    label: 'Readiness Check',
-    title: 'Know where you stand before you move.',
-    body: 'Assess income readiness, RNOR timing, city clarity, family complexity, and housing preparation in one guided flow.',
-    links: [{ href: '/planner', label: 'Open Readiness Check' }],
+    label: 'Step 1',
+    title: 'Check your readiness',
+    body: 'Answer a few practical questions about your move timeline, finances, family situation, city plans, and preparation.',
+    links: [{ href: '/planner', label: 'Start Readiness Check' }],
   },
   {
-    label: 'Journey Tracker',
-    title: 'Turn a big move into a managed program.',
-    body: 'Move from decision to arrival and year one with phased tasks, milestone tracking, and a clear next-best action.',
-    links: [{ href: '/journey', label: 'Open Journey Tracker' }],
+    label: 'Step 2',
+    title: 'See what gaps still need fixing',
+    body: 'Get a readiness score, understand the risks, and see what still needs attention before you commit to the move.',
+    links: [{ href: '/planner', label: 'See Your Results' }],
   },
   {
-    label: 'Tools + Resources',
-    title: 'Go deeper with specialist tools and guides.',
-    body: 'Use RNOR, city, school, housing, healthcare, and career tools alongside practical returning-NRI articles.',
+    label: 'Step 3',
+    title: 'Follow a clearer move plan',
+    body: 'Use your next steps to make better decisions on taxes, housing, schools, health insurance, and timing.',
     links: [
       { href: '/Tools', label: 'Explore Tools' },
-      { href: '/resources', label: 'Browse Resources' },
+      { href: '/resources', label: 'Browse Guides' },
     ],
   },
 ]
 
-const FEATURE_SURFACES = [
-  ['RNOR planning', 'Protect the tax window most NRIs miss'],
-  ['City and cost fit', 'Compare where life actually works'],
-  ['Schools and family timing', 'Reduce the hardest move friction'],
-  ['Housing and landing setup', 'Stabilize the first 90 days'],
-]
-
 const TOOL_CARDS = [
-  ['RNOR Calculator', 'Model your tax timing before you become India-resident.', '/rnor'],
-  ['City Match', 'Shortlist cities using cost, lifestyle, and practical tradeoffs.', '/city'],
-  ['Schools Finder', 'Compare international and local school options by move timing.', '/schools'],
-  ['Housing Finder', 'Start with neighborhoods and rental direction before landing.', '/housing'],
-  ['Healthcare Guide', 'Map hospitals, insurance, and care decisions early.', '/healthcare'],
-  ['Resource Guide', 'Read grounded guides built specifically for returning NRIs.', '/resources'],
+  ['What about RNOR and taxes?', 'Understand the tax timing decisions that can materially affect your move back.', '/rnor'],
+  ['Which city actually fits our life?', 'Compare cities through cost, lifestyle, and practical day-to-day tradeoffs.', '/city'],
+  ['How do we think about schools?', 'Explore school options and timing if children are part of the move.', '/schools'],
+  ['Should we rent or buy first?', 'Start with neighborhoods, rent direction, and landing practicality before committing.', '/housing'],
+  ['What should we do about health insurance?', 'Get clearer on hospitals, cover, and what needs to be set up early.', '/healthcare'],
+  ['What should happen in the first 90 days?', 'Use grounded guides built specifically for returning NRIs and families.', '/resources'],
 ]
 
 export default function Home() {
@@ -149,8 +142,16 @@ export default function Home() {
                   marginBottom: '1rem',
                 }}
               >
-                The operating system for your move back to India.
+                Moving back to India is a big life decision. It should not feel this confusing.
               </h1>
+
+              <p style={{ fontSize: 18, color: '#665848', lineHeight: 1.8, maxWidth: 720, marginBottom: '0.85rem' }}>
+                Taxes, RNOR, housing, schools, health insurance, timing, city choice, savings, and a hundred small decisions in between. ReturningNRIs helps you understand where you stand and what to do next without spending months piecing it together alone.
+              </p>
+
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#8d5c22', marginBottom: '1.5rem' }}>
+                Free 3-minute readiness check. No signup required.
+              </div>
 
               <div
                 className="home-cta-row"
@@ -159,48 +160,15 @@ export default function Home() {
                   gap: '1.1rem',
                   alignItems: 'center',
                   flexWrap: 'wrap',
-                  marginBottom: '2.5rem',
+                  marginBottom: '0.5rem',
                 }}
               >
                 <Link href="/planner" className="btn-primary">
                   Start Readiness Check
                 </Link>
-                <Link href="/journey" className="btn-secondary">
-                  View Journey Tracker
+                <Link href="#how-it-works" className="btn-secondary">
+                  See How It Works
                 </Link>
-              </div>
-
-              <div className="home-proof-grid">
-                {[
-                  ['Readiness first', 'Get clear before making expensive timing mistakes.'],
-                  ['Journey managed', 'Track phases, tasks, and milestones through year one.'],
-                  ['Specialist tools', 'Use focused tools when you need depth, not guesswork.'],
-                  ['Built for NRIs', 'Everything is shaped around real returning-NRI decisions.'],
-                ].map(([title, body]) => (
-                  <div
-                    key={title}
-                    style={{
-                      padding: '1rem',
-                      borderRadius: 20,
-                      background: 'rgba(29,22,15,0.03)',
-                      border: '1px solid rgba(29,22,15,0.08)',
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: '#9d907f',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.08em',
-                        marginBottom: 8,
-                      }}
-                    >
-                      {title}
-                    </div>
-                    <div style={{ fontSize: 14, color: '#665848', lineHeight: 1.7 }}>{body}</div>
-                  </div>
-                ))}
               </div>
             </div>
 
@@ -234,17 +202,21 @@ export default function Home() {
                 </div>
 
                 <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', lineHeight: 1.02, color: '#fff', marginBottom: '0.8rem' }}>
-                  One platform, three core surfaces.
+                  We spent months figuring out what should have taken a weekend.
                 </h2>
 
                 <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.72)', lineHeight: 1.75, marginBottom: '1.25rem' }}>
-                  Start with Readiness Check, move into the Journey Tracker, and go deeper with targeted tools and resources when specific decisions need detail.
+                  One tab for RNOR. Another for schools. Another for rent, taxes, insurance, investments, and what to do after landing. It was stressful, scattered, and much harder than it should have been.
                 </p>
 
                 <div style={{ display: 'grid', gap: 10 }}>
-                  {PLATFORM_PILLARS.map((pillar) => (
+                  {[
+                    ['Why we built this', 'We built the simple step-by-step guide we wish existed when we were planning our own move back.'],
+                    ['Who it is for', 'NRIs and NRI families returning to India permanently who want clarity before making expensive decisions.'],
+                    ['How to begin', 'Start with the free readiness check, see your results immediately, and go deeper only where you need help.'],
+                  ].map(([title, body]) => (
                     <div
-                      key={pillar.title}
+                      key={title}
                       style={{
                         padding: '1rem',
                         borderRadius: 20,
@@ -253,18 +225,10 @@ export default function Home() {
                       }}
                     >
                       <div style={{ fontSize: 12, fontWeight: 700, color: '#f3a44f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                        {pillar.label}
+                        ReturningNRIs
                       </div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{pillar.title}</div>
-                      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, marginBottom: 10 }}>{pillar.body}</div>
-                      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                        {pillar.links.map((link) => (
-                          <Link key={link.href} href={link.href} style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
-                            {link.label}
-                            {' ->'}
-                          </Link>
-                        ))}
-                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{title}</div>
+                      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7 }}>{body}</div>
                     </div>
                   ))}
                 </div>
@@ -285,9 +249,9 @@ export default function Home() {
             }}
           >
             {[
-              ['Decision quality', 'Assess readiness before booking flights or making tax moves.'],
-              ['Program structure', 'Track the move as phases, not scattered to-dos.'],
-              ['Decision support', 'Use purpose-built tools for the hard questions.'],
+              ['Readiness score', 'See how prepared you really are across finances, timing, family, housing, and planning.'],
+              ['Personalized next steps', 'Understand what is already in place, what is still risky, and what to fix before you move.'],
+              ['A clearer move-back plan', 'Stop guessing what matters most and focus on the next decisions that actually change your outcome.'],
             ].map(([title, body]) => (
               <div
                 key={title}
@@ -309,13 +273,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section style={{ background: '#fffdf9', padding: '0 0 5rem' }}>
+      <section id="how-it-works" style={{ background: '#fffdf9', padding: '0 0 5rem' }}>
         <div className="home-shell">
           <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto 2.5rem' }}>
-            <div className="section-label">Core Platform</div>
-            <h2 className="section-title">Designed for the full returning-NRI journey, not just one moment.</h2>
+            <div className="section-label">How It Works</div>
+            <h2 className="section-title">A simple way to get clarity before you make the big move-back decisions.</h2>
             <p className="section-sub" style={{ margin: '0 auto' }}>
-              The platform is structured to support the move from early evaluation through landing and the first year back in India.
+              Start with the free readiness check, see what still needs attention, and use that clarity to build a better move plan.
             </p>
           </div>
 
@@ -352,10 +316,10 @@ export default function Home() {
       <section style={{ background: '#fffdf9', padding: '5rem 0' }}>
         <div className="home-shell">
           <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto 2.5rem' }}>
-            <div className="section-label">Useful Tools And Resources</div>
-            <h2 className="section-title">Specialist surfaces for the decisions that matter most.</h2>
+            <div className="section-label">Real Questions NRIs Worry About</div>
+            <h2 className="section-title">The practical questions that usually create the most stress and second-guessing.</h2>
             <p className="section-sub" style={{ margin: '0 auto' }}>
-              Use the right tool when you need depth, then return to the platform to keep the broader move on track.
+              These are the concerns most families end up researching across dozens of tabs, WhatsApp groups, and conflicting advice.
             </p>
           </div>
 
@@ -375,12 +339,12 @@ export default function Home() {
                 }}
               >
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                  Tool
+                  Question
                 </div>
                 <div style={{ fontSize: 22, color: '#1d160f', marginBottom: 10 }}>{title}</div>
                 <div style={{ fontSize: 15, color: '#665848', lineHeight: 1.8, marginBottom: 14 }}>{body}</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#1d160f' }}>
-                  Open
+                  Explore
                   {' ->'}
                 </div>
               </Link>
@@ -418,18 +382,21 @@ export default function Home() {
               Start with clarity
             </div>
             <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)', lineHeight: 1.02, color: '#fff', marginBottom: '1rem' }}>
-              Start with your readiness. Manage the rest of the journey with confidence.
+              Start with your readiness before you commit to dates, rent, schools, taxes, or big financial moves.
             </h2>
             <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.68)', lineHeight: 1.85, maxWidth: 720, margin: '0 auto 1.75rem' }}>
-              Use the Readiness Check to establish where you stand, then continue inside the Journey Tracker and specialist tools as your move plan becomes real.
+              Take the free readiness check and see where you stand in a few minutes. No signup required, and you can view your results immediately.
             </p>
             <div className="home-cta-row" style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
               <Link href="/planner" className="btn-primary">
-                Start Readiness Check
+                Start Free Readiness Check
               </Link>
-              <Link href="/resources" className="btn-ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.16)' }}>
-                Browse Resources
+              <Link href="/Tools" className="btn-ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.16)' }}>
+                Browse Free Tools
               </Link>
+            </div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.62)', marginTop: '1rem' }}>
+              Free 3-minute readiness check. No signup required.
             </div>
           </div>
         </div>
