@@ -17,6 +17,14 @@ export type Article = {
 
 export const ARTICLES: Article[] = [
   {
+    href: '/resources/hyderabad-neighbourhood-guide-for-returning-nri-families',
+    label: 'Hyderabad Neighbourhood Guide for Returning NRI Families',
+    icon: '📍',
+    sub: '5 micro-markets, 15 parameters, and who each zone fits',
+    category: 'Housing',
+    readMins: 11,
+  },
+  {
     href: '/resources/should-i-return-to-india-from-usa',
     label: 'Should I return to India from the USA?',
     icon: '🤔',
