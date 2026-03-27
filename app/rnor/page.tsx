@@ -674,22 +674,14 @@ export default function RNOROptimizer() {
   const { shouldBlock } = useProtectedRoute()
 
   const [answers, setAnswers] = useState<Partial<Inputs>>({})
-  const [currentStep, setCurrentStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<TaxResult | null>(null)
 
   const visibleSteps = DISPLAY_STEPS.filter((step) => isStepVisible(step, answers))
   const totalSteps = visibleSteps.length
-  const step = visibleSteps[currentStep]
   const answered = visibleSteps.filter((step) => isStepAnswered(step, answers)).length
   const progress = Math.round((answered / totalSteps) * 100)
   if (shouldBlock) return null
-
-  const sectionColors: Record<string, string> = {
-    'Your Profile': '#FF9933',
-    'Income Sources': '#138808',
-    'Tax Planning': '#7C5CBF',
-  }
 
   function setAnswer(key: string, val: string) {
     setAnswers(prev => {
@@ -712,7 +704,7 @@ export default function RNOROptimizer() {
   }
 
   function restart() {
-    setAnswers({}); setCurrentStep(0); setResult(null); setLoading(false)
+    setAnswers({}); setResult(null); setLoading(false)
   }
 
   const fmtLakh = (n: number) => {
@@ -1132,63 +1124,6 @@ export default function RNOROptimizer() {
           </div>
         </div>
       </div>
-    </div>
-  )
-  return (
-    <div style={{ minHeight: '100vh', background: '#1A1208', display: 'flex', flexDirection: 'column' }}>
-
-      {/* HERO */}
-      <div style={{ padding: '3rem 2rem 2rem', textAlign: 'center' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,153,51,0.15)', border: '0.5px solid rgba(255,153,51,0.3)', borderRadius: '100px', padding: '5px 14px', marginBottom: '1rem' }}>
-          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF9933' }} />
-          <span style={{ fontSize: '11px', fontWeight: 500, color: '#FF9933', letterSpacing: '0.08em' }}>RNOR Tax Optimizer · Free · {totalSteps} questions</span>
-        </div>
-        <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.8rem,4vw,2.5rem)', color: '#fff', marginBottom: '0.5rem' }}>
-          How much can you save<br />with RNOR status?
-        </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.95rem', maxWidth: '520px', margin: '0 auto' }}>
-          Answer {totalSteps} questions — get your exact RNOR window, personalised RSU and 401k strategy, forms to file, and total India tax saved.
-        </p>
-      </div>
-
-      {/* PROGRESS */}
-      <div style={{ padding: '0 2rem', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Question {currentStep + 1} of {totalSteps}</span>
-          <span style={{ fontSize: '12px', color: '#FF9933', fontWeight: 500 }}>{progress}% complete</span>
-        </div>
-        <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '100px', overflow: 'hidden', marginBottom: '2rem' }}>
-          <div style={{ height: '100%', background: '#FF9933', borderRadius: '100px', width: progress + '%', transition: 'width 0.4s ease' }} />
-        </div>
-      </div>
-
-      {/* QUESTION */}
-      {step && (
-        <div style={{ flex: 1, padding: '0 2rem 4rem', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '2rem', border: '0.5px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '1.25rem' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: sectionColors[step.section] || '#FF9933' }} />
-              <span style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{step.section}</span>
-            </div>
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.4rem', color: '#fff', marginBottom: '6px' }}>{step.q}</h2>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', marginBottom: '1.5rem' }}>{step.hint}</p>
-            <div style={{ display: 'grid', gridTemplateColumns: step.opts.length <= 3 ? '1fr' : '1fr 1fr', gap: '10px' }}>
-              {step.opts.map(opt => {
-                const sel = answers[step.key as keyof Inputs] === opt.k
-                return (
-                  <button key={opt.k} onClick={() => pick(step.key, opt.k)} style={{ padding: '14px 18px', borderRadius: '14px', border: sel ? '2px solid #FF9933' : '1px solid rgba(255,255,255,0.1)', background: sel ? 'rgba(255,153,51,0.12)' : 'rgba(255,255,255,0.04)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', textAlign: 'left', transition: 'all 0.18s' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 500, color: '#fff', marginBottom: '3px' }}>{opt.label}</div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{opt.sub}</div>
-                  </button>
-                )
-              })}
-            </div>
-            {currentStep > 0 && (
-              <button onClick={() => setCurrentStep(s => s - 1)} style={{ marginTop: '1.5rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>← Back</button>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
