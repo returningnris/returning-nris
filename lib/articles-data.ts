@@ -48,4 +48,12 @@ export const ARTICLES: Article[] = [
     category: 'Schools',
     readMins: 9,
   },
+  {
+    href: '/resources/gated-community-flat-vs-suburb-villa-for-returning-nris',
+    label: 'Gated Community Flat vs Suburb Villa for Returning NRIs',
+    icon: '🏠',
+    sub: 'What your housing choice really changes in year one',
+    category: 'Housing',
+    readMins: 8,
+  },
 ]
