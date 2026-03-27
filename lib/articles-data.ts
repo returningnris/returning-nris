@@ -40,4 +40,12 @@ export const ARTICLES: Article[] = [
     category: 'Tax Planning',
     readMins: 10,
   },
+  {
+    href: '/resources/ib-cambridge-cbse-icse-guide-for-returning-nris',
+    label: 'IB vs Cambridge vs CBSE vs ICSE for Returning NRIs',
+    icon: '🎓',
+    sub: 'Which school board fits your child and your move plan',
+    category: 'Schools',
+    readMins: 9,
+  },
 ]
