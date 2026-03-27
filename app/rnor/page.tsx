@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useProtectedRoute } from '../../components/useProtectedRoute'
 
@@ -377,8 +377,6 @@ function computeRNOR(I: Inputs): TaxResult {
     ? 'Less than 3 years abroad — RNOR may not apply. Consult a CA immediately.'
     : I.yearsAbroad === '10plus'
     ? 'You qualify for the maximum 3-year RNOR window — highest possible tax benefit.'
-    : I.yearsAbroad === '10to15'
-    ? 'You qualify for a 2.5-year RNOR window — very strong position.'
     : I.yearsAbroad === '7to10'
     ? 'You qualify for a 2-year RNOR window — standard full RNOR benefit.'
     : 'You have partial RNOR eligibility — professional assessment recommended.'
@@ -405,29 +403,24 @@ function computeRNOR(I: Inputs): TaxResult {
   const fmtUSD = (n: number) => '$' + (n / 1000).toFixed(0) + 'K'
 
   // India tax rate on foreign income (30% surcharge for high income)
-  const indiaTaxRate = annualSalaryINR > 10000000 ? 0.42 : annualSalaryINR > 5000000 ? 0.30 : 0.20
+  const annualRecurringForeignIncome = annualSalaryINR + rentalINR + dividendINR
+  const indiaTaxRate = annualRecurringForeignIncome > 10000000 ? 0.42 : annualRecurringForeignIncome > 5000000 ? 0.30 : annualRecurringForeignIncome > 0 ? 0.20 : 0
 
   // Tax saved per year on salary during RNOR
-  const yearlySalarySaving = annualSalaryINR * indiaTaxRate
+  const yearlySalarySaving = annualRecurringForeignIncome * indiaTaxRate
   const rnorYears = rnorMonths / 12
   const totalSalarySaving = yearlySalarySaving * rnorYears
+  const recurringProtectedIncomeTotal = annualRecurringForeignIncome * rnorYears
 
   // RSU saving — if vested during RNOR window
   const rsuSaving = rsuValueINR * indiaTaxRate
 
   // 401k — don't withdraw during RNOR (India would tax it)
-  // Rental + dividend savings
-  const rentalSaving = rentalINR * rnorYears * indiaTaxRate
-  const dividendSaving = dividendINR * rnorYears * indiaTaxRate
-  const recurringRentalSaving = rnorYears > 0 ? rentalSaving / rnorYears : 0
-  const recurringDividendSaving = rnorYears > 0 ? dividendSaving / rnorYears : 0
+  const totalSaving = Math.round(totalSalarySaving + rsuSaving)
+  const year1Saving = Math.round(Math.min(totalSaving, yearlySalarySaving + rsuSaving))
+  const year2Saving = Math.round(yearlySalarySaving)
 
-  const totalSaving = Math.round(totalSalarySaving + rsuSaving + rentalSaving + dividendSaving)
-  const year1Saving = Math.round(yearlySalarySaving + (rsuSaving * 0.5) + recurringRentalSaving + recurringDividendSaving)
-  const year2Saving = Math.round(yearlySalarySaving + (rsuSaving * 0.3) + recurringRentalSaving + recurringDividendSaving)
-
-  const recurringForeignIncome = annualSalaryINR + rentalINR + dividendINR
-  const taxFreeIncome = isEligible ? Math.round((recurringForeignIncome * rnorYears) + rsuValueINR) : 0
+  const taxFreeIncome = isEligible ? Math.round(recurringProtectedIncomeTotal + rsuValueINR) : 0
 
   // ── RSU Strategy ─────────────────────────────────────────────────────────────
   let rsuStrategy = ''
@@ -473,18 +466,30 @@ function computeRNOR(I: Inputs): TaxResult {
 
   // ── Year by Year ──────────────────────────────────────────────────────────────
   const yearByYear: TaxResult['yearByYear'] = []
-  for (let y = 0; y < Math.ceil(rnorYears) + 1; y++) {
-    const yr = moveYear + y
-    const isRNOR = y < rnorYears
-    const isLastRNOR = y === Math.floor(rnorYears) && rnorYears % 1 !== 0
+  const fyStartYear = (d: Date) => (d.getMonth() + 1 >= 4 ? d.getFullYear() : d.getFullYear() - 1)
+  const monthDiff = (start: Date, end: Date) => Math.max(0, ((end.getFullYear() - start.getFullYear()) * 12) + (end.getMonth() - start.getMonth()))
+  const startFY = fyStartYear(startDate)
+  const endFY = fyStartYear(endDate)
+  for (let fy = startFY; fy <= endFY; fy++) {
+    const fyStart = new Date(fy, 3, 1)
+    const fyEnd = new Date(fy + 1, 3, 1)
+    const overlapStart = startDate > fyStart ? startDate : fyStart
+    const overlapEnd = endDate < fyEnd ? endDate : fyEnd
+    const monthsInRNOR = overlapEnd > overlapStart ? monthDiff(overlapStart, overlapEnd) : 0
+    const status = monthsInRNOR === 12 ? 'RNOR' : monthsInRNOR > 0 ? `Partial RNOR (${monthsInRNOR} mo)` : 'Resident'
+    const recurringSavingForFY = (yearlySalarySaving * monthsInRNOR) / 12
+    const rsuSavingForFY = fy === startFY ? rsuSaving : 0
+    const totalSavingForFY = recurringSavingForFY + rsuSavingForFY
+    const residentMonths = 12 - monthsInRNOR
+    const residentTaxForFY = (yearlySalarySaving * residentMonths) / 12
     yearByYear.push({
-      year: `FY ${yr}–${(yr + 1).toString().slice(2)}`,
-      status: isRNOR ? (isLastRNOR ? 'Partial RNOR' : 'RNOR') : 'Resident',
-      foreignIncomeTax: isRNOR ? '₹0 (tax-free)' : fmtLakh(annualSalaryINR * indiaTaxRate) + '/yr',
+      year: `FY ${fy}-${(fy + 1).toString().slice(2)}`,
+      status,
+      foreignIncomeTax: monthsInRNOR === 12 ? 'Rs0 (tax-free)' : monthsInRNOR > 0 ? `${fmtLakh(residentTaxForFY)} on resident-period months` : fmtLakh(yearlySalarySaving) + '/yr',
       indiaIncomeTax: 'As per India slab',
-      totalTax: isRNOR ? 'Only India income taxed' : 'Global income taxed',
-      saving: isRNOR ? fmtLakh(annualSalaryINR * indiaTaxRate) : '–',
-      color: isRNOR ? '#138808' : '#FF9933',
+      totalTax: monthsInRNOR > 0 ? 'India tax applies only outside the RNOR months shown here' : 'Global income taxed',
+      saving: monthsInRNOR > 0 ? fmtLakh(totalSavingForFY) : '-',
+      color: monthsInRNOR > 0 ? '#138808' : '#FF9933',
     })
   }
 
@@ -549,10 +554,10 @@ function computeRNOR(I: Inputs): TaxResult {
 
   // ── Income Breakdown ──────────────────────────────────────────────────────────
   const incomeBreakdown: TaxResult['incomeBreakdown'] = []
-  if (annualSalaryINR > 0 && I.employmentType === 'remote_us') incomeBreakdown.push({ source: 'US Salary', amount: annualSalaryINR, taxable: false, note: 'Foreign source — RNOR tax-free in India' })
-  if (rsuValueINR > 0) incomeBreakdown.push({ source: 'RSU Vesting', amount: rsuValueINR, taxable: false, note: 'Foreign equity — RNOR tax-free if vested during window' })
-  if (rentalINR > 0) incomeBreakdown.push({ source: 'US Rental Income', amount: rentalINR * rnorYears, taxable: false, note: 'Foreign property income — RNOR tax-free' })
-  if (dividendINR > 0) incomeBreakdown.push({ source: 'US Dividends & Capital Gains', amount: dividendINR * rnorYears, taxable: false, note: 'Foreign investment income — RNOR tax-free' })
+  if (annualSalaryINR > 0 && I.employmentType === 'remote_us') incomeBreakdown.push({ source: 'US Salary', amount: annualSalaryINR * rnorYears, taxable: false, note: 'Foreign salary total across your RNOR window' })
+  if (rsuValueINR > 0) incomeBreakdown.push({ source: 'RSU Vesting', amount: rsuValueINR, taxable: false, note: 'Assumed to vest within your RNOR window' })
+  if (rentalINR > 0) incomeBreakdown.push({ source: 'US Rental Income', amount: rentalINR * rnorYears, taxable: false, note: 'Foreign property income total across your RNOR window' })
+  if (dividendINR > 0) incomeBreakdown.push({ source: 'US Dividends & Capital Gains', amount: dividendINR * rnorYears, taxable: false, note: 'Foreign investment income total across your RNOR window' })
 
   return {
     rnorStartDate: startStr,
@@ -681,6 +686,12 @@ export default function RNOROptimizer() {
   const totalSteps = visibleSteps.length
   const answered = visibleSteps.filter((step) => isStepAnswered(step, answers)).length
   const progress = Math.round((answered / totalSteps) * 100)
+
+  useEffect(() => {
+    if (!result) return
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [result])
+
   if (shouldBlock) return null
 
   function setAnswer(key: string, val: string) {
@@ -1127,3 +1138,4 @@ export default function RNOROptimizer() {
     </div>
   )
 }
+
