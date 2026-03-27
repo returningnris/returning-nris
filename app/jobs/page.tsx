@@ -287,6 +287,36 @@ export default function JobCareerGuide() {
 
     return (
       <div style={{ background: 'var(--india-white)', minHeight: '100vh' }}>
+        <style>{`
+          .jobs-report-shell {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+          }
+          @media (max-width: 767px) {
+            .jobs-report-shell {
+              padding: 1rem .9rem 2rem;
+            }
+            .jobs-market-grid,
+            .jobs-advice-grid,
+            .jobs-report-cta {
+              grid-template-columns: 1fr !important;
+            }
+            .jobs-risk-row {
+              flex-direction: column;
+            }
+            .jobs-report-cta {
+              padding: 1.5rem !important;
+            }
+            .jobs-report-actions {
+              width: 100%;
+            }
+            .jobs-report-actions > * {
+              flex: 1 1 100%;
+              justify-content: center;
+            }
+          }
+        `}</style>
         <div style={{ background: '#1A1208', padding: '4rem 2rem 3rem' }}>
           <div style={{ maxWidth: '960px', margin: '0 auto' }}>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Job & Career Transition Guide</div>
@@ -296,7 +326,7 @@ export default function JobCareerGuide() {
             <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', maxWidth: '560px', lineHeight: 1.75 }}>
               Salary benchmarks, top companies hiring NRI returnees, remote work strategy, and a 90-day job search plan.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '2rem' }}>
+            <div className="jobs-market-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '2rem' }}>
               {r.marketSnapshot.map(s => (
                 <div key={s.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '14px', padding: '14px' }}>
                   <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>{s.label}</div>
@@ -308,7 +338,7 @@ export default function JobCareerGuide() {
           </div>
         </div>
 
-        <div style={{ maxWidth: '960px', margin: '0 auto', padding: '2rem' }}>
+        <div className="jobs-report-shell">
 
           {/* SALARY BENCHMARKS */}
           <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '20px', padding: '1.75rem', marginBottom: '1.25rem' }}>
@@ -375,7 +405,7 @@ export default function JobCareerGuide() {
           </div>
 
           {/* RESUME + LINKEDIN + INTERVIEW TIPS */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' }}>
+          <div className="jobs-advice-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' }}>
             <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '20px', padding: '1.5rem' }}>
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '1rem' }}>📄 Resume for India Market</div>
               {r.resumeTips.map((tip, i) => (
@@ -431,7 +461,7 @@ export default function JobCareerGuide() {
                 {r.risks.map((risk, i) => {
                   const c = riskColors[risk.level]
                   return (
-                    <div key={i} style={{ background: c.bg, border: `0.5px solid ${c.border}`, borderRadius: '14px', padding: '1.25rem 1.5rem', display: 'flex', gap: '1rem' }}>
+                    <div key={i} className="jobs-risk-row" style={{ background: c.bg, border: `0.5px solid ${c.border}`, borderRadius: '14px', padding: '1.25rem 1.5rem', display: 'flex', gap: '1rem' }}>
                       <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: c.icon, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#fff', flexShrink: 0 }}>{risk.level === 'high' ? '!' : '⚠'}</div>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
@@ -462,12 +492,12 @@ export default function JobCareerGuide() {
             </div>
           </div>
 
-          <div style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
+          <div className="jobs-report-cta" style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>See your complete return readiness score</div>
               <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Get your personalised readiness report — financial, career, schools, housing all in one place.</div>
             </div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="jobs-report-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <Link href="/planner" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>Readiness check →</Link>
               <button onClick={restart} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>Recalculate</button>
             </div>

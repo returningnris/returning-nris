@@ -175,6 +175,42 @@ export default function SchoolsFinder() {
 
     return (
       <div style={{ background: 'var(--india-white)', minHeight: '100vh' }}>
+        <style>{`
+          .schools-report-shell {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+          }
+          @media (max-width: 767px) {
+            .schools-report-shell {
+              padding: 1rem .9rem 2rem;
+            }
+            .schools-alert,
+            .schools-school-row {
+              flex-direction: column;
+            }
+            .schools-detail-row {
+              flex-direction: column;
+              align-items: flex-start !important;
+              gap: 4px !important;
+            }
+            .schools-detail-row > span:last-child {
+              text-align: left !important;
+              max-width: none !important;
+            }
+            .schools-report-cta {
+              grid-template-columns: 1fr !important;
+              padding: 1.5rem !important;
+            }
+            .schools-report-actions {
+              width: 100%;
+            }
+            .schools-report-actions > * {
+              flex: 1 1 100%;
+              justify-content: center;
+            }
+          }
+        `}</style>
         <div style={{ background: '#1A1208', padding: '4rem 2rem 3rem' }}>
           <div style={{ maxWidth: '960px', margin: '0 auto' }}>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Schools Comparison — {cityName}</div>
@@ -187,11 +223,11 @@ export default function SchoolsFinder() {
           </div>
         </div>
 
-        <div style={{ maxWidth: '960px', margin: '0 auto', padding: '2rem' }}>
+        <div className="schools-report-shell">
 
           {/* IMPORTANT NOTE */}
           {answers.midYear === 'yes_urgent' && (
-            <div style={{ background: '#FFF3E6', border: '0.5px solid rgba(255,153,51,0.3)', borderRadius: '14px', padding: '1rem 1.5rem', marginBottom: '1.25rem', display: 'flex', gap: '10px' }}>
+            <div className="schools-alert" style={{ background: '#FFF3E6', border: '0.5px solid rgba(255,153,51,0.3)', borderRadius: '14px', padding: '1rem 1.5rem', marginBottom: '1.25rem', display: 'flex', gap: '10px' }}>
               <span style={{ fontSize: '1.25rem' }}>⚡</span>
               <div>
                 <div style={{ fontSize: '14px', fontWeight: 600, color: '#854F0B', marginBottom: '3px' }}>Urgent mid-year admission — act immediately</div>
@@ -207,7 +243,7 @@ export default function SchoolsFinder() {
 
                 {/* SCHOOL HEADER */}
                 <div style={{ padding: '1.5rem', cursor: 'pointer' }} onClick={() => setExpanded(expanded === school.name ? null : school.name)}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                  <div className="schools-school-row" style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                     <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: i === 0 ? '#FF9933' : i === 1 ? '#138808' : 'var(--india-white)', color: i < 2 ? '#fff' : 'var(--ink-soft)', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
@@ -255,7 +291,7 @@ export default function SchoolsFinder() {
                             { label: 'Sports', val: school.sports },
                             { label: 'Arts', val: school.arts },
                           ].map(item => (
-                            <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                            <div key={item.label} className="schools-detail-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                               <span style={{ color: 'var(--ink-soft)' }}>{item.label}</span>
                               <span style={{ color: 'var(--ink)', fontWeight: 500, textAlign: 'right', maxWidth: '200px' }}>{item.val}</span>
                             </div>
@@ -312,12 +348,12 @@ export default function SchoolsFinder() {
             </div>
           </div>
 
-          <div style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
+          <div className="schools-report-cta" style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>Need to find housing near your shortlisted school?</div>
               <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Check the Rental & Housing Finder — neighbourhoods ranked by proximity to your school and NRI community.</div>
             </div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="schools-report-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <Link href="/housing" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>Find housing →</Link>
               <button onClick={restart} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>New search</button>
             </div>

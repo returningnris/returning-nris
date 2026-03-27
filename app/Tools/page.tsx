@@ -181,6 +181,12 @@ export default function ToolsPage() {
           .tools-shell {
             padding: 1rem .9rem 2rem;
           }
+          .tools-card-header {
+            grid-template-columns: 1fr;
+          }
+          .tools-card-cta {
+            width: 100%;
+          }
         }
       `}</style>
 
@@ -254,7 +260,7 @@ export default function ToolsPage() {
                         <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.75, margin: 0 }}>{tool.description}</p>
                       </div>
 
-                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 1.15rem', borderRadius: 999, background: tone.bg, color: tone.color, fontSize: 13, fontWeight: 700, border: `1px solid ${tone.border}`, alignSelf: 'start', whiteSpace: 'nowrap' }}>
+                      <div className="tools-card-cta" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 1.15rem', borderRadius: 999, background: tone.bg, color: tone.color, fontSize: 13, fontWeight: 700, border: `1px solid ${tone.border}`, alignSelf: 'start', whiteSpace: 'nowrap' }}>
                         Open tool
                       </div>
                     </div>

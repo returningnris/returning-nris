@@ -160,6 +160,37 @@ export default function HousingFinder() {
 
     return (
       <div style={{ background: 'var(--india-white)', minHeight: '100vh' }}>
+        <style>{`
+          .housing-report-shell {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+          }
+          @media (max-width: 767px) {
+            .housing-report-shell {
+              padding: 1rem .9rem 2rem;
+            }
+            .housing-alert,
+            .housing-result-row {
+              flex-direction: column;
+            }
+            .housing-rating-grid,
+            .housing-pros-grid,
+            .housing-report-cta {
+              grid-template-columns: 1fr !important;
+            }
+            .housing-report-cta {
+              padding: 1.5rem !important;
+            }
+            .housing-report-actions {
+              width: 100%;
+            }
+            .housing-report-actions > * {
+              flex: 1 1 100%;
+              justify-content: center;
+            }
+          }
+        `}</style>
         <div style={{ background: '#1A1208', padding: '4rem 2rem 3rem' }}>
           <div style={{ maxWidth: '960px', margin: '0 auto' }}>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Rental & Housing Guide — {cityName}</div>
@@ -170,11 +201,11 @@ export default function HousingFinder() {
           </div>
         </div>
 
-        <div style={{ maxWidth: '960px', margin: '0 auto', padding: '2rem' }}>
+        <div className="housing-report-shell">
 
           {/* IMMEDIATE TIMELINE NOTE */}
           {answers.timeline === 'immediate' && (
-            <div style={{ background: '#FFF3E6', border: '0.5px solid rgba(255,153,51,0.3)', borderRadius: '14px', padding: '1rem 1.5rem', marginBottom: '1.25rem', display: 'flex', gap: '10px' }}>
+            <div className="housing-alert" style={{ background: '#FFF3E6', border: '0.5px solid rgba(255,153,51,0.3)', borderRadius: '14px', padding: '1rem 1.5rem', marginBottom: '1.25rem', display: 'flex', gap: '10px' }}>
               <span style={{ fontSize: '1.25rem' }}>⚡</span>
               <div>
                 <div style={{ fontSize: '14px', fontWeight: 600, color: '#854F0B', marginBottom: '3px' }}>Moving in under 1 month — use a serviced apartment first</div>
@@ -188,7 +219,7 @@ export default function HousingFinder() {
             {result.map((n, i) => (
               <div key={n.name} style={{ background: 'var(--white)', border: `0.5px solid ${expanded === n.name ? 'rgba(255,153,51,0.3)' : 'var(--border)'}`, borderRadius: '20px', overflow: 'hidden' }}>
                 <div style={{ padding: '1.5rem', cursor: 'pointer' }} onClick={() => setExpanded(expanded === n.name ? null : n.name)}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                  <div className="housing-result-row" style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                     <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: i === 0 ? '#FF9933' : i === 1 ? '#138808' : 'var(--india-white)', color: i < 2 ? '#fff' : 'var(--ink-soft)', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
@@ -207,7 +238,7 @@ export default function HousingFinder() {
                           <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '4px' }}>{expanded === n.name ? '▲ Less' : '▼ Details'}</div>
                         </div>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px', marginTop: '10px' }}>
+                      <div className="housing-rating-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px', marginTop: '10px' }}>
                         {[{ label: 'NRI community', val: n.nriRating, color: '#FF9933' }, { label: 'Safety', val: n.safetyRating, color: '#138808' }, { label: 'Connectivity', val: n.connectivityRating, color: '#000080' }, { label: 'Green spaces', val: n.greenRating, color: '#1D9E75' }].map(r => (
                           <div key={r.label} style={{ background: 'var(--india-white)', borderRadius: '8px', padding: '6px 8px' }}>
                             <div style={{ fontSize: '9px', color: 'var(--ink-soft)', marginBottom: '4px' }}>{r.label}</div>
@@ -223,7 +254,7 @@ export default function HousingFinder() {
                   <div style={{ padding: '0 1.5rem 1.5rem', borderTop: '0.5px solid var(--border)' }}>
                     <p style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: 1.7, marginTop: '1.25rem', marginBottom: '1.25rem' }}>{n.description}</p>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                    <div className="housing-pros-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                       <div>
                         <div style={{ fontSize: '12px', fontWeight: 600, color: '#138808', marginBottom: '6px' }}>✓ Why it works</div>
                         {n.pros.map((p, i) => <div key={i} style={{ fontSize: '12px', color: 'var(--ink-muted)', lineHeight: 1.5, marginBottom: '4px', paddingLeft: '10px', borderLeft: '2px solid #E8F5E8' }}>{p}</div>)}
@@ -278,12 +309,12 @@ export default function HousingFinder() {
             </div>
           </div>
 
-          <div style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
+          <div className="housing-report-cta" style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>Need to check healthcare options in {cityName}?</div>
               <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>See the Healthcare & Insurance Guide for top hospitals, insurance options, and coverage gap management.</div>
             </div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="housing-report-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <Link href="/healthcare" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>Healthcare guide →</Link>
               <button onClick={restart} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>New search</button>
             </div>

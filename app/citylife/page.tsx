@@ -152,6 +152,33 @@ export default function CityLifeGuide() {
 
     return (
       <div style={{ background: 'var(--india-white)', minHeight: '100vh' }}>
+        <style>{`
+          .citylife-report-shell {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+          }
+          @media (max-width: 767px) {
+            .citylife-report-shell {
+              padding: 1rem .9rem 2rem;
+            }
+            .citylife-place-head,
+            .citylife-community-head {
+              flex-wrap: wrap;
+            }
+            .citylife-report-cta {
+              grid-template-columns: 1fr !important;
+              padding: 1.5rem !important;
+            }
+            .citylife-report-actions {
+              width: 100%;
+            }
+            .citylife-report-actions > * {
+              flex: 1 1 100%;
+              justify-content: center;
+            }
+          }
+        `}</style>
         <div style={{ background: '#1A1208', padding: '4rem 2rem 3rem' }}>
           <div style={{ maxWidth: '960px', margin: '0 auto' }}>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>City Life Guide — {cityName}</div>
@@ -160,7 +187,7 @@ export default function CityLifeGuide() {
           </div>
         </div>
 
-        <div style={{ maxWidth: '960px', margin: '0 auto', padding: '2rem' }}>
+        <div className="citylife-report-shell">
 
           {/* CATEGORY FILTERS */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '1.5rem' }}>
@@ -175,7 +202,7 @@ export default function CityLifeGuide() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
             {filtered.map(place => (
               <div key={place.name} style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '18px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                <div className="citylife-place-head" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
                   <div>
                     <div style={{ fontSize: '1.25rem', marginBottom: '4px' }}>{CATEGORY_ICONS[place.category] || '📍'}</div>
                     <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)', marginBottom: '2px' }}>{place.name}</div>
@@ -202,7 +229,7 @@ export default function CityLifeGuide() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px,1fr))', gap: '1rem' }}>
               {result.communities.map((c, i) => (
                 <div key={i} style={{ background: 'var(--india-white)', borderRadius: '14px', padding: '1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <div className="citylife-community-head" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                     <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink)' }}>{c.name}</div>
                     <span style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '100px', background: '#E8E8FF', color: '#0C447C', fontWeight: 600 }}>{c.platform}</span>
                   </div>
@@ -213,12 +240,12 @@ export default function CityLifeGuide() {
             </div>
           </div>
 
-          <div style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
+          <div className="citylife-report-cta" style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>Looking for career opportunities in {cityName}?</div>
               <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Check the Job & Career Transition guide — salary benchmarks, top companies, and remote work strategy.</div>
             </div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="citylife-report-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <Link href="/jobs" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>Career guide →</Link>
               <button onClick={restart} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>New search</button>
             </div>

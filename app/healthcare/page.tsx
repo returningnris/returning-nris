@@ -154,6 +154,35 @@ export default function HealthcareGuide() {
 
     return (
       <div style={{ background: 'var(--india-white)', minHeight: '100vh' }}>
+        <style>{`
+          .health-report-shell {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+          }
+          @media (max-width: 767px) {
+            .health-report-shell {
+              padding: 1rem .9rem 2rem;
+            }
+            .health-alert {
+              flex-direction: column;
+            }
+            .health-hospital-head {
+              flex-wrap: wrap;
+            }
+            .health-report-cta {
+              grid-template-columns: 1fr !important;
+              padding: 1.5rem !important;
+            }
+            .health-report-actions {
+              width: 100%;
+            }
+            .health-report-actions > * {
+              flex: 1 1 100%;
+              justify-content: center;
+            }
+          }
+        `}</style>
         <div style={{ background: '#1A1208', padding: '4rem 2rem 3rem' }}>
           <div style={{ maxWidth: '960px', margin: '0 auto' }}>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Healthcare & Insurance Guide — {cityName}</div>
@@ -162,10 +191,10 @@ export default function HealthcareGuide() {
           </div>
         </div>
 
-        <div style={{ maxWidth: '960px', margin: '0 auto', padding: '2rem' }}>
+        <div className="health-report-shell">
 
           {/* COVERAGE GAP ALERT */}
-          <div style={{ background: uc.bg, border: `0.5px solid ${uc.border}`, borderRadius: '14px', padding: '1rem 1.5rem', marginBottom: '1.25rem', display: 'flex', gap: '10px' }}>
+          <div className="health-alert" style={{ background: uc.bg, border: `0.5px solid ${uc.border}`, borderRadius: '14px', padding: '1rem 1.5rem', marginBottom: '1.25rem', display: 'flex', gap: '10px' }}>
             <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: uc.icon, color: '#fff', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>!</div>
             <div>
               <div style={{ fontSize: '14px', fontWeight: 600, color: uc.text, marginBottom: '3px' }}>US–India Coverage Gap</div>
@@ -181,7 +210,7 @@ export default function HealthcareGuide() {
                 <div key={h.name} style={{ background: 'var(--india-white)', borderRadius: '14px', padding: '1.25rem', border: '0.5px solid var(--border)' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <div className="health-hospital-head" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                         <div style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink)' }}>{h.name}</div>
                         {h.jciAccredited && <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '100px', background: '#E8E8FF', color: '#0C447C' }}>JCI Accredited</span>}
                         {h.usStandards && <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '100px', background: '#E8F5E8', color: '#27500A' }}>US Standards</span>}
@@ -252,12 +281,12 @@ export default function HealthcareGuide() {
             </div>
           </div>
 
-          <div style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
+          <div className="health-report-cta" style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>Ready to explore life in your city?</div>
               <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Check the City Life Guide — where to eat, shop, and find your community in {cityName}.</div>
             </div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="health-report-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <Link href="/citylife" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>City life guide →</Link>
               <button onClick={restart} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>Recalculate</button>
             </div>

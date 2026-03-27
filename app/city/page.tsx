@@ -244,6 +244,50 @@ export default function CityMatch() {
 
     return (
       <div style={{ background: 'var(--india-white)', minHeight: '100vh' }}>
+        <style>{`
+          .city-report-shell {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+          }
+          .city-ranking-tags {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+          }
+          @media (max-width: 767px) {
+            .city-report-shell {
+              padding: 1rem .9rem 2rem;
+            }
+            .city-ranking-row,
+            .city-detail-header {
+              flex-direction: column;
+              align-items: flex-start !important;
+            }
+            .city-ranking-score {
+              text-align: left !important;
+              min-width: 0 !important;
+            }
+            .city-score-grid,
+            .city-cost-grid,
+            .city-neighborhood-grid,
+            .city-pros-grid,
+            .city-report-cta {
+              grid-template-columns: 1fr !important;
+            }
+            .city-report-cta {
+              padding: 1.5rem !important;
+            }
+            .city-report-actions {
+              width: 100%;
+            }
+            .city-report-actions > * {
+              flex: 1 1 100%;
+              justify-content: center;
+            }
+          }
+        `}</style>
         <div style={{ background: '#1A1208', padding: '4rem 2rem 3rem' }}>
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>City Match Report</div>
@@ -254,25 +298,25 @@ export default function CityMatch() {
           </div>
         </div>
 
-        <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem' }}>
+        <div className="city-report-shell">
 
           {/* CITY RANKING */}
           <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '20px', padding: '1.75rem', marginBottom: '1.25rem' }}>
             <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.25rem' }}>Your City Rankings</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {result.map((city, i) => (
-                <div key={city.code} onClick={() => setSelectedCity(city.code)} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '14px 16px', background: selectedCity === city.code || (!selectedCity && i === 0) ? 'rgba(255,153,51,0.06)' : 'var(--india-white)', border: `0.5px solid ${selectedCity === city.code || (!selectedCity && i === 0) ? 'rgba(255,153,51,0.3)' : 'var(--border)'}`, borderRadius: '14px', cursor: 'pointer', transition: 'all 0.2s' }}>
+                <div key={city.code} className="city-ranking-row" onClick={() => setSelectedCity(city.code)} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '14px 16px', background: selectedCity === city.code || (!selectedCity && i === 0) ? 'rgba(255,153,51,0.06)' : 'var(--india-white)', border: `0.5px solid ${selectedCity === city.code || (!selectedCity && i === 0) ? 'rgba(255,153,51,0.3)' : 'var(--border)'}`, borderRadius: '14px', cursor: 'pointer', transition: 'all 0.2s' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: i === 0 ? '#FF9933' : i === 1 ? '#138808' : 'var(--india-white)', color: i < 2 ? '#fff' : 'var(--ink-soft)', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink)' }}>{city.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '2px' }}>{city.bestFor}</div>
                   </div>
-                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  <div className="city-ranking-tags">
                     {[{ label: 'Cost', val: city.costRange }, { label: 'AQI', val: city.airQ }, { label: 'NRI', val: city.nriCommunity.replace('Very High', 'V.High') }].map(tag => (
                       <span key={tag.label} style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '100px', background: 'var(--white)', border: '0.5px solid var(--border)', color: 'var(--ink-soft)' }}>{tag.label}: {tag.val}</span>
                     ))}
                   </div>
-                  <div style={{ textAlign: 'right', minWidth: '60px' }}>
+                  <div className="city-ranking-score" style={{ textAlign: 'right', minWidth: '60px' }}>
                     <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.5rem', color: i === 0 ? '#FF9933' : 'var(--ink)' }}>{city.totalScore}</div>
                     <div style={{ fontSize: '10px', color: 'var(--ink-soft)' }}>match</div>
                   </div>
@@ -284,13 +328,13 @@ export default function CityMatch() {
 
           {/* DETAILED CITY VIEW */}
           <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '20px', padding: '1.75rem', marginBottom: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className="city-detail-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
               <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.5rem', color: 'var(--ink)', flex: 1 }}>{detail.name} — Detailed Breakdown</h2>
               <div style={{ background: '#FFF3E6', color: '#FF9933', fontSize: '13px', fontWeight: 600, padding: '6px 14px', borderRadius: '100px' }}>{detail.totalScore}/100 match</div>
             </div>
 
             {/* Score bars */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className="city-score-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
               {[
                 { label: 'Job Market', score: detail.jobScore, color: '#138808' },
                 { label: 'Schools', score: detail.schoolScore, color: '#7C5CBF' },
@@ -312,7 +356,7 @@ export default function CityMatch() {
             </div>
 
             {/* Cost snapshot */}
-            <div style={{ background: 'var(--india-white)', borderRadius: '14px', padding: '1.25rem', marginBottom: '1.25rem', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem' }}>
+            <div className="city-cost-grid" style={{ background: 'var(--india-white)', borderRadius: '14px', padding: '1.25rem', marginBottom: '1.25rem', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem' }}>
               <div><div style={{ fontSize: '10px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Monthly Cost</div><div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.3rem', color: 'var(--ink)' }}>{detail.costRange}</div></div>
               <div><div style={{ fontSize: '10px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Your Income</div><div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.3rem', color: '#138808' }}>{incomeLabel[answers.income || 'h200']}</div></div>
               <div><div style={{ fontSize: '10px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Monthly Savings</div><div style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.3rem', color: '#FF9933' }}>₹{Math.max(0, Math.round((incomeINR - detail.monthlyCost) / 1000))}K/mo</div></div>
@@ -321,7 +365,7 @@ export default function CityMatch() {
             {/* Neighbourhoods */}
             <div style={{ marginBottom: '1.25rem' }}>
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.75rem' }}>Best Neighbourhoods for NRIs</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px' }}>
+              <div className="city-neighborhood-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px' }}>
                 {detail.topNeighbourhoods.map(n => (
                   <div key={n.name} style={{ background: 'var(--india-white)', borderRadius: '12px', padding: '12px 14px', border: '0.5px solid var(--border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -335,7 +379,7 @@ export default function CityMatch() {
             </div>
 
             {/* Pros / Cons */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="city-pros-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
                 <div style={{ fontSize: '12px', fontWeight: 600, color: '#138808', marginBottom: '8px' }}>✓ Why {detail.name} works</div>
                 {detail.pros.map((p, i) => <div key={i} style={{ fontSize: '12px', color: 'var(--ink-muted)', lineHeight: 1.55, marginBottom: '5px', paddingLeft: '12px', borderLeft: '2px solid #E8F5E8' }}>{p}</div>)}
@@ -348,12 +392,12 @@ export default function CityMatch() {
           </div>
 
           {/* CTA */}
-          <div style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
+          <div className="city-report-cta" style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>Ready to find your school and neighbourhood in {top.name}?</div>
               <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Check the Schools Comparison Tool and Rental & Housing Finder next.</div>
             </div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="city-report-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <Link href="/schools" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>Find schools →</Link>
               <button onClick={restart} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>Recalculate</button>
             </div>
