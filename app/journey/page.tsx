@@ -794,7 +794,14 @@ type Action =
 function journeyReducer(state: JourneyState, action: Action): JourneyState {
   switch (action.type) {
     case 'SET_ANSWER':
-      return { ...state, answers: { ...state.answers, [action.key]: action.value } }
+      return {
+        ...state,
+        answers: {
+          ...state.answers,
+          [action.key]: action.value,
+          ...(action.key === 'childrenCount' && action.value === 'none' ? { teenageChildren: 'none' } : {}),
+        },
+      }
     case 'SET_MOVE_DATE': {
       if (action.value === state.answers.moveDate) {
         return state

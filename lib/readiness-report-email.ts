@@ -3,6 +3,36 @@ type ReadinessEmailParams = {
   result: Record<string, unknown>
 }
 
+type ReadinessEmailScore = {
+  total?: number
+  financial?: number
+  planning?: number
+  career?: number
+  lifeComplexity?: number
+}
+
+type ReadinessEmailRisk = {
+  level: string
+  title: string
+  detail: string
+  action: string
+}
+
+type ReadinessEmailRecommendation = {
+  bg?: string
+  border?: string
+  icon?: string
+  color?: string
+  verdict?: string
+  actions?: string[]
+}
+
+type ReadinessEmailFinancial = {
+  monthlyCost?: string
+  runway?: string
+  rnorSaving?: string
+}
+
 const READINESS_EMAIL_BREAKDOWN = [
   { label: 'Financial', scoreKey: 'financial', max: 35, color: '#FF9933' },
   { label: 'Planning', scoreKey: 'planning', max: 27, color: '#0E138C' },
@@ -11,16 +41,17 @@ const READINESS_EMAIL_BREAKDOWN = [
 ] as const
 
 export function buildReadinessReportEmailHtml({ firstName, result }: ReadinessEmailParams) {
-  const score = result?.score?.total || 0
+  const scoreBreakdown = (result.score as ReadinessEmailScore | undefined) ?? {}
+  const score = scoreBreakdown.total ?? 0
   const scoreColor = score >= 80 ? '#138808' : score >= 60 ? '#FF9933' : '#E24B4A'
   const statusBg = score >= 80 ? '#E8F5E8' : score >= 60 ? '#FFF3E6' : '#FCEBEB'
   const statusColor = scoreColor
-  const status = result?.status || ''
-  const headline = result?.headline || ''
-  const subheadline = result?.subheadline || ''
-  const risks = result?.risks || []
-  const recommendation = result?.recommendation || null
-  const financial = result?.financial || {}
+  const status = typeof result.status === 'string' ? result.status : ''
+  const headline = typeof result.headline === 'string' ? result.headline : ''
+  const subheadline = typeof result.subheadline === 'string' ? result.subheadline : ''
+  const risks = Array.isArray(result.risks) ? (result.risks as ReadinessEmailRisk[]) : []
+  const recommendation = (result.recommendation as ReadinessEmailRecommendation | null | undefined) ?? null
+  const financial = (result.financial as ReadinessEmailFinancial | undefined) ?? {}
   const riskBg: Record<string, string> = { high: '#FCEBEB', medium: '#FFF3E6', low: '#F0F8FF' }
   const riskBadge: Record<string, string> = { high: '#E24B4A', medium: '#FF9933', low: '#6B8CFF' }
 
@@ -56,17 +87,21 @@ export function buildReadinessReportEmailHtml({ firstName, result }: ReadinessEm
               <td style="vertical-align:top;padding-left:28px;">
                 ${READINESS_EMAIL_BREAKDOWN
                   .map(
-                    (item) => `
+                    (item) => {
+                      const scoreValue = scoreBreakdown[item.scoreKey] ?? 0
+                      const scorePercent = Math.max(0, Math.min(100, Math.round((scoreValue / item.max) * 100)))
+                      return `
                   <div style="margin-bottom:9px;">
                     <div style="overflow:hidden;margin-bottom:3px;">
                       <span style="font-size:11px;color:#888;float:left;">${item.label}</span>
-                      <span style="font-size:11px;font-weight:600;color:${item.color};float:right;">${result?.score?.[item.scoreKey] || 0}/${item.max}</span>
+                      <span style="font-size:11px;font-weight:600;color:${item.color};float:right;">${scoreValue}/${item.max}</span>
                     </div>
                     <div style="height:4px;background:#f0f0f0;border-radius:100px;">
-                      <div style="width:${Math.max(0, Math.min(100, Math.round((((result?.score?.[item.scoreKey] || 0) / item.max) * 100))))}%;height:4px;background:${item.color};border-radius:100px;"></div>
+                      <div style="width:${scorePercent}%;height:4px;background:${item.color};border-radius:100px;"></div>
                     </div>
                   </div>
                 `
+                    }
                   )
                   .join('')}
               </td>

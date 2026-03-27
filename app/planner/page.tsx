@@ -1334,7 +1334,11 @@ export default function Planner() {
 
   function setAnswer(key: keyof Answers, val: string) {
     setSubmitError('')
-    setAnswers(prev => ({ ...prev, [key]: val }))
+    setAnswers(prev => ({
+      ...prev,
+      [key]: val,
+      ...(key === 'childrenCount' && val === 'none' ? { teenageChildren: 'none' } : {}),
+    }))
   }
 
   function setTimelineAnswer(moveDate: string, timeline: Answers['timeline']) {
