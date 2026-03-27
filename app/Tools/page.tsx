@@ -101,6 +101,13 @@ const TOOL_GROUPS = [
   },
 ]
 
+const ALL_TOOLS = TOOL_GROUPS.flatMap((group) =>
+  group.tools.map((tool) => ({
+    ...tool,
+    group: group.title,
+  }))
+)
+
 function toneStyles(tone: string) {
   if (tone === 'green') return { color: T.green, bg: T.greenLight, border: 'rgba(19,136,8,0.18)' }
   if (tone === 'navy') return { color: T.navy, bg: T.navyLight, border: 'rgba(0,0,128,0.12)' }
@@ -121,26 +128,30 @@ export default function ToolsPage() {
           margin: 0 auto;
           padding: 2rem 1.25rem 4rem;
         }
-        .tools-hero-grid {
+        .tools-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-          gap: 1rem;
-          align-items: stretch;
+          grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+          gap: 1.25rem;
+          align-items: start;
         }
-        .tools-proof-grid {
+        .tools-sticky {
+          position: sticky;
+          top: 96px;
+        }
+        .tools-proof-grid,
+        .tools-note-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0.9rem;
         }
-        .tools-group-grid {
-          display: grid;
-          gap: 1rem;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+        .tools-proof-grid {
+          grid-template-columns: 1fr;
         }
-        .tools-card-grid {
+        .tools-note-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .tools-stack {
           display: grid;
           gap: 1rem;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         .tools-link-card {
           display: block;
@@ -152,11 +163,12 @@ export default function ToolsPage() {
           box-shadow: 0 18px 38px rgba(29,22,15,0.08);
         }
         @media (max-width: 980px) {
-          .tools-hero-grid,
-          .tools-group-grid,
-          .tools-card-grid,
-          .tools-proof-grid {
+          .tools-grid,
+          .tools-note-grid {
             grid-template-columns: 1fr;
+          }
+          .tools-sticky {
+            position: static;
           }
         }
         @media (max-width: 767px) {
@@ -167,51 +179,51 @@ export default function ToolsPage() {
       `}</style>
 
       <div className="tools-shell">
-        <div className="tools-hero-grid">
-          <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 28, overflow: 'hidden', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
-            <div style={{ padding: '1.4rem 1.4rem 1rem', background: '#20160f' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 7,
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: 999,
-                  padding: '0.45rem 0.85rem',
-                  marginBottom: '1rem',
-                }}
-              >
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.saffron }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  Specialist tools
-                </span>
+        <div className="tools-grid">
+          <div className="tools-sticky">
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 28, overflow: 'hidden', boxShadow: '0 22px 48px rgba(29,22,15,0.06)' }}>
+              <div style={{ padding: '1.4rem 1.4rem 1rem', background: '#20160f' }}>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 7,
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: 999,
+                    padding: '0.45rem 0.85rem',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.saffron }} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Specialist tools
+                  </span>
+                </div>
+                <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(2.2rem,5vw,4.2rem)', lineHeight: 0.98, color: T.white, marginBottom: '.9rem' }}>
+                  Open the right deep dive for the <em style={{ fontStyle: 'italic', color: T.saffron }}>real question.</em>
+                </h1>
+                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>
+                  This page is a specialist-tools catalog, not another assessment. Each tool goes deeper on one returning-NRI decision so you can move from generic planning to sharper answers.
+                </p>
               </div>
-              <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(2.2rem,5vw,4.2rem)', lineHeight: 0.98, color: T.white, marginBottom: '.9rem' }}>
-                Open the right deep dive for the <em style={{ fontStyle: 'italic', color: T.saffron }}>real question.</em>
-              </h1>
-              <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75, maxWidth: 700 }}>
-                This page is a specialist-tools catalog, not another assessment. Each tool goes deeper on one returning-NRI decision so you can move from generic planning to sharper answers.
-              </p>
+
+              <div style={{ padding: '1.25rem 1.4rem 1.4rem' }}>
+                <div className="tools-proof-grid">
+                  {[
+                    ['7 specialist tools', 'Direct access to the deep dives that matter most.'],
+                    ['No questionnaire', 'Open the tool you need without repeating readiness inputs.'],
+                    ['Built for returnees', 'Every tool is shaped around real NRI return decisions.'],
+                  ].map(([title, body]) => (
+                    <div key={title} style={{ padding: '1rem', borderRadius: 20, background: 'rgba(29,22,15,0.03)', border: `1px solid ${T.border}` }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{title}</div>
+                      <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.65 }}>{body}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div style={{ padding: '1.25rem 1.4rem 1.4rem' }}>
-              <div className="tools-proof-grid">
-                {[
-                  ['7 specialist tools', 'Direct access to the deep dives that matter most.'],
-                  ['No questionnaire', 'Open the tool you need without repeating readiness inputs.'],
-                  ['Built for returnees', 'Every tool is shaped around real NRI return decisions.'],
-                ].map(([title, body]) => (
-                  <div key={title} style={{ padding: '1rem', borderRadius: 20, background: 'rgba(29,22,15,0.03)', border: `1px solid ${T.border}` }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{title}</div>
-                    <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.65 }}>{body}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gap: '1rem' }}>
             <div
               style={{
                 background: 'linear-gradient(135deg, #20160f 0%, #302117 46%, #173e2c 100%)',
@@ -263,75 +275,88 @@ export default function ToolsPage() {
               </div>
             </div>
           </div>
-        </div>
 
-        <div style={{ marginTop: '1rem', display: 'grid', gap: '1rem' }}>
-          {TOOL_GROUPS.map((group) => (
-            <section key={group.title} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 28, padding: '1.35rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
-              <div className="tools-group-grid" style={{ alignItems: 'start' }}>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{group.title}</div>
-                  <h2 style={{ fontSize: '1.45rem', color: T.ink, marginBottom: 10 }}>{group.title}</h2>
-                  <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.75, margin: 0 }}>{group.body}</p>
-                  <div style={{ marginTop: 14, padding: '1rem', borderRadius: 20, background: 'rgba(29,22,15,0.03)', border: `1px solid ${T.border}` }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Inside this group</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{group.tools.length} specialist tools</div>
-                    <div style={{ fontSize: 13, color: T.muted, lineHeight: 1.7 }}>
-                      Each card below tells you what the tool does, when it is most useful, and how it assists the move.
-                    </div>
-                  </div>
+          <div className="tools-stack">
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 28, padding: '1.25rem 1.3rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: 100, padding: '5px 14px', marginBottom: '1rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.saffron }} />
+                <span style={{ fontSize: 11, fontWeight: 500, color: T.muted, letterSpacing: '0.06em' }}>
+                  Specialist Tools Catalog - {ALL_TOOLS.length} tools
+                </span>
+              </div>
+              <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', color: T.ink, marginBottom: '0.6rem' }}>All available tools</h2>
+              <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, maxWidth: 760 }}>
+                Pick the tool that matches the exact question you want to solve next. Each card below tells you what the tool does, who it is best for, and how it assists the move.
+              </p>
+            </div>
+
+            <div className="tools-note-grid">
+              {[
+                ['Decision deep dives', 'RNOR, city, and career help while the move is still narrowing.'],
+                ['Landing deep dives', 'Schools, housing, healthcare, and city life help once the move gets real.'],
+                ['Direct access', 'Open the specialist tool you need without retaking a generic questionnaire.'],
+              ].map(([title, body]) => (
+                <div key={title} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 22, padding: '1rem', boxShadow: '0 12px 28px rgba(29,22,15,0.04)' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{title}</div>
+                  <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.7 }}>{body}</div>
                 </div>
+              ))}
+            </div>
 
-                <div className="tools-card-grid">
-                  {group.tools.map((tool) => {
-                    const tone = toneStyles(tool.tone)
-                    return (
-                      <Link
-                        key={tool.href}
-                        href={tool.href}
-                        className="tools-link-card"
-                        style={{ padding: '1.05rem', borderRadius: 22, background: tone.bg, border: `1px solid ${tone.border}` }}
-                      >
-                        <div style={{ height: 6, borderRadius: 999, background: tone.color, marginBottom: 14, opacity: 0.88 }} />
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
-                          <div>
-                            <div style={{ fontSize: 11, color: tone.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{tool.eyebrow}</div>
-                            <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, lineHeight: 1.35 }}>{tool.title}</div>
-                          </div>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: tone.color, alignSelf: 'flex-start' }}>Open</div>
+            {ALL_TOOLS.map((tool) => {
+              const tone = toneStyles(tool.tone)
+              return (
+                <Link
+                  key={tool.href}
+                  href={tool.href}
+                  className="tools-link-card"
+                  style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 28, padding: '1.15rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}
+                >
+                  <div style={{ display: 'grid', gap: 14 }}>
+                    <div style={{ height: 6, borderRadius: 999, background: tone.color, opacity: 0.88 }} />
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'start', flexWrap: 'wrap' }}>
+                      <div style={{ maxWidth: 760 }}>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
+                          <div style={{ fontSize: 11, color: tone.color, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{tool.group}</div>
+                          <div style={{ width: 4, height: 4, borderRadius: '50%', background: T.soft }} />
+                          <div style={{ fontSize: 11, color: tone.color, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{tool.eyebrow}</div>
                         </div>
+                        <h3 style={{ fontSize: '1.4rem', color: T.ink, marginBottom: 8, lineHeight: 1.25 }}>{tool.title}</h3>
+                        <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.75, margin: 0 }}>{tool.description}</p>
+                      </div>
 
-                        <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.75, marginTop: 0, marginBottom: 12 }}>{tool.description}</p>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.9rem 1.15rem', borderRadius: 999, background: tone.bg, color: tone.color, fontSize: 13, fontWeight: 700, border: `1px solid ${tone.border}` }}>
+                        Open tool
+                      </div>
+                    </div>
 
-                        <div style={{ padding: '0.8rem 0.9rem', borderRadius: 16, background: 'rgba(255,255,255,0.62)', marginBottom: 12 }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: tone.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-                            Best for
-                          </div>
-                          <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.65 }}>{tool.bestFor}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.9fr) minmax(0,1.1fr)', gap: 14 }}>
+                      <div style={{ padding: '0.95rem', borderRadius: 20, background: tone.bg, border: `1px solid ${tone.border}` }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: tone.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                          Best for
                         </div>
+                        <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.7 }}>{tool.bestFor}</div>
+                      </div>
 
+                      <div>
                         <div style={{ fontSize: 11, fontWeight: 700, color: tone.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                           How it assists
                         </div>
                         <div style={{ display: 'grid', gap: 8 }}>
                           {tool.assists.map((item) => (
-                            <div key={item} style={{ padding: '0.75rem 0.8rem', borderRadius: 14, background: 'rgba(255,255,255,0.62)', fontSize: 13, color: T.ink, lineHeight: 1.65 }}>
+                            <div key={item} style={{ padding: '0.8rem 0.9rem', borderRadius: 16, background: 'rgba(29,22,15,0.03)', border: `1px solid ${T.border}`, fontSize: 14, color: T.ink, lineHeight: 1.65 }}>
                               {item}
                             </div>
                           ))}
                         </div>
-
-                        <div style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', paddingTop: 12, borderTop: `1px solid ${tone.border}` }}>
-                          <div style={{ fontSize: 12, color: T.muted }}>Go deeper on this decision</div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: tone.color }}>Open tool</div>
-                        </div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              </div>
-            </section>
-          ))}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>
