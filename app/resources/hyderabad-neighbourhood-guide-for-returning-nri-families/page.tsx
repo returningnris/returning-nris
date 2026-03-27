@@ -44,7 +44,7 @@ const pStyle: React.CSSProperties = {
 
 const zoneCards = [
   {
-    name: 'Zone 1',
+    name: 'West Core',
     title: 'Hitech City / Financial District / Narsingi / Kokapet',
     accent: '#0E6BA8',
     bg: '#EEF7FD',
@@ -62,7 +62,7 @@ const zoneCards = [
     ],
   },
   {
-    name: 'Zone 2',
+    name: 'Tellapur',
     title: 'Tellapur / Osman Nagar',
     accent: '#2D6A4F',
     bg: '#ECF7F0',
@@ -80,7 +80,7 @@ const zoneCards = [
     ],
   },
   {
-    name: 'Zone 3',
+    name: 'Bachupally',
     title: 'Kukatpally / Miyapur / Bachupally',
     accent: '#7B3F00',
     bg: '#F9EFE7',
@@ -98,7 +98,7 @@ const zoneCards = [
     ],
   },
   {
-    name: 'Zone 4',
+    name: 'Airport Side',
     title: 'Rajendranagar / Kismatpur / Tukkuguda',
     accent: '#6B3FA0',
     bg: '#F3ECFA',
@@ -111,12 +111,12 @@ const zoneCards = [
     ],
     watchouts: [
       'No metro, so daily life is car-dependent.',
-      'School choice is noticeably thinner than Zone 1 or Zone 2.',
+      'School choice is noticeably thinner than West Core or Tellapur.',
       'The informal NRI support network is still limited here.',
     ],
   },
   {
-    name: 'Zone 5',
+    name: 'Kompally',
     title: 'Kompally / Gandimaisamma',
     accent: '#0E7C7B',
     bg: '#EAF7F6',
@@ -152,39 +152,26 @@ const compareRows = [
   ['Best for', 'Easy NRI landing', 'Hybrid life plus space', 'Schools plus value', 'Airport-heavy routines', 'Quiet long-term living'],
 ]
 
-const situationRows = [
-  ['Both adults commute into the IT corridor most days', 'Zone 1 gives the shortest routine and the strongest social landing for younger kids.'],
-  ['You work from home most days', 'Zone 2 is the best quality-of-life play if commute is no longer the main driver.'],
-  ['Your budget is Rs.80L-Rs.1.5 Cr', 'Zone 3 or Zone 5 usually gives the best value without giving up fundamentals.'],
-  ['Kids are under 10 and social settling matters most', 'Zone 1 has the clearest edge because the NRI community is already dense and active.'],
-  ['Your child was in IB or Cambridge abroad', 'Zone 1 or Zone 2 gives the strongest curriculum-continuity options.'],
-  ['One parent travels internationally every week or two', 'Zone 4 changes life the most because airport time drops dramatically.'],
-  ['You want clean air and lower density more than urban buzz', 'Zone 2 or Zone 5 usually fits better than the western core.'],
-  ['You want the strongest long-term appreciation angle', 'Zone 2 and Zone 4 have the biggest upside stories right now.'],
-  ['You just landed and want a support ecosystem around you', 'Zone 1 remains the softest landing because community solves many invisible problems.'],
-  ['You want a forever home for the next 10 plus years', 'Zone 2 or Zone 5 usually fits the long-haul chapter better than Zone 1.'],
-]
-
 const honestTakeCards = [
   [
     'If both adults work in IT and your kids are under 12',
-    'Zone 1 is still the safest answer. It costs more, but the hidden social support in year one is hard to replicate elsewhere.',
+    'West Core is still the safest answer. It costs more, but the hidden social support in year one is hard to replicate elsewhere.',
   ],
   [
     'If one or both of you work from home',
-    'Zone 2 deserves a serious look because the newer road connectivity changed the trade-off meaningfully.',
+    'Tellapur deserves a serious look because the newer road connectivity changed the trade-off meaningfully.',
   ],
   [
     'If budget is the first filter and schools matter above all',
-    'Zone 3, especially Bachupally, stays very compelling because the school ecosystem is unusually dense for the price.',
+    'Bachupally stays very compelling because the school ecosystem is unusually dense for the price.',
   ],
   [
     'If air travel is a constant part of life',
-    'Zone 4 makes more sense than most families assume, because airport proximity compounds into a major quality-of-life advantage.',
+    'Airport Side makes more sense than most families assume, because airport proximity compounds into a major quality-of-life advantage.',
   ],
   [
     'If you want a slower chapter with space and calm',
-    'Zone 5 offers something the western corridor rarely can anymore: quiet that actually feels durable.',
+    'Kompally offers something the western corridor rarely can anymore: quiet that actually feels durable.',
   ],
 ]
 
@@ -250,19 +237,19 @@ export default function HyderabadNeighbourhoodGuide() {
             </div>
             <div className="guide-grid">
               <div className="quick-card">
-                <strong>Choose Zone 1</strong>
+                <strong>Choose West Core</strong>
                 <span>if you want the easiest first year back, the biggest NRI support system, and the strongest all-round convenience.</span>
               </div>
               <div className="quick-card">
-                <strong>Choose Zone 2</strong>
+                <strong>Choose Tellapur</strong>
                 <span>if hybrid work, cleaner air, and long-term upside matter more than living inside the western core.</span>
               </div>
               <div className="quick-card">
-                <strong>Choose Zone 3</strong>
+                <strong>Choose Bachupally</strong>
                 <span>if school access and value matter most, and you are comfortable with a more local social ecosystem.</span>
               </div>
               <div className="quick-card">
-                <strong>Choose Zone 4 or 5</strong>
+                <strong>Choose Airport Side or Kompally</strong>
                 <span>only when airport access, space, or a slower lifestyle clearly outweigh the weaker support network.</span>
               </div>
             </div>
@@ -323,11 +310,11 @@ export default function HyderabadNeighbourhoodGuide() {
               <thead>
                 <tr>
                   <th>Parameter</th>
-                  <th>Zone 1</th>
-                  <th>Zone 2</th>
-                  <th>Zone 3</th>
-                  <th>Zone 4</th>
-                  <th>Zone 5</th>
+                  <th>West Core</th>
+                  <th>Tellapur</th>
+                  <th>Bachupally</th>
+                  <th>Airport Side</th>
+                  <th>Kompally</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,11 +335,11 @@ export default function HyderabadNeighbourhoodGuide() {
             {compareRows.map((row) => (
               <div key={row[0]} className="stack-card">
                 <div className="stack-title">{row[0]}</div>
-                <div className="stack-row"><strong>Zone 1</strong><span>{row[1]}</span></div>
-                <div className="stack-row"><strong>Zone 2</strong><span>{row[2]}</span></div>
-                <div className="stack-row"><strong>Zone 3</strong><span>{row[3]}</span></div>
-                <div className="stack-row"><strong>Zone 4</strong><span>{row[4]}</span></div>
-                <div className="stack-row"><strong>Zone 5</strong><span>{row[5]}</span></div>
+                <div className="stack-row"><strong>West Core</strong><span>{row[1]}</span></div>
+                <div className="stack-row"><strong>Tellapur</strong><span>{row[2]}</span></div>
+                <div className="stack-row"><strong>Bachupally</strong><span>{row[3]}</span></div>
+                <div className="stack-row"><strong>Airport Side</strong><span>{row[4]}</span></div>
+                <div className="stack-row"><strong>Kompally</strong><span>{row[5]}</span></div>
               </div>
             ))}
           </div>
@@ -360,34 +347,6 @@ export default function HyderabadNeighbourhoodGuide() {
             <p style={{ margin: 0, fontSize: '13px', color: '#6B5E50', lineHeight: 1.65 }}>
               These comparisons are relative to one another within Hyderabad. Price ranges are indicative for 2025-26 and should always be cross-checked with current project-level data before you commit.
             </p>
-          </div>
-
-          <h2 style={h2Style}>Match the Zone to Your Situation</h2>
-          <div className="table-shell">
-            <table className="compare-table compare-table-slim">
-              <thead>
-                <tr>
-                  <th>Your situation</th>
-                  <th>Where to lean</th>
-                </tr>
-              </thead>
-              <tbody>
-                {situationRows.map((row) => (
-                  <tr key={row[0]}>
-                    <td>{row[0]}</td>
-                    <td>{row[1]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mobile-stack">
-            {situationRows.map((row) => (
-              <div key={row[0]} className="stack-card">
-                <div className="stack-title">{row[0]}</div>
-                <div className="stack-row"><strong>Answer</strong><span>{row[1]}</span></div>
-              </div>
-            ))}
           </div>
 
           <h2 style={h2Style}>The Honest Take</h2>
@@ -555,6 +514,18 @@ export default function HyderabadNeighbourhoodGuide() {
           font-weight:600;
           color:#1A1208;
           width:22%;
+        }
+        .compare-table-wide th:first-child,
+        .compare-table-wide td:first-child {
+          position: sticky;
+          left: 0;
+          z-index: 1;
+          background: #fff;
+          box-shadow: 1px 0 0 #EDE8E1;
+        }
+        .compare-table-wide th:first-child {
+          z-index: 2;
+          background: #F8F5F0;
         }
         .mobile-stack {
           display:none;

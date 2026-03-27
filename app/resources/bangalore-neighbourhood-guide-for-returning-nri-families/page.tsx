@@ -44,7 +44,7 @@ const pStyle: React.CSSProperties = {
 
 const zoneCards = [
   {
-    name: 'Zone 1',
+    name: 'Whitefield',
     title: 'Whitefield / ORR East',
     accent: '#0E6BA8',
     bg: '#EEF7FD',
@@ -64,7 +64,7 @@ const zoneCards = [
     ],
   },
   {
-    name: 'Zone 2',
+    name: 'Sarjapur',
     title: 'Sarjapur Road',
     accent: '#2D6A4F',
     bg: '#ECF7F0',
@@ -84,7 +84,7 @@ const zoneCards = [
     ],
   },
   {
-    name: 'Zone 3',
+    name: 'North Bangalore',
     title: 'North Bangalore - Hebbal / Yelahanka / Devanahalli',
     accent: '#7B3F00',
     bg: '#F9EFE7',
@@ -104,7 +104,7 @@ const zoneCards = [
     ],
   },
   {
-    name: 'Zone 4',
+    name: 'South Bangalore',
     title: 'South Bangalore - Bannerghatta / Electronic City / Kanakapura',
     accent: '#6B3FA0',
     bg: '#F3ECFA',
@@ -124,7 +124,7 @@ const zoneCards = [
     ],
   },
   {
-    name: 'Zone 5',
+    name: 'ORR Core',
     title: 'ORR Core - Koramangala / HSR / Bellandur',
     accent: '#0E7C7B',
     bg: '#EAF7F6',
@@ -164,40 +164,26 @@ const compareRows = [
   ['Best for', 'Easy NRI landing', 'School continuity and space', 'Airport-led long game', 'Affordable family living', 'Urban premium lifestyle'],
 ]
 
-const situationRows = [
-  ['Both of you work on the ORR tech corridor', 'Zone 1 or Zone 5 usually makes the most sense because commute friction compounds quickly in Bangalore.'],
-  ['Your child was in IB or Cambridge abroad', 'Zone 2 has the strongest curriculum-density advantage and usually the cleanest international-school shortlist.'],
-  ['Your budget is Rs.90L-Rs.1.8 Cr', 'Zone 4 gives the best mix of affordability, current metro utility, and livable family space.'],
-  ['Kids are under 10 and social life matters most', 'Zone 1 still wins because the NRI-returnee peer network is unusually dense and active.'],
-  ['You travel internationally often', 'Zone 3 becomes the most logical answer because airport time materially changes weekly life.'],
-  ['You want the best air and greenery', 'Zone 3 or the greener edges of Zone 4 usually fit better than east or core ORR.'],
-  ['You work from home and want lifestyle over intensity', 'Zone 2 is usually the cleanest answer because it balances schools, space, and access.'],
-  ['You want the strongest long-term appreciation angle', 'Zone 2 and Zone 3 have the clearest infrastructure-led upside stories today.'],
-  ['You want premium urban life with less dependence on a car', 'Zone 5 is the obvious answer if you can live with the price and congestion trade-off.'],
-  ['You just landed and want a support ecosystem around you', 'Zone 1 is still the easiest Bangalore landing pad for a returning NRI family.'],
-  ['You are staying 10 plus years and want a permanent home', 'Zone 2 or Zone 3 generally fits the long-haul family chapter best.'],
-]
-
 const honestTakeCards = [
   [
     'If both adults work in IT and your children are under 12',
-    'Start in Zone 1. The community does a surprising amount of the emotional and practical work for you in year one.',
+    'Start in Whitefield. The community does a surprising amount of the emotional and practical work for you in year one.',
   ],
   [
     'If school continuity is the deciding factor',
-    'Zone 2 is where Bangalore&apos;s strongest IB and Cambridge ecosystem lives, and that matters more than many families realize.',
+    'Sarjapur is where Bangalore&apos;s strongest IB and Cambridge ecosystem lives, and that matters more than many families realize.',
   ],
   [
     'If you fly internationally often and want to think five years ahead',
-    'Zone 3 deserves real weight because airport-side infrastructure is one of Bangalore&apos;s clearest structural shifts.',
+    'North Bangalore deserves real weight because airport-side infrastructure is one of Bangalore&apos;s clearest structural shifts.',
   ],
   [
     'If budget is the honest constraint',
-    'Zone 4 gives more home, better breathing room, and now real metro value without collapsing the family quality-of-life equation.',
+    'South Bangalore gives more home, better breathing room, and now real metro value without collapsing the family quality-of-life equation.',
   ],
   [
     'If you know you want dense urban energy',
-    'Zone 5 is the right answer only when you accept, upfront, that lifestyle gains are being purchased with congestion and price.',
+    'ORR Core is the right answer only when you accept, upfront, that lifestyle gains are being purchased with congestion and price.',
   ],
 ]
 
@@ -263,19 +249,19 @@ export default function BangaloreNeighbourhoodGuide() {
             </div>
             <div className="guide-grid">
               <div className="quick-card">
-                <strong>Choose Zone 1</strong>
+                <strong>Choose Whitefield</strong>
                 <span>if you want the easiest first year back, the densest NRI support system, and the broadest everyday convenience.</span>
               </div>
               <div className="quick-card">
-                <strong>Choose Zone 2</strong>
+                <strong>Choose Sarjapur</strong>
                 <span>if school continuity, more space, and long-term upside matter more than immediate metro access.</span>
               </div>
               <div className="quick-card">
-                <strong>Choose Zone 3</strong>
+                <strong>Choose North Bangalore</strong>
                 <span>if airport access, cleaner air, and a five-year infrastructure bet matter more than ORR proximity.</span>
               </div>
               <div className="quick-card">
-                <strong>Choose Zone 4 or 5</strong>
+                <strong>Choose South Bangalore or ORR Core</strong>
                 <span>only when budget or urban-lifestyle priorities clearly outweigh the social-density advantage of east Bangalore.</span>
               </div>
             </div>
@@ -336,11 +322,11 @@ export default function BangaloreNeighbourhoodGuide() {
               <thead>
                 <tr>
                   <th>Parameter</th>
-                  <th>Zone 1</th>
-                  <th>Zone 2</th>
-                  <th>Zone 3</th>
-                  <th>Zone 4</th>
-                  <th>Zone 5</th>
+                  <th>Whitefield</th>
+                  <th>Sarjapur</th>
+                  <th>North Bangalore</th>
+                  <th>South Bangalore</th>
+                  <th>ORR Core</th>
                 </tr>
               </thead>
               <tbody>
@@ -361,11 +347,11 @@ export default function BangaloreNeighbourhoodGuide() {
             {compareRows.map((row) => (
               <div key={row[0]} className="stack-card">
                 <div className="stack-title">{row[0]}</div>
-                <div className="stack-row"><strong>Zone 1</strong><span>{row[1]}</span></div>
-                <div className="stack-row"><strong>Zone 2</strong><span>{row[2]}</span></div>
-                <div className="stack-row"><strong>Zone 3</strong><span>{row[3]}</span></div>
-                <div className="stack-row"><strong>Zone 4</strong><span>{row[4]}</span></div>
-                <div className="stack-row"><strong>Zone 5</strong><span>{row[5]}</span></div>
+                <div className="stack-row"><strong>Whitefield</strong><span>{row[1]}</span></div>
+                <div className="stack-row"><strong>Sarjapur</strong><span>{row[2]}</span></div>
+                <div className="stack-row"><strong>North Bangalore</strong><span>{row[3]}</span></div>
+                <div className="stack-row"><strong>South Bangalore</strong><span>{row[4]}</span></div>
+                <div className="stack-row"><strong>ORR Core</strong><span>{row[5]}</span></div>
               </div>
             ))}
           </div>
@@ -373,34 +359,6 @@ export default function BangaloreNeighbourhoodGuide() {
             <p style={{ margin: 0, fontSize: '13px', color: '#6B5E50', lineHeight: 1.65 }}>
               These ratings are relative within Bangalore, not absolute. Price and infrastructure ranges are indicative for 2025-26 and should always be validated at the project and route level before you commit.
             </p>
-          </div>
-
-          <h2 style={h2Style}>Match the Zone to Your Situation</h2>
-          <div className="table-shell">
-            <table className="compare-table compare-table-slim">
-              <thead>
-                <tr>
-                  <th>Your situation</th>
-                  <th>Where to lean</th>
-                </tr>
-              </thead>
-              <tbody>
-                {situationRows.map((row) => (
-                  <tr key={row[0]}>
-                    <td>{row[0]}</td>
-                    <td>{row[1]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mobile-stack">
-            {situationRows.map((row) => (
-              <div key={row[0]} className="stack-card">
-                <div className="stack-title">{row[0]}</div>
-                <div className="stack-row"><strong>Answer</strong><span>{row[1]}</span></div>
-              </div>
-            ))}
           </div>
 
           <h2 style={h2Style}>The Honest Take</h2>
@@ -568,6 +526,18 @@ export default function BangaloreNeighbourhoodGuide() {
           font-weight:600;
           color:#1A1208;
           width:22%;
+        }
+        .compare-table-wide th:first-child,
+        .compare-table-wide td:first-child {
+          position: sticky;
+          left: 0;
+          z-index: 1;
+          background: #fff;
+          box-shadow: 1px 0 0 #EDE8E1;
+        }
+        .compare-table-wide th:first-child {
+          z-index: 2;
+          background: #F8F5F0;
         }
         .mobile-stack {
           display:none;
