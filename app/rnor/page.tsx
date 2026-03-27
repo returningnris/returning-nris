@@ -390,7 +390,7 @@ function computeRNOR(I: Inputs): TaxResult {
   const rsuValueUSD = rsuMap[I.hasRSUs] || 0
   const rsuValueINR = rsuValueUSD * 83
 
-  const k401Map: Record<string, number> = { 'yes_large': 750000, 'yes_medium': 250000, 'yes_small': 50000, 'no': 0 }
+  const k401RangeLabel: Record<string, string> = { 'yes_large': 'over $500,000', 'yes_medium': '$100,000-$500,000', 'yes_small': 'under $100,000', 'no': 'No 401(k)' }
   const rentalUSD = I.hasRentalIncome === 'yes' ? 24000 : 0
   const rentalINR = rentalUSD * 83
 
@@ -437,8 +437,8 @@ function computeRNOR(I: Inputs): TaxResult {
   if (I.has401k === 'no') {
     k401Strategy = 'No 401(k) — not applicable.'
   } else {
-    const balance = k401Map[I.has401k]
-    k401Strategy = `Your 401(k) balance of ~${fmtUSD(balance)} needs case-by-case planning. US withdrawals can trigger tax and, if taken early, penalties. The India position during RNOR depends on factors such as whether the payment is periodic or lump-sum, your treaty residence, and whether you remain a US citizen or green-card holder. If you do not need the money immediately, leaving it invested is often the lower-friction option. Review any withdrawal with a US-India cross-border tax specialist before acting.`
+    const selectedRange = k401RangeLabel[I.has401k] || 'the selected range'
+    k401Strategy = `Your selected 401(k) range (${selectedRange}) needs case-by-case planning. US withdrawals can trigger tax and, if taken early, penalties. The India position during RNOR depends on factors such as whether the payment is periodic or lump-sum, your treaty residence, and whether you remain a US citizen or green-card holder. If you do not need the money immediately, leaving it invested is often the lower-friction option. Review any withdrawal with a US-India cross-border tax specialist before acting.`
   }
 
   // ── NRE Strategy ─────────────────────────────────────────────────────────────
