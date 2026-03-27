@@ -139,19 +139,19 @@ export default function ToolsPage() {
           top: 96px;
         }
         .tools-proof-grid,
-        .tools-note-grid {
+        .tools-card-meta-grid {
           display: grid;
           gap: 0.9rem;
         }
         .tools-proof-grid {
           grid-template-columns: 1fr;
         }
-        .tools-note-grid {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
         .tools-stack {
           display: grid;
           gap: 1rem;
+        }
+        .tools-card-meta-grid {
+          grid-template-columns: minmax(0,0.9fr) minmax(0,1.1fr);
         }
         .tools-link-card {
           display: block;
@@ -164,7 +164,7 @@ export default function ToolsPage() {
         }
         @media (max-width: 980px) {
           .tools-grid,
-          .tools-note-grid {
+          .tools-card-meta-grid {
             grid-template-columns: 1fr;
           }
           .tools-sticky {
@@ -212,7 +212,6 @@ export default function ToolsPage() {
                 <div className="tools-proof-grid">
                   {[
                     ['7 specialist tools', 'Direct access to the deep dives that matter most.'],
-                    ['No questionnaire', 'Open the tool you need without repeating readiness inputs.'],
                     ['Built for returnees', 'Every tool is shaped around real NRI return decisions.'],
                   ].map(([title, body]) => (
                     <div key={title} style={{ padding: '1rem', borderRadius: 20, background: 'rgba(29,22,15,0.03)', border: `1px solid ${T.border}` }}>
@@ -223,86 +222,9 @@ export default function ToolsPage() {
                 </div>
               </div>
             </div>
-
-            <div
-              style={{
-                background: 'linear-gradient(135deg, #20160f 0%, #302117 46%, #173e2c 100%)',
-                borderRadius: 24,
-                overflow: 'hidden',
-                boxShadow: '0 22px 48px rgba(29,22,15,0.08)',
-              }}
-            >
-              <div style={{ padding: '1.2rem 1.25rem 1rem' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '0.4rem 0.8rem', borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.76)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
-                  Page role
-                </div>
-                <h2 style={{ fontSize: 'clamp(1.7rem, 3vw, 2.35rem)', lineHeight: 1.04, color: '#fff', marginBottom: '0.8rem' }}>
-                  One page. All the deep dives.
-                </h2>
-                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.72)', lineHeight: 1.75, margin: 0 }}>
-                  Use this surface when you already know the decision area that needs depth: tax, career, city, schools, housing, healthcare, or daily-life settling.
-                </p>
-              </div>
-
-              <div style={{ padding: '0 1.25rem 1.25rem', display: 'grid', gap: 10 }}>
-                {[
-                  ['Start here if', 'You want a specialist answer without repeating a full assessment.'],
-                  ['Use it after', 'The core platform has made the next decision area obvious.'],
-                  ['Outcome', 'Sharper decisions with less random tab-hopping across the move.'],
-                ].map(([title, body]) => (
-                  <div key={title} style={{ padding: '0.95rem', borderRadius: 18, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#f3a44f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{title}</div>
-                    <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.78)', lineHeight: 1.7 }}>{body}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ background: T.saffronLight, border: `1px solid ${T.saffronBorder}`, borderRadius: 24, padding: '1.2rem 1.25rem' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#8d5c22', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                How to use this page
-              </div>
-              <div style={{ display: 'grid', gap: 10 }}>
-                {[
-                  'Pick the tool that matches the question blocking your next move.',
-                  'Use decision deep dives when you are still narrowing the move.',
-                  'Use landing deep dives when the move is getting real and operational.',
-                ].map((line) => (
-                  <div key={line} style={{ padding: '0.9rem', borderRadius: 16, background: 'rgba(255,255,255,0.65)', fontSize: 14, color: T.ink, lineHeight: 1.7 }}>
-                    {line}
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           <div className="tools-stack">
-            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 28, padding: '1.25rem 1.3rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: T.white, border: `1px solid ${T.saffronBorder}`, borderRadius: 100, padding: '5px 14px', marginBottom: '1rem', boxShadow: '0 1px 8px rgba(255,153,51,0.1)' }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.saffron }} />
-                <span style={{ fontSize: 11, fontWeight: 500, color: T.muted, letterSpacing: '0.06em' }}>
-                  Specialist Tools Catalog - {ALL_TOOLS.length} tools
-                </span>
-              </div>
-              <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', color: T.ink, marginBottom: '0.6rem' }}>All available tools</h2>
-              <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, maxWidth: 760 }}>
-                Pick the tool that matches the exact question you want to solve next. Each card below tells you what the tool does, who it is best for, and how it assists the move.
-              </p>
-            </div>
-
-            <div className="tools-note-grid">
-              {[
-                ['Decision deep dives', 'RNOR, city, and career help while the move is still narrowing.'],
-                ['Landing deep dives', 'Schools, housing, healthcare, and city life help once the move gets real.'],
-                ['Direct access', 'Open the specialist tool you need without retaking a generic questionnaire.'],
-              ].map(([title, body]) => (
-                <div key={title} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 22, padding: '1rem', boxShadow: '0 12px 28px rgba(29,22,15,0.04)' }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{title}</div>
-                  <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.7 }}>{body}</div>
-                </div>
-              ))}
-            </div>
-
             {ALL_TOOLS.map((tool) => {
               const tone = toneStyles(tool.tone)
               return (
@@ -331,7 +253,7 @@ export default function ToolsPage() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.9fr) minmax(0,1.1fr)', gap: 14 }}>
+                    <div className="tools-card-meta-grid" style={{ display: 'grid', gap: 14 }}>
                       <div style={{ padding: '0.95rem', borderRadius: 20, background: tone.bg, border: `1px solid ${tone.border}` }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: tone.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                           Best for
