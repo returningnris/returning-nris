@@ -24,6 +24,7 @@ const TOP_LINKS = [
 
 const PUBLIC_NAV_PATHS = new Set([
   '/planner',
+  '/journey',
   '/Tools',
   '/rnor',
   '/city',

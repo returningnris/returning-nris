@@ -6,6 +6,7 @@ import { useAuth } from './useAuth'
 
 const PUBLIC_PATHS = new Set([
   '/planner',
+  '/journey',
   '/Tools',
   '/rnor',
   '/city',

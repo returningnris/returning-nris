@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useReducer, useState } from 'react'
 import FounderConsultationCard from '../../components/FounderConsultationCard'
 import { useAuth } from '../../components/useAuth'
-import { useProtectedRoute } from '../../components/useProtectedRoute'
 import { REFINED_READINESS_QUESTIONS, type ReadinessAnswers } from '../../lib/readinessQuestions'
 import { supabase } from '../../lib/supabase'
 
@@ -11,6 +10,8 @@ type Answers = ReadinessAnswers & {
   moveDate: string
   alreadyMoved: string
 }
+
+const GUEST_JOURNEY_STORAGE_KEY = 'journey:guest-state'
 
 const CITY_BASE: Record<string, number> = {
   Hyderabad: 190000,
@@ -902,6 +903,56 @@ const initialState: JourneyState = {
   firstName: '',
 }
 
+type PersistedJourneyState = {
+  answers?: Partial<Answers>
+  completedTaskIds?: string[]
+  completedCustomTaskIds?: string[]
+  manualMilestoneIds?: string[]
+  customTasks?: CustomTask[]
+  currentPhase?: number
+  step?: JourneyState['step']
+  editingProfile?: boolean
+  firstName?: string
+}
+
+function readPersistedJourneyState(storageKey: string): Partial<JourneyState> | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = window.localStorage.getItem(storageKey)
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw) as PersistedJourneyState
+    return {
+      answers: parsed.answers || {},
+      completedTasks: new Set(parsed.completedTaskIds || []),
+      completedCustomTaskIds: new Set(parsed.completedCustomTaskIds || []),
+      manualMilestones: new Set(parsed.manualMilestoneIds || []),
+      customTasks: parsed.customTasks || [],
+      currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : 0,
+      step: parsed.step === 'journey' ? 'journey' : 'profile',
+      editingProfile: Boolean(parsed.editingProfile),
+      firstName: parsed.firstName || '',
+    }
+  } catch {
+    return null
+  }
+}
+
+function serializeJourneyState(state: JourneyState): PersistedJourneyState {
+  return {
+    answers: state.answers,
+    completedTaskIds: [...state.completedTasks],
+    completedCustomTaskIds: [...state.completedCustomTaskIds],
+    manualMilestoneIds: [...state.manualMilestones],
+    customTasks: state.customTasks,
+    currentPhase: state.currentPhase,
+    step: state.step,
+    editingProfile: state.editingProfile,
+    firstName: state.firstName,
+  }
+}
+
 function journeyPct(completedTaskCount: number, totalTaskCount: number) {
   if (!totalTaskCount) return 0
   return Math.round((completedTaskCount / totalTaskCount) * 100)
@@ -1589,11 +1640,15 @@ function JourneyDashboard({
   dispatch,
   userEmail,
   userLastName,
+  isGuest,
+  onGuestActions,
 }: {
   state: JourneyState
   dispatch: React.Dispatch<Action>
   userEmail?: string
   userLastName?: string
+  isGuest: boolean
+  onGuestActions: () => void
 }) {
   const [tab, setTab] = useState<'tasks' | 'guidance'>('tasks')
   const [draftTaskTitle, setDraftTaskTitle] = useState('')
@@ -1839,6 +1894,26 @@ function JourneyDashboard({
               >
                 Update profile answers
               </button>
+
+              {isGuest ? (
+                <button
+                  type="button"
+                  onClick={onGuestActions}
+                  className="journey-edit-button"
+                  style={{
+                    padding: '0.8rem 1.05rem',
+                    borderRadius: 999,
+                    border: 'none',
+                    background: T.green,
+                    color: T.white,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Email or save journey
+                </button>
+              ) : null}
             </div>
           </SurfaceCard>
         </div>
@@ -2247,11 +2322,162 @@ function JourneyDashboard({
   )
 }
 
+function buildJourneyEmailPayload(state: JourneyState) {
+  const answers = state.answers as Answers
+  const result = buildJourneySubmissionResult(answers)
+  const alreadyMoved = answers.alreadyMoved === 'yes'
+  const visiblePhases = alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]
+  const activeTimelinePhase = getActiveTimelinePhase(answers.moveDate)
+  const currentPhase = visiblePhases.includes(state.currentPhase)
+    ? state.currentPhase
+    : visiblePhases.includes(activeTimelinePhase)
+      ? activeTimelinePhase
+      : visiblePhases[0]
+  const autoCompletedPastTaskIds = getPastPhaseTaskIds(visiblePhases.filter((phase) => phase < currentPhase))
+  const effectiveCompletedTasks = new Set(state.completedTasks)
+  autoCompletedPastTaskIds.forEach((id) => effectiveCompletedTasks.add(id))
+  const checklistItems = TASKS.filter((task) => task.phase === currentPhase && !effectiveCompletedTasks.has(task.id))
+    .slice(0, 6)
+    .map((task) => task.title)
+
+  return {
+    result,
+    currentPhaseLabel: PHASES[currentPhase],
+    moveDateLabel: formatMoveDate(answers.moveDate),
+    checklistItems,
+  }
+}
+
+function JourneyGuestActionModal({
+  open,
+  emailName,
+  emailAddress,
+  emailSending,
+  emailSent,
+  emailError,
+  signupName,
+  signupEmail,
+  signupPassword,
+  signupConfirmPassword,
+  signupLoading,
+  signupSuccess,
+  signupError,
+  onClose,
+  onEmailNameChange,
+  onEmailAddressChange,
+  onSendEmail,
+  onSignupNameChange,
+  onSignupEmailChange,
+  onSignupPasswordChange,
+  onSignupConfirmPasswordChange,
+  onCreateAccount,
+}: {
+  open: boolean
+  emailName: string
+  emailAddress: string
+  emailSending: boolean
+  emailSent: boolean
+  emailError: string
+  signupName: string
+  signupEmail: string
+  signupPassword: string
+  signupConfirmPassword: string
+  signupLoading: boolean
+  signupSuccess: string
+  signupError: string
+  onClose: () => void
+  onEmailNameChange: (value: string) => void
+  onEmailAddressChange: (value: string) => void
+  onSendEmail: () => void
+  onSignupNameChange: (value: string) => void
+  onSignupEmailChange: (value: string) => void
+  onSignupPasswordChange: (value: string) => void
+  onSignupConfirmPasswordChange: (value: string) => void
+  onCreateAccount: () => void
+}) {
+  if (!open) return null
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(26,18,8,0.48)', backdropFilter: 'blur(6px)', zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem' }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        style={{ width: '100%', maxWidth: 980, background: T.white, borderRadius: 24, border: `1px solid ${T.border}`, boxShadow: '0 30px 80px rgba(29,22,15,0.18)', overflow: 'hidden' }}
+      >
+        <div style={{ padding: '1.25rem 1.35rem', background: '#20160f', color: T.white }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)', marginBottom: 10 }}>Journey results</div>
+              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.9rem', lineHeight: 1.1, marginBottom: 8 }}>Keep this dashboard or send it to yourself</h2>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.72)', lineHeight: 1.7, margin: 0 }}>
+                You can email the journey checklist now, or create a free account so this dashboard stays saved in your profile for later.
+              </p>
+            </div>
+            <button type="button" onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.8)', fontSize: 24, lineHeight: 1, cursor: 'pointer' }} aria-label="Close journey actions">x</button>
+          </div>
+        </div>
+
+        <div style={{ padding: '1.35rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ border: `1px solid ${T.border}`, borderRadius: 20, padding: '1.15rem', background: 'linear-gradient(180deg, #FFF9F3 0%, #FFFFFF 100%)' }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#CC7A00', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Email my checklist</div>
+            <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.7, marginTop: 0, marginBottom: 14 }}>Send the checklist and journey summary to any inbox without creating an account.</p>
+            {emailSent ? (
+              <div style={{ padding: '0.95rem', borderRadius: 16, background: T.greenSoft, color: T.green, fontSize: 14, fontWeight: 700 }}>
+                Journey checklist sent to {emailAddress}.
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: 10 }}>
+                <input value={emailName} onChange={(event) => onEmailNameChange(event.target.value)} placeholder="Your name" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+                <input value={emailAddress} onChange={(event) => onEmailAddressChange(event.target.value)} placeholder="Email address" type="email" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+                {emailError ? <div style={{ fontSize: 13, color: '#C0392B', lineHeight: 1.6 }}>{emailError}</div> : null}
+                <button type="button" onClick={onSendEmail} disabled={emailSending || !emailAddress.includes('@')} style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: 'none', background: T.saffron, color: '#fff', fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 700, cursor: emailSending || !emailAddress.includes('@') ? 'not-allowed' : 'pointer', opacity: emailSending || !emailAddress.includes('@') ? 0.6 : 1 }}>
+                  {emailSending ? 'Sending checklist...' : 'Send checklist and results'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ border: `1px solid ${T.border}`, borderRadius: 20, padding: '1.15rem', background: 'linear-gradient(180deg, #F7FAFF 0%, #FFFFFF 100%)' }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Create account and save</div>
+            <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.7, marginTop: 0, marginBottom: 14 }}>We&apos;ll create your account, save this journey dashboard to your profile, and send a secure verification link to your inbox.</p>
+            <div style={{ display: 'grid', gap: 10 }}>
+              <input value={signupName} onChange={(event) => onSignupNameChange(event.target.value)} placeholder="Full name" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+              <input value={signupEmail} onChange={(event) => onSignupEmailChange(event.target.value)} placeholder="Email address" type="email" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+              <input value={signupPassword} onChange={(event) => onSignupPasswordChange(event.target.value)} placeholder="Password" type="password" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+              <input value={signupConfirmPassword} onChange={(event) => onSignupConfirmPasswordChange(event.target.value)} placeholder="Confirm password" type="password" style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: `1px solid ${T.border}`, fontFamily: 'DM Sans, sans-serif', fontSize: 14 }} />
+              {signupError ? <div style={{ fontSize: 13, color: '#C0392B', lineHeight: 1.6 }}>{signupError}</div> : null}
+              {signupSuccess ? <div style={{ fontSize: 13, color: T.green, lineHeight: 1.6 }}>{signupSuccess}</div> : null}
+              <button type="button" onClick={onCreateAccount} disabled={signupLoading} style={{ width: '100%', padding: '13px 14px', borderRadius: 14, border: 'none', background: T.navy, color: '#fff', fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 700, cursor: signupLoading ? 'not-allowed' : 'pointer', opacity: signupLoading ? 0.6 : 1 }}>
+                {signupLoading ? 'Creating account...' : 'Create account and save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function JourneyPage() {
-  const { shouldBlock } = useProtectedRoute()
-  const { user, loading: authLoading } = useAuth()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const [state, dispatch] = useReducer(journeyReducer, initialState)
   const [loadingSavedJourney, setLoadingSavedJourney] = useState(true)
+  const [guestModalOpen, setGuestModalOpen] = useState(false)
+  const [guestActionsPrompted, setGuestActionsPrompted] = useState(false)
+  const [guestEmailName, setGuestEmailName] = useState('')
+  const [guestEmailAddress, setGuestEmailAddress] = useState('')
+  const [guestEmailSending, setGuestEmailSending] = useState(false)
+  const [guestEmailSent, setGuestEmailSent] = useState(false)
+  const [guestEmailError, setGuestEmailError] = useState('')
+  const [signupName, setSignupName] = useState('')
+  const [signupEmail, setSignupEmail] = useState('')
+  const [signupPassword, setSignupPassword] = useState('')
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('')
+  const [signupLoading, setSignupLoading] = useState(false)
+  const [signupError, setSignupError] = useState('')
+  const [signupSuccess, setSignupSuccess] = useState('')
 
   useEffect(() => {
     let active = true
@@ -2261,7 +2487,12 @@ export default function JourneyPage() {
 
       if (!user?.id) {
         if (!active) return
-        dispatch({ type: 'LOAD_SAVED', payload: { firstName: '', step: 'profile' } })
+        const guestState = readPersistedJourneyState(GUEST_JOURNEY_STORAGE_KEY)
+        dispatch({
+          type: 'LOAD_SAVED',
+          payload: guestState || { firstName: '', step: 'profile' },
+        })
+        setGuestActionsPrompted(guestState?.step === 'journey')
         setLoadingSavedJourney(false)
         return
       }
@@ -2282,36 +2513,7 @@ export default function JourneyPage() {
         Boolean(data?.result_json) &&
         Object.keys(savedAnswers).length > 0
 
-      let persisted: Partial<JourneyState> = {}
-      if (typeof window !== 'undefined') {
-        try {
-          const raw = window.localStorage.getItem(`journey:state:${user.id}`)
-          if (raw) {
-            const parsed = JSON.parse(raw) as {
-              answers?: Partial<Answers>
-              completedTaskIds?: string[]
-              completedCustomTaskIds?: string[]
-              manualMilestoneIds?: string[]
-              customTasks?: CustomTask[]
-              currentPhase?: number
-              step?: JourneyState['step']
-              editingProfile?: boolean
-            }
-            persisted = {
-              answers: parsed.answers || {},
-              completedTasks: new Set(parsed.completedTaskIds || []),
-              completedCustomTaskIds: new Set(parsed.completedCustomTaskIds || []),
-              manualMilestones: new Set(parsed.manualMilestoneIds || []),
-              customTasks: parsed.customTasks || [],
-              currentPhase: typeof parsed.currentPhase === 'number' ? parsed.currentPhase : 0,
-              step: parsed.step === 'journey' ? 'journey' : 'profile',
-              editingProfile: Boolean(parsed.editingProfile),
-            }
-          }
-        } catch {
-          persisted = {}
-        }
-      }
+      const persisted = readPersistedJourneyState(`journey:state:${user.id}`) || {}
 
       if (error) {
         console.error('Error loading journey initialization:', error)
@@ -2342,6 +2544,7 @@ export default function JourneyPage() {
               : getDefaultJourneyPhase(restoredAnswers),
         },
       })
+      setGuestActionsPrompted(true)
       setLoadingSavedJourney(false)
     }
 
@@ -2353,25 +2556,16 @@ export default function JourneyPage() {
   }, [authLoading, user])
 
   useEffect(() => {
-    if (loadingSavedJourney || !user?.id || typeof window === 'undefined') return
+    if (loadingSavedJourney || typeof window === 'undefined') return
+
+    const storageKey = user?.id ? `journey:state:${user.id}` : GUEST_JOURNEY_STORAGE_KEY
+
     try {
-      window.localStorage.setItem(
-        `journey:state:${user.id}`,
-        JSON.stringify({
-          answers: state.answers,
-          completedTaskIds: [...state.completedTasks],
-          completedCustomTaskIds: [...state.completedCustomTaskIds],
-          manualMilestoneIds: [...state.manualMilestones],
-          customTasks: state.customTasks,
-          currentPhase: state.currentPhase,
-          step: state.step,
-          editingProfile: state.editingProfile,
-        })
-      )
+      window.localStorage.setItem(storageKey, JSON.stringify(serializeJourneyState(state)))
     } catch {
       return
     }
-  }, [loadingSavedJourney, state.answers, state.completedCustomTaskIds, state.completedTasks, state.currentPhase, state.customTasks, state.editingProfile, state.manualMilestones, state.step, user?.id])
+  }, [loadingSavedJourney, state, user?.id])
 
   useEffect(() => {
     if (authLoading || loadingSavedJourney || !user || !hasCompleteJourneyProfile(state.answers)) return
@@ -2398,7 +2592,166 @@ export default function JourneyPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [loadingSavedJourney, state.step])
 
-  if (shouldBlock || loadingSavedJourney) return null
+  useEffect(() => {
+    if (state.firstName) {
+      setGuestEmailName((prev) => prev || state.firstName)
+      setSignupName((prev) => prev || state.firstName)
+    }
+  }, [state.firstName])
+
+  useEffect(() => {
+    if (
+      loadingSavedJourney ||
+      isAuthenticated ||
+      guestActionsPrompted ||
+      state.step !== 'journey' ||
+      !hasCompleteJourneyProfile(state.answers)
+    ) {
+      return
+    }
+
+    setGuestModalOpen(true)
+    setGuestActionsPrompted(true)
+  }, [guestActionsPrompted, isAuthenticated, loadingSavedJourney, state.answers, state.step])
+
+  async function handleGuestEmailSend() {
+    if (!hasCompleteJourneyProfile(state.answers)) return
+
+    setGuestEmailSending(true)
+    setGuestEmailError('')
+
+    try {
+      const emailPayload = buildJourneyEmailPayload(state)
+      const response = await fetch('/api/send-journey-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userDetails: {
+            firstName: guestEmailName.trim() || state.firstName,
+            email: guestEmailAddress.trim(),
+          },
+          journey: emailPayload,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('EMAIL_SEND_FAILED')
+      }
+
+      setGuestEmailSent(true)
+    } catch (error) {
+      console.error('Guest journey email failed:', error)
+      setGuestEmailError('We could not send the checklist email right now. Please try again.')
+    } finally {
+      setGuestEmailSending(false)
+    }
+  }
+
+  async function handleGuestSignupSave() {
+    if (!hasCompleteJourneyProfile(state.answers)) return
+
+    setSignupError('')
+    setSignupSuccess('')
+
+    if (!signupName.trim()) {
+      setSignupError('Please enter your name.')
+      return
+    }
+
+    if (!signupEmail.includes('@')) {
+      setSignupError('Please enter a valid email address.')
+      return
+    }
+
+    if (signupPassword.length < 8) {
+      setSignupError('Password must be at least 8 characters.')
+      return
+    }
+
+    if (signupPassword !== signupConfirmPassword) {
+      setSignupError('Passwords do not match.')
+      return
+    }
+
+    setSignupLoading(true)
+
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: signupName.trim(),
+          email: signupEmail.trim(),
+          password: signupPassword,
+          next: '/journey',
+          readiness: {
+            answers: state.answers,
+            result: buildJourneySubmissionResult(state.answers as Answers),
+          },
+        }),
+      })
+
+      let payload: { error?: string } | null = null
+      try {
+        payload = await response.json()
+      } catch {
+        payload = null
+      }
+
+      if (!response.ok) {
+        setSignupError(payload?.error || 'We could not create your account right now.')
+        return
+      }
+
+      setSignupSuccess('Check your inbox to verify your account. Your journey dashboard has already been saved to your profile.')
+    } catch (error) {
+      console.error('Journey signup and save failed:', error)
+      setSignupError('We could not create your account right now. Please try again.')
+    } finally {
+      setSignupLoading(false)
+    }
+  }
+
+  if (loadingSavedJourney) return null
+
   if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
-  return <JourneyDashboard state={state} dispatch={dispatch} userEmail={user?.email} userLastName={user?.lastName} />
+
+  return (
+    <>
+      <JourneyDashboard
+        state={state}
+        dispatch={dispatch}
+        userEmail={user?.email}
+        userLastName={user?.lastName}
+        isGuest={!isAuthenticated}
+        onGuestActions={() => setGuestModalOpen(true)}
+      />
+      <JourneyGuestActionModal
+        open={!isAuthenticated && guestModalOpen}
+        emailName={guestEmailName}
+        emailAddress={guestEmailAddress}
+        emailSending={guestEmailSending}
+        emailSent={guestEmailSent}
+        emailError={guestEmailError}
+        signupName={signupName}
+        signupEmail={signupEmail}
+        signupPassword={signupPassword}
+        signupConfirmPassword={signupConfirmPassword}
+        signupLoading={signupLoading}
+        signupSuccess={signupSuccess}
+        signupError={signupError}
+        onClose={() => setGuestModalOpen(false)}
+        onEmailNameChange={setGuestEmailName}
+        onEmailAddressChange={setGuestEmailAddress}
+        onSendEmail={handleGuestEmailSend}
+        onSignupNameChange={setSignupName}
+        onSignupEmailChange={setSignupEmail}
+        onSignupPasswordChange={setSignupPassword}
+        onSignupConfirmPasswordChange={setSignupConfirmPassword}
+        onCreateAccount={handleGuestSignupSave}
+      />
+    </>
+  )
 }
