@@ -2465,7 +2465,6 @@ export default function JourneyPage() {
   const [state, dispatch] = useReducer(journeyReducer, initialState)
   const [loadingSavedJourney, setLoadingSavedJourney] = useState(true)
   const [guestModalOpen, setGuestModalOpen] = useState(false)
-  const [guestActionsPrompted, setGuestActionsPrompted] = useState(false)
   const [guestEmailName, setGuestEmailName] = useState('')
   const [guestEmailAddress, setGuestEmailAddress] = useState('')
   const [guestEmailSending, setGuestEmailSending] = useState(false)
@@ -2492,7 +2491,6 @@ export default function JourneyPage() {
           type: 'LOAD_SAVED',
           payload: guestState || { firstName: '', step: 'profile' },
         })
-        setGuestActionsPrompted(guestState?.step === 'journey')
         setLoadingSavedJourney(false)
         return
       }
@@ -2544,7 +2542,6 @@ export default function JourneyPage() {
               : getDefaultJourneyPhase(restoredAnswers),
         },
       })
-      setGuestActionsPrompted(true)
       setLoadingSavedJourney(false)
     }
 
@@ -2598,21 +2595,6 @@ export default function JourneyPage() {
       setSignupName((prev) => prev || state.firstName)
     }
   }, [state.firstName])
-
-  useEffect(() => {
-    if (
-      loadingSavedJourney ||
-      isAuthenticated ||
-      guestActionsPrompted ||
-      state.step !== 'journey' ||
-      !hasCompleteJourneyProfile(state.answers)
-    ) {
-      return
-    }
-
-    setGuestModalOpen(true)
-    setGuestActionsPrompted(true)
-  }, [guestActionsPrompted, isAuthenticated, loadingSavedJourney, state.answers, state.step])
 
   async function handleGuestEmailSend() {
     if (!hasCompleteJourneyProfile(state.answers)) return
