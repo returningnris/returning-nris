@@ -17,6 +17,14 @@ export type Article = {
 
 export const ARTICLES: Article[] = [
   {
+    href: '/resources/fire-for-returning-nris',
+    label: 'FIRE for Returning NRIs',
+    icon: '🔥',
+    sub: 'How much a metro family really needs to retire comfortably in India',
+    category: 'Financial Planning',
+    readMins: 10,
+  },
+  {
     href: '/resources/bangalore-neighbourhood-guide-for-returning-nri-families',
     label: 'Bangalore Neighbourhood Guide for Returning NRI Families',
     icon: '🏙️',
