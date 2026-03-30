@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+
 import Link from 'next/link'
 import { Metadata } from 'next'
 
@@ -161,7 +163,7 @@ export default function ShouldIReturnToIndia() {
             <li style={{ ...liStyle }}>Tax savings can range from ₹18L to ₹60L+ over the RNOR period depending on your income level</li>
           </ul>
           <p style={{ ...pStyle }}>
-            The critical catch: <strong>you must file Form 12A within 30 days of arriving in India to register your RNOR status</strong>. Miss this window and it cannot be backdated. Missing RNOR can permanently increase your tax liability by ₹18–40L in the first year alone.
+            RNOR status is not claimed through a separate pre-arrival form. It is determined based on your stay history under India’s tax residency rules and is typically reflected when you file your Indian income tax return for the relevant year.
           </p>
           <p style={{ ...pStyle }}>
             If you don't yet understand RNOR, you are almost certainly leaving significant money on the table. A single consultation with a CA who specialises in NRI taxation is strongly recommended before you move.
@@ -194,7 +196,7 @@ export default function ShouldIReturnToIndia() {
           <ul style={{ paddingLeft: '1.25rem', margin: '0 0 1.25rem 0' }}>
             {[
               'Moving without a job or confirmed income — the #1 reason NRIs return within 2 years',
-              'Ignoring RNOR tax planning — missing this window can cost ₹18–40L in year 1',
+              'Ignoring RNOR tax planning — poor day-count tracking or return reporting can create avoidable tax costs',
               'Underestimating India cost of living — especially school fees and urban rent',
               'Not planning school admissions early — 12–18 month timelines are standard for good schools',
               'Rushing the move due to emotion — excitement about returning is real but shouldn\'t override financial readiness',

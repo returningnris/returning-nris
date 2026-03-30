@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 export default function Contact() {
@@ -73,7 +74,7 @@ export default function Contact() {
           <p style={{ color: 'var(--ink-muted)', lineHeight: 1.75, marginBottom: '2rem' }}>
             Welcome to the ReturningNRIs founding community. We&apos;ll email you when we launch on 31st March 2026.
           </p>
-          <a href="/" className="btn-primary">Back to home →</a>
+          <Link href="/" className="btn-primary">Back to home →</Link>
         </div>
       </section>
     )

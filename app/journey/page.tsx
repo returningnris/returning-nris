@@ -569,7 +569,7 @@ const TASKS: Task[] = [
     id: 't02',
     phase: 0,
     title: 'Validate RNOR and cross-border tax strategy',
-    desc: 'Work out RNOR timing, tax residency implications, retirement account questions, and the return date strategy with a specialist CA while the move window is still flexible.',
+    desc: 'Review RNOR eligibility from your stay history, tax residency implications, retirement account questions, and the return-date strategy with a specialist CA while the move window is still flexible.',
     priority: 'critical',
     milestoneId: 'rnor',
     isScoreImpact: true,
@@ -685,8 +685,8 @@ const TASKS: Task[] = [
   {
     id: 't15',
     phase: 2,
-    title: 'Confirm the first 30-day arrival plan',
-    desc: 'Lock flights, airport transfer, SIM or connectivity, temporary stay, first appointments, and the sequence for your first month in India.',
+    title: 'Confirm the arrival and first-quarter plan',
+    desc: 'Lock flights, airport transfer, SIM or connectivity, temporary stay, first appointments, and the sequence for your first weeks in India.',
     priority: 'critical',
     milestoneId: null,
     isScoreImpact: false,
@@ -731,7 +731,7 @@ const TASKS: Task[] = [
     id: 't20',
     phase: 3,
     title: 'Execute the first India tax and residency cycle correctly',
-    desc: 'Track residency days, validate RNOR treatment, and handle the first return-year decisions before mistakes become expensive.',
+    desc: 'Track days in India, validate RNOR treatment from your stay history, and report the correct residency status in the first India tax return.',
     priority: 'critical',
     milestoneId: 'rnor',
     isScoreImpact: true,
@@ -998,11 +998,11 @@ function getPostMoveRecommendation(A: Answers) {
   if (rnorBlind) {
     return {
       title: 'RNOR and tax setup should happen now',
-      text: 'Post-move tax mistakes are expensive and hard to reverse. Get clarity before making major transfers or account changes.',
+      text: 'Post-move tax mistakes are expensive and hard to reverse. RNOR comes from your stay history and tax residency, not a separate application.',
       actions: [
         'Book a specialist CA conversation immediately.',
         'Collect entry dates, travel history, and foreign income records.',
-        'Hold off on large account changes until the tax plan is confirmed.',
+        'Plan stock sales, dividends, RSUs, and bank-status updates before major account changes.',
       ],
       color: T.navy,
       bg: T.navySoft,
@@ -1044,7 +1044,7 @@ function getPostMoveRecommendation(A: Answers) {
     title: 'You are through the highest-risk part',
     text: 'The focus now is on depth: routines, financial structure, community, and feeling established rather than provisional.',
     actions: [
-      'Plan the first India tax return carefully.',
+      'Plan the first India tax return carefully, including RNOR if you are eligible.',
       'Build local professional and social networks deliberately.',
       'Do a six-month financial review after the move stabilizes.',
     ],

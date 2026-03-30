@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+
 import Link from 'next/link'
 import { Metadata } from 'next'
 
@@ -172,25 +174,25 @@ export default function RNORGuide() {
             Even for more modest income levels, RNOR savings are significant. An NRI with $60,000 in annual foreign income can expect to save ₹15–25L per year they remain in RNOR status.
           </p>
 
-          <h2 style={{ ...h2Style }}>The Critical Action: File Form 12A on Arrival</h2>
+          <h2 style={{ ...h2Style }}>Do you need to file any separate form to get RNOR status?</h2>
           <p style={{ ...pStyle }}>
-            Understanding RNOR is not enough. The benefit only applies if you register it correctly — and this requires filing <strong>Form 12A within 30 days of arriving in India</strong> as a returning resident.
+            No. Individuals do not file a separate RNOR form. RNOR is determined by tax residency rules and generally reflected in the tax return.
           </p>
           <p style={{ ...pStyle }}>
-            This form notifies the Indian tax authorities of your residency status change. It establishes the start date of your RNOR period. Without it, you may be classified as a full resident (ROR) from the moment you arrive, losing the RNOR benefit entirely.
+            RNOR status is not claimed through a separate pre-arrival form. It is determined based on your stay history under India’s tax residency rules and is typically reflected when you file your Indian income tax return for the relevant year.
           </p>
           <div style={{ background: '#FCEBEB', border: '1.5px solid rgba(192,57,43,0.2)', borderRadius: '14px', padding: '1.25rem 1.5rem', margin: '1rem 0 1.5rem' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#C0392B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>⚠️ What happens if you miss it</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#C0392B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>⚠️ Common mistake</div>
             <p style={{ fontSize: '14px', color: '#7B241C', lineHeight: 1.65, margin: 0 }}>
-              Form 12A cannot be backdated. If you miss the 30-day window from your arrival date, you cannot reclaim RNOR status for that period. The full tax liability on your foreign income applies — and unlike most tax mistakes, this one cannot be corrected retroactively. It is the single most expensive planning error a returning NRI can make.
+              Many returning NRIs think RNOR requires a separate form right after landing. For individuals, that is not how RNOR works.
             </p>
           </div>
 
           <h2 style={{ ...h2Style }}>The 3 Most Common RNOR Mistakes</h2>
 
-          <h3 style={{ ...h3Style }}>1. Missing the filing window</h3>
+          <h3 style={{ ...h3Style }}>1. Assuming RNOR needs a separate application</h3>
           <p style={{ ...pStyle }}>
-            Most NRIs know about RNOR in theory but assume they can sort it out after they settle in. They arrive, deal with housing, kids' school, job start — and by the time they get to the CA, 30 days have passed. The window is gone. The tax liability for that entire year applies to foreign income.
+            Many NRIs hear about RNOR, then go looking for a form, approval, or registration step that does not exist. The real work is different: keep clean travel records, count India days carefully, and make sure the first India tax return uses the correct residency position.
           </p>
 
           <h3 style={{ ...h3Style }}>2. Incorrect residency classification in tax returns</h3>
@@ -208,9 +210,9 @@ export default function RNORGuide() {
             {[
               { n: 1, step: 'Calculate your RNOR window', detail: 'Give your CA a complete year-by-year record of days spent in India for the past 10 years. They will calculate your exact eligibility period.' },
               { n: 2, step: 'Time your return date strategically', detail: 'Work with your CA to identify the return date that maximises your RNOR period. Even a few weeks\' difference can add a full year of benefit.' },
-              { n: 3, step: 'Structure your foreign income', detail: 'Ensure foreign income sources (salary, investments, rental) are clearly separated from India-sourced income in your accounts before you arrive.' },
-              { n: 4, step: 'Prepare Form 12A in advance', detail: 'Have the form ready to file with your CA before you land. The 30-day clock starts from your arrival date — don\'t wait until you\'re settled.' },
-              { n: 5, step: 'Convert NRE accounts correctly', detail: 'NRE accounts must eventually be converted to resident accounts, but the timing matters for tax purposes. Your CA can advise on the optimal sequence.' },
+              { n: 3, step: 'Structure your foreign income', detail: 'Ensure foreign income sources such as salary, dividends, stock sales, RSUs, and rental income are clearly mapped before you arrive.' },
+              { n: 4, step: 'Track your India day count', detail: 'Keep clean records of your move date and your total days in India for each financial year so RNOR can be reviewed correctly.' },
+              { n: 5, step: 'Prepare for the first India tax return', detail: 'Update banks if your residential status changes and work with your CA so RNOR is reflected correctly in the return if you are eligible.' },
             ].map(s => (
               <div key={s.n} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: '#F8F5F0', borderRadius: '12px', padding: '1rem 1.125rem', border: '1px solid #E5E1DA' }}>
                 <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#000080', color: '#fff', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{s.n}</div>

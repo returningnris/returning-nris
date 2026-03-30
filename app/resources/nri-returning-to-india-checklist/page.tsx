@@ -40,8 +40,8 @@ const phases = [
       },
       {
         n: '3', title: 'Plan RNOR Tax Status', urgent: true,
-        tasks: ['Check if you qualify based on years abroad (7+ years gives the strongest window)', 'Book a consultation with an NRI CA at least 3–6 months before moving', 'Plan your return date to maximise RNOR eligibility period'],
-        note: 'RNOR can save ₹18–60L in year 1. Miss the window and it cannot be recovered.',
+        tasks: ['Review your stay history to see whether RNOR may apply after you return', 'Book a consultation with an NRI CA at least 3–6 months before moving', 'Plan your return date and first tax year with foreign income, stock sales, dividends, and RSUs in mind'],
+        note: 'RNOR status is not claimed through a separate pre-arrival form. It is determined based on your stay history under India’s tax residency rules and is typically reflected when you file your Indian income tax return for the relevant year.',
       },
       {
         n: '4', title: 'Shortlist Your Target City', urgent: false,
@@ -114,13 +114,13 @@ const phases = [
     border: 'rgba(19,136,8,0.2)',
     items: [
       {
-        n: '12', title: 'Register RNOR Status — Day 1 Priority', urgent: true,
-        tasks: ['File Form 12A within 30 days of arriving — this is time-critical and cannot be backdated', 'Inform your CA immediately on arrival to initiate the filing', 'Track your residency days carefully for each financial year'],
-        note: 'This is the single most important financial task in your first month. Do not delay.',
+        n: '12', title: 'Track RNOR Eligibility and First Tax Return', urgent: true,
+        tasks: ['Track your move date and your days in India for each financial year', 'Review RNOR eligibility based on your stay history under India tax residency rules', 'Work with your CA so the correct RNOR status is reflected in your Indian tax return if eligible'],
+        note: 'For individuals, RNOR does not require a separate application after landing. The work is in tracking, reviewing eligibility, and filing correctly.',
       },
       {
         n: '13', title: 'Set Up Your Financial Life', urgent: false,
-        tasks: ['Convert NRE account to resident account once residency changes', 'Update KYC across all banks, mutual funds, and investment accounts', 'Review and restructure investment portfolio for Indian tax residency'],
+        tasks: ['Convert NRE account to resident account once residency changes', 'Update KYC across all banks, mutual funds, and investment accounts if your residential status changes', 'Review and restructure investment portfolio for Indian tax residency'],
         note: null,
       },
       {
@@ -243,7 +243,7 @@ export default function NRIChecklist() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem' }}>
             {[
               { m: 'Moving without a job or income confirmed', detail: 'The #1 reason NRIs return within 2 years. No exceptions to this rule.' },
-              { m: 'Ignoring RNOR tax planning', detail: 'Missing the RNOR window permanently costs ₹18–60L. It cannot be recovered retroactively.' },
+              { m: 'Ignoring RNOR tax planning', detail: 'Poor day-count tracking, foreign-income planning, or tax-return reporting can create avoidable tax and compliance problems.' },
               { m: 'Underestimating India cost of living', detail: 'School fees, urban rent, and healthcare costs surprise most returnees. Budget conservatively.' },
               { m: 'Delaying school applications', detail: 'The best schools have 12–18 month waitlists. There is no workaround for this.' },
               { m: 'Arriving without housing arranged', detail: 'Settling into a new home while navigating everything else adds unnecessary pressure to an already demanding transition.' },
@@ -262,7 +262,7 @@ export default function NRIChecklist() {
             {[
               { icon: '💼', label: 'Income confirmed', sub: 'Job offer, remote work, or business revenue locked in' },
               { icon: '💰', label: 'Savings buffer ready', sub: '$75K–$100K+ liquid and accessible' },
-              { icon: '📊', label: 'RNOR planned', sub: 'CA consulted, return date optimised' },
+              { icon: '📊', label: 'RNOR planned', sub: 'Stay history reviewed, return-year reporting ready' },
               { icon: '🏙️', label: 'City selected', sub: 'Schools researched, housing in process' },
               { icon: '👨‍👩‍👧', label: 'Family logistics sorted', sub: 'School applications in, housing arranged' },
             ].map(s => (

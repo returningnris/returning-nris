@@ -184,13 +184,13 @@ const LEGACY_STEPS = [
   },
   {
     key: 'filedForm12A', section: 'Tax Planning',
-    q: 'Have you filed Form 12A (RNOR status application)?',
-    hint: 'Form 12A must be filed within 30 days of arriving in India to lock RNOR status',
+    q: 'Have you planned how RNOR will be reviewed and reported in your Indian tax return?',
+    hint: 'RNOR is based on stay history under India tax residency rules, not a separate application.',
     opts: [
-      { k: 'yes', label: 'Yes — already filed', sub: 'RNOR status confirmed' },
-      { k: 'not_yet_planning', label: 'Not yet — but planning to', sub: 'Must file within 30 days of arrival' },
-      { k: 'didnt_know', label: 'Did not know about this', sub: 'Critical — must act immediately' },
-      { k: 'havent_moved', label: "Haven't moved yet", sub: 'File on arrival day' },
+      { k: 'yes', label: 'Yes — already planned', sub: 'Stay history and return-year approach reviewed' },
+      { k: 'not_yet_planning', label: 'Not yet — but planning to', sub: 'Need travel history and tax-return prep' },
+      { k: 'didnt_know', label: 'Did not know this', sub: 'Review RNOR rules before you move' },
+      { k: 'havent_moved', label: "Haven't moved yet", sub: 'Track move date and India days from day one' },
     ],
   },
 ]
@@ -347,13 +347,13 @@ const DISPLAY_STEPS: Step[] = [
   },
   {
     key: 'filedForm12A', section: 'Tax Planning',
-    q: 'Have you filed Form 12A (RNOR status application)?',
-    hint: 'Form 12A must be filed within 30 days of arriving in India to lock RNOR status',
+    q: 'Have you planned how RNOR will be reviewed and reported in your Indian tax return?',
+    hint: 'RNOR is based on stay history under India tax residency rules, not a separate application.',
     opts: [
-      { k: 'yes', label: 'Yes - already filed', sub: 'RNOR status confirmed' },
-      { k: 'not_yet_planning', label: 'Not yet - but planning to', sub: 'Must file within 30 days of arrival' },
-      { k: 'didnt_know', label: 'Did not know about this', sub: 'Critical - must act immediately' },
-      { k: 'havent_moved', label: "Haven't moved yet", sub: 'File on arrival day' },
+      { k: 'yes', label: 'Yes - already planned', sub: 'Stay history and return-year approach reviewed' },
+      { k: 'not_yet_planning', label: 'Not yet - but planning to', sub: 'Need travel history and tax-return prep' },
+      { k: 'didnt_know', label: 'Did not know this', sub: 'Review RNOR rules before you move' },
+      { k: 'havent_moved', label: "Haven't moved yet", sub: 'Track move date and India days from day one' },
     ],
   },
 ]
@@ -497,9 +497,9 @@ function computeRNOR(I: Inputs): TaxResult {
 
   // ── Forms to File ─────────────────────────────────────────────────────────────
   const forms: TaxResult['formsToFile'] = [
-    { form: 'Form 12A', deadline: 'Within 30 days of arriving in India', purpose: 'Register your RNOR status with Income Tax Dept — the single most important form', priority: 'urgent' },
-    { form: 'ITR-2', deadline: 'July 31st of each assessment year', purpose: 'Annual income tax return for individuals with foreign income', priority: 'important' },
-    { form: 'Schedule FSI', deadline: 'With ITR-2', purpose: 'Declare all foreign source income during RNOR period', priority: 'important' },
+    { form: 'No separate RNOR form', deadline: 'Before filing your India return', purpose: 'For individuals, RNOR is determined from stay history and is typically reflected in the tax return if eligible', priority: 'urgent' },
+    { form: 'ITR-2', deadline: 'July 31st of each assessment year', purpose: 'Annual India income tax return where RNOR status is generally reflected for the relevant year', priority: 'important' },
+    { form: 'Schedule FSI', deadline: 'With ITR-2', purpose: 'Report foreign source income and review what falls outside India tax scope during RNOR', priority: 'important' },
     { form: 'Schedule TR', deadline: 'With ITR-2', purpose: 'Claim DTAA tax relief on income already taxed abroad', priority: 'important' },
     { form: 'FEMA Declaration', deadline: 'Within 180 days of arriving', purpose: 'Declare foreign assets to RBI under FEMA regulations', priority: 'important' },
   ]
@@ -542,7 +542,7 @@ function computeRNOR(I: Inputs): TaxResult {
 
   if (!isEligible) risks.push({ level: 'high', title: 'RNOR eligibility uncertain', detail: 'Under 3 years abroad may not qualify for RNOR. You could be treated as a Resident from day 1, making ALL global income taxable in India.', action: 'Get a written opinion from a CA specialising in NRI taxation before moving.' })
 
-  if (I.filedForm12A === 'didnt_know') risks.push({ level: 'high', title: 'Form 12A not filed — RNOR at risk', detail: 'Without Form 12A filed within 30 days of arrival, your RNOR status may not be recognised by the Income Tax department.', action: 'File Form 12A on your first day in India. Carry it to your CA appointment.' })
+  if (I.filedForm12A === 'didnt_know') risks.push({ level: 'high', title: 'RNOR reporting plan is missing', detail: 'RNOR is not claimed through a separate form. If you do not track stay history and plan the first India return properly, you can still create avoidable tax and reporting mistakes.', action: 'Review your travel history, count India days, and confirm the return-year reporting approach with an NRI-focused CA.' })
 
   if (I.hasRSUs !== 'no' && rsuValueINR > 5000000) risks.push({ level: 'high', title: `Large RSU exposure (${rsuRangeLabel[I.hasRSUs]}) — vesting timing critical`, detail: 'RSUs vesting after your RNOR window ends will be fully taxable in India at 30%+. Wrong timing could cost you crores.', action: 'Map every vesting date against your RNOR window. Accelerate vesting where possible through employer.' })
 
@@ -550,7 +550,7 @@ function computeRNOR(I: Inputs): TaxResult {
 
   if (I.hasNREAccount === 'no') risks.push({ level: 'medium', title: 'No NRE account — transfers unoptimised', detail: 'Without an NRE account, you cannot transfer foreign earnings to India tax-free. Every transfer through a regular account may be suboptimal.', action: 'Open NRE account this week. Takes 2–3 weeks for Indian banks with NRI branches.' })
 
-  if (I.plannedMoveMonth === 'mar') risks.push({ level: 'low', title: 'March move timing — tax year split', detail: 'Moving in March means you\'ll have less than 30 days in India before the tax year ends on March 31. This creates a complex partial-year filing situation.', action: 'Consider moving in April instead to start clean with a full Indian financial year.' })
+  if (I.plannedMoveMonth === 'mar') risks.push({ level: 'low', title: 'March move timing — tax year split', detail: 'Moving in March leaves very little time before the financial year closes on March 31. This creates a more complex partial-year filing situation.', action: 'Consider moving in April instead to start clean with a full Indian financial year.' })
 
   // ── Insights ─────────────────────────────────────────────────────────────────
   const insights: TaxResult['insights'] = []
@@ -933,7 +933,7 @@ export default function RNOROptimizer() {
 
           {/* FORMS TO FILE */}
           <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: '20px', padding: '1.75rem', marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.25rem' }}>Forms You Must File — In Order of Priority</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.25rem' }}>Key Tax Forms and Reporting Tasks</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {r.formsToFile.map((f, i) => (
                 <div key={i} className="rnor-form-row" style={{ padding: '12px 16px', background: 'var(--india-white)', borderRadius: '12px', border: '0.5px solid var(--border)' }}>

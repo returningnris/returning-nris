@@ -193,6 +193,15 @@ const SECTION_COLORS: Record<string, string> = {
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
+const RNOR_PLANNER_CHECKLIST = [
+  'Track your target move date before you lock flights or resign.',
+  'Track your days in India through the financial year after you return.',
+  'Review RNOR eligibility using your stay history under India tax residency rules.',
+  'Plan foreign income, stock sales, dividends, and RSU vesting before the move.',
+  'Update banks and investment accounts if your residential status changes.',
+  'Report RNOR correctly in your Indian tax return if you are eligible.',
+]
+
 function getPlannerYearRange(): number[] {
   const year = new Date().getFullYear()
   return [year, year + 1, year + 2, year + 3]
@@ -309,7 +318,7 @@ export function computeRecommendation(A: Answers, score: number): Rec {
       verdict: 'You are ready. Move as planned.',
       directTalk: `With ${incomeStr}, ${A.savings === '200000+' ? 'strong savings' : 'solid savings'}, and your city decided — you've resolved the three things that derail most NRI returns before they start.`,
       actions: [
-        rnorBlind ? 'Book a CA consultation before you leave — RNOR filing on Day 1 in India saves ₹18–40L' : 'File Form 12A on your first day in India',
+        rnorBlind ? 'Book a CA consultation before you leave and review RNOR from your stay history, not a separate application.' : 'Keep your move date, India day count, and RNOR reporting plan documented for the first tax year.',
         noHousing ? 'Arrange housing before landing — even a 2-month serviced apartment removes stress' : 'Transfer funds to your NRE account before you change tax residency',
       ],
     }
@@ -456,7 +465,7 @@ function computeRefinedRecommendation(A: Answers, score: number): Rec {
       verdict: 'You look ready to move.',
       directTalk: `With ${incomeStr}, ${A.savings === '200000+' || A.savings === '150000' ? 'strong liquidity' : 'solid liquidity'}, and a defined city plan, your profile looks prepared rather than hopeful.`,
       actions: [
-        taxPlanningGap ? 'Close RNOR and foreign-asset planning before departure so the move stays financially clean.' : 'Finalize execution details such as tax paperwork, fund transfers, and first-month logistics.',
+        taxPlanningGap ? 'Close RNOR and foreign-asset planning before departure using your stay history, move date, and first tax-return plan.' : 'Finalize execution details such as tax reporting prep, fund transfers, and first-month logistics.',
         noHousing ? 'Lock housing before landing so your first 30-60 days feel stable, not reactive.' : 'Keep the move disciplined and avoid introducing late uncertainty.',
       ],
     }
@@ -1804,6 +1813,50 @@ export default function Planner() {
                 ))}
               </div>
             </div>
+
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 24, padding: '1.35rem', boxShadow: '0 18px 38px rgba(29,22,15,0.05)' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                RNOR checklist
+              </div>
+              <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 12 }}>What to track for RNOR</h2>
+              <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.75, margin: '0 0 1rem 0' }}>
+                RNOR status is not claimed through a separate pre-arrival form. It is determined based on your stay history under India’s tax residency rules and is typically reflected when you file your Indian income tax return for the relevant year.
+              </p>
+              <div style={{ display: 'grid', gap: 10 }}>
+                {RNOR_PLANNER_CHECKLIST.map((item, index) => (
+                  <div
+                    key={item}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '26px minmax(0, 1fr)',
+                      gap: 12,
+                      alignItems: 'start',
+                      padding: '0.95rem',
+                      borderRadius: 18,
+                      background: 'rgba(29,22,15,0.03)',
+                      border: `1px solid ${T.border}`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: '50%',
+                        background: T.navy,
+                        color: '#fff',
+                        display: 'grid',
+                        placeItems: 'center',
+                        fontSize: 12,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.7 }}>{item}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="planner-result-cards-grid">
@@ -1816,7 +1869,7 @@ export default function Planner() {
                 {[
                   { label: 'India monthly cost', val: r.financial.monthlyCost, sub: r.cityName, color: T.ink },
                   { label: 'Financial runway', val: r.financial.runway, sub: 'on savings alone', color: r.financial.runwayMonths >= 18 ? T.green : '#CC7A00' },
-                  { label: 'RNOR tax saving', val: r.financial.rnorSaving, sub: 'if claimed correctly', color: T.saffron },
+                  { label: 'RNOR tax saving', val: r.financial.rnorSaving, sub: 'if eligible and reported correctly', color: T.saffron },
                 ].map((item) => (
                   <div
                     key={item.label}
