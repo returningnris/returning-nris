@@ -119,66 +119,8 @@ function getStoredMoveDate(raw: Partial<Record<string, unknown>> | null | undefi
   return /^\d{4}-\d{2}$/.test(raw.moveDate) ? raw.moveDate : ''
 }
 
-function readinessAnswersMatch(
-  savedAnswers: Partial<Answers>,
-  candidateAnswers: Partial<Record<string, unknown>> | null | undefined
-): boolean {
-  if (!candidateAnswers) return false
-
-  const comparableKeys: (keyof Answers)[] = [
-    'country',
-    'timeline',
-    'savings',
-    'commitments',
-    'netWorth',
-    'hasJob',
-    'city',
-    'housing',
-    'childrenCount',
-    'teenageChildren',
-    'knowsRNOR',
-    'foreignAssets',
-    'yearsAbroad',
-  ]
-
-  let compared = 0
-
-  for (const key of comparableKeys) {
-    const savedValue = savedAnswers[key]
-    const candidateValue = typeof candidateAnswers[key] === 'string' ? candidateAnswers[key] : ''
-
-    if (!savedValue || !candidateValue) continue
-
-    compared += 1
-
-    if (savedValue !== candidateValue) {
-      return false
-    }
-  }
-
-  return compared >= 4
-}
-
 function buildStoredPlannerAnswers(answers: Partial<Answers>, moveDate: string): StoredPlannerAnswers {
   return moveDate ? { ...answers, moveDate } : { ...answers }
-}
-
-function getRecoveredPlannerMoveDate(
-  savedAnswers: Partial<Answers>,
-  savedAnswerSource: Partial<Record<string, unknown>> | null | undefined,
-  guestState: GuestPlannerState | null
-): string {
-  const storedMoveDate = getStoredMoveDate(savedAnswerSource)
-
-  if (storedMoveDate) {
-    return storedMoveDate
-  }
-
-  if (guestState?.moveDate && readinessAnswersMatch(savedAnswers, guestState.answers)) {
-    return guestState.moveDate
-  }
-
-  return defaultMoveDateForTimeline(savedAnswers.timeline)
 }
 
 
@@ -1316,7 +1258,7 @@ export default function Planner() {
       if (data?.answers_json && data?.result_json) {
         const savedAnswerSource = data.answers_json as Partial<Record<string, unknown>>
         const savedAnswers = normalizeAnswers(savedAnswerSource)
-        const recoveredMoveDate = getRecoveredPlannerMoveDate(savedAnswers, savedAnswerSource, guestState)
+        const recoveredMoveDate = getStoredMoveDate(savedAnswerSource) || defaultMoveDateForTimeline(savedAnswers.timeline)
         const hydratedAnswers = recoveredMoveDate
           ? { ...savedAnswers, timeline: plannerTimelineFromMoveDate(recoveredMoveDate) }
           : savedAnswers
@@ -1325,57 +1267,9 @@ export default function Planner() {
         setResult(normalizedResult)
         setPlannerMoveDate(recoveredMoveDate)
       } else {
-        let journeyAnswers: Partial<Record<string, unknown>> = {}
-
-        if (typeof window !== 'undefined') {
-          try {
-            const rawJourneyState = window.localStorage.getItem(`journey:state:${userId}`)
-            if (rawJourneyState) {
-              const parsedJourneyState = JSON.parse(rawJourneyState) as {
-                answers?: Partial<Record<string, unknown>>
-              }
-              journeyAnswers = parsedJourneyState.answers || {}
-            }
-          } catch {
-            journeyAnswers = {}
-          }
-        }
-
-        const normalizedJourneyAnswers = normalizeAnswers(journeyAnswers)
-        const hasJourneyAnswers = REFINED_READINESS_QUESTIONS.every((q) => {
-          if (q.key === 'timeline') {
-            return Boolean(
-              normalizedJourneyAnswers.timeline ||
-              (typeof journeyAnswers.moveDate === 'string' && journeyAnswers.moveDate)
-            )
-          }
-          return Boolean(normalizedJourneyAnswers[q.key])
-        })
-
-        if (hasJourneyAnswers) {
-          const timelineFromJourney =
-            normalizedJourneyAnswers.timeline ||
-            (typeof journeyAnswers.moveDate === 'string'
-              ? plannerTimelineFromMoveDate(journeyAnswers.moveDate)
-              : '')
-
-          const hydratedJourneyAnswers = {
-            ...normalizedJourneyAnswers,
-            timeline: timelineFromJourney,
-          }
-
-          setAnswers(hydratedJourneyAnswers)
-          setResult(computeRefinedResult(hydratedJourneyAnswers as Answers))
-          setPlannerMoveDate(
-            typeof journeyAnswers.moveDate === 'string' && journeyAnswers.moveDate
-              ? journeyAnswers.moveDate
-              : defaultMoveDateForTimeline(timelineFromJourney)
-          )
-        } else {
-          setAnswers({})
-          setResult(null)
-          setPlannerMoveDate('')
-        }
+        setAnswers({})
+        setResult(null)
+        setPlannerMoveDate('')
       }
 
       setLoadingSavedResult(false)

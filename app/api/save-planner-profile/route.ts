@@ -25,6 +25,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Authenticated user is missing an email' }, { status: 400 })
     }
 
+    const { data: latestSubmission, error: selectError } = await auth.supabase
+      .from('planner_submissions')
+      .select('id, result_json')
+      .eq('user_id', auth.user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (selectError) {
+      console.error('Supabase select error:', selectError)
+      return NextResponse.json({ success: false, error: 'Failed to load prior submission' }, { status: 500 })
+    }
+
+    const existingResultJson =
+      latestSubmission?.result_json && typeof latestSubmission.result_json === 'object'
+        ? (latestSubmission.result_json as Record<string, unknown>)
+        : {}
     const submissionPayload = {
       user_id: auth.user.id,
       first_name: firstName,
@@ -49,20 +66,13 @@ export async function POST(request: Request) {
       planning_score: result?.score?.planning || 0,
       readiness_status: result?.status || '',
       answers_json: answers,
-      result_json: result,
-    }
-
-    const { data: latestSubmission, error: selectError } = await auth.supabase
-      .from('planner_submissions')
-      .select('id')
-      .eq('user_id', auth.user.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    if (selectError) {
-      console.error('Supabase select error:', selectError)
-      return NextResponse.json({ success: false, error: 'Failed to load prior submission' }, { status: 500 })
+      result_json:
+        existingResultJson.journeyState !== undefined
+          ? {
+              ...result,
+              journeyState: existingResultJson.journeyState,
+            }
+          : result,
     }
 
     if (latestSubmission?.id) {
