@@ -12,6 +12,7 @@ type Answers = ReadinessAnswers & {
 }
 
 const GUEST_JOURNEY_STORAGE_KEY = 'journey:guest-state'
+const GUEST_PLANNER_STORAGE_KEY = 'planner:guest-state'
 
 const CITY_BASE: Record<string, number> = {
   Hyderabad: 190000,
@@ -915,6 +916,11 @@ type PersistedJourneyState = {
   firstName?: string
 }
 
+type PlannerGuestState = {
+  answers?: Partial<Record<string, unknown>>
+  moveDate?: string
+}
+
 function readPersistedJourneyState(storageKey: string): Partial<JourneyState> | null {
   if (typeof window === 'undefined') return null
 
@@ -937,6 +943,63 @@ function readPersistedJourneyState(storageKey: string): Partial<JourneyState> | 
   } catch {
     return null
   }
+}
+
+function readPlannerGuestState(): PlannerGuestState | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = window.localStorage.getItem(GUEST_PLANNER_STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as PlannerGuestState
+  } catch {
+    return null
+  }
+}
+
+function getStoredMoveDate(raw: Partial<Record<string, unknown>> | null | undefined): string {
+  if (!raw || typeof raw.moveDate !== 'string') return ''
+  return /^\d{4}-\d{2}$/.test(raw.moveDate) ? raw.moveDate : ''
+}
+
+function readinessAnswersMatch(
+  savedAnswers: Partial<Answers>,
+  candidateAnswers: Partial<Record<string, unknown>> | null | undefined
+): boolean {
+  if (!candidateAnswers) return false
+
+  const comparableKeys: (keyof ReadinessAnswers)[] = [
+    'country',
+    'timeline',
+    'savings',
+    'commitments',
+    'netWorth',
+    'hasJob',
+    'city',
+    'housing',
+    'childrenCount',
+    'teenageChildren',
+    'knowsRNOR',
+    'foreignAssets',
+    'yearsAbroad',
+  ]
+
+  let compared = 0
+
+  for (const key of comparableKeys) {
+    const savedValue = savedAnswers[key]
+    const candidateValue = typeof candidateAnswers[key] === 'string' ? candidateAnswers[key] : ''
+
+    if (!savedValue || !candidateValue) continue
+
+    compared += 1
+
+    if (savedValue !== candidateValue) {
+      return false
+    }
+  }
+
+  return compared >= 4
 }
 
 function serializeJourneyState(state: JourneyState): PersistedJourneyState {
@@ -2505,25 +2568,49 @@ export default function JourneyPage() {
 
       if (!active) return
 
-      const savedAnswers = (data?.answers_json || {}) as Partial<Answers>
+      const rawSavedAnswers = (data?.answers_json || {}) as Partial<Record<string, unknown>>
+      const savedAnswers = rawSavedAnswers as Partial<Answers>
       const hasSavedReadiness =
         Boolean(data?.answers_json) &&
         Boolean(data?.result_json) &&
         Object.keys(savedAnswers).length > 0
 
       const persisted = readPersistedJourneyState(`journey:state:${user.id}`) || {}
+      const plannerGuestState = readPlannerGuestState()
 
       if (error) {
         console.error('Error loading journey initialization:', error)
       }
 
-      const restoredAnswers =
+      const restoredAnswersBase =
         hasSavedReadiness || persisted.answers
           ? { ...savedAnswers, ...(persisted.answers || {}) }
           : {}
+      const recoveredMoveDate =
+        typeof restoredAnswersBase.moveDate === 'string' && restoredAnswersBase.moveDate
+          ? restoredAnswersBase.moveDate
+          : getStoredMoveDate(rawSavedAnswers) ||
+            (plannerGuestState?.moveDate && readinessAnswersMatch(savedAnswers, plannerGuestState.answers)
+              ? plannerGuestState.moveDate
+              : '')
+      const restoredAnswers = recoveredMoveDate
+        ? {
+            ...restoredAnswersBase,
+            moveDate: recoveredMoveDate,
+            timeline: moveDateToTimeline(recoveredMoveDate),
+          }
+        : restoredAnswersBase
+      const isJourneyReady = hasCompleteJourneyProfile(restoredAnswers)
       const restoredStep =
-        persisted.step ||
-        (hasSavedReadiness || hasCompleteJourneyProfile(restoredAnswers) ? 'journey' : 'profile')
+        persisted.step === 'journey'
+          ? isJourneyReady
+            ? 'journey'
+            : 'profile'
+          : persisted.step === 'profile'
+            ? 'profile'
+            : isJourneyReady
+              ? 'journey'
+              : 'profile'
 
       dispatch({
         type: 'LOAD_SAVED',

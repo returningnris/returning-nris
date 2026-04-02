@@ -29,10 +29,14 @@ type GuestPlannerState = {
   moveDate: string
 }
 
+type StoredPlannerAnswers = Partial<Answers> & {
+  moveDate?: string
+}
+
 const GUEST_PLANNER_STORAGE_KEY = 'planner:guest-state'
 
 async function savePlannerProfile(params: {
-  answers: Partial<Answers>
+  answers: StoredPlannerAnswers
   result: Result
   user: PlannerUser
 }) {
@@ -108,6 +112,73 @@ function loadGuestPlannerState(): GuestPlannerState | null {
   } catch {
     return null
   }
+}
+
+function getStoredMoveDate(raw: Partial<Record<string, unknown>> | null | undefined): string {
+  if (!raw || typeof raw.moveDate !== 'string') return ''
+  return /^\d{4}-\d{2}$/.test(raw.moveDate) ? raw.moveDate : ''
+}
+
+function readinessAnswersMatch(
+  savedAnswers: Partial<Answers>,
+  candidateAnswers: Partial<Record<string, unknown>> | null | undefined
+): boolean {
+  if (!candidateAnswers) return false
+
+  const comparableKeys: (keyof Answers)[] = [
+    'country',
+    'timeline',
+    'savings',
+    'commitments',
+    'netWorth',
+    'hasJob',
+    'city',
+    'housing',
+    'childrenCount',
+    'teenageChildren',
+    'knowsRNOR',
+    'foreignAssets',
+    'yearsAbroad',
+  ]
+
+  let compared = 0
+
+  for (const key of comparableKeys) {
+    const savedValue = savedAnswers[key]
+    const candidateValue = typeof candidateAnswers[key] === 'string' ? candidateAnswers[key] : ''
+
+    if (!savedValue || !candidateValue) continue
+
+    compared += 1
+
+    if (savedValue !== candidateValue) {
+      return false
+    }
+  }
+
+  return compared >= 4
+}
+
+function buildStoredPlannerAnswers(answers: Partial<Answers>, moveDate: string): StoredPlannerAnswers {
+  return moveDate ? { ...answers, moveDate } : { ...answers }
+}
+
+function getRecoveredPlannerMoveDate(
+  savedAnswers: Partial<Answers>,
+  savedAnswerSource: Partial<Record<string, unknown>> | null | undefined,
+  guestState: GuestPlannerState | null
+): string {
+  const storedMoveDate = getStoredMoveDate(savedAnswerSource)
+
+  if (storedMoveDate) {
+    return storedMoveDate
+  }
+
+  if (guestState?.moveDate && readinessAnswersMatch(savedAnswers, guestState.answers)) {
+    return guestState.moveDate
+  }
+
+  return defaultMoveDateForTimeline(savedAnswers.timeline)
 }
 
 
@@ -1213,9 +1284,10 @@ export default function Planner() {
         return
       }
 
+      const guestState = loadGuestPlannerState()
+
       if (!isAuthenticated || !userId) {
         if (!active) return
-        const guestState = loadGuestPlannerState()
         setAnswers(guestState?.answers || {})
         setResult(guestState?.result || null)
         setPlannerMoveDate(guestState?.moveDate || '')
@@ -1242,11 +1314,16 @@ export default function Planner() {
       }
 
       if (data?.answers_json && data?.result_json) {
-        const savedAnswers = normalizeAnswers(data.answers_json as Partial<Record<string, unknown>>)
-        const normalizedResult = computeRefinedResult(savedAnswers as Answers)
-        setAnswers(savedAnswers)
+        const savedAnswerSource = data.answers_json as Partial<Record<string, unknown>>
+        const savedAnswers = normalizeAnswers(savedAnswerSource)
+        const recoveredMoveDate = getRecoveredPlannerMoveDate(savedAnswers, savedAnswerSource, guestState)
+        const hydratedAnswers = recoveredMoveDate
+          ? { ...savedAnswers, timeline: plannerTimelineFromMoveDate(recoveredMoveDate) }
+          : savedAnswers
+        const normalizedResult = computeRefinedResult(hydratedAnswers as Answers)
+        setAnswers(hydratedAnswers)
         setResult(normalizedResult)
-        setPlannerMoveDate(defaultMoveDateForTimeline(savedAnswers.timeline))
+        setPlannerMoveDate(recoveredMoveDate)
       } else {
         let journeyAnswers: Partial<Record<string, unknown>> = {}
 
@@ -1364,7 +1441,7 @@ export default function Planner() {
     if (isAuthenticated && user) {
       try {
         await savePlannerProfile({
-          answers,
+          answers: buildStoredPlannerAnswers(answers, plannerMoveDate),
           result: computedResult,
           user: {
             firstName: user.firstName,
@@ -1449,7 +1526,7 @@ export default function Planner() {
           password: signupPassword,
           next: '/planner',
           readiness: {
-            answers,
+            answers: buildStoredPlannerAnswers(answers, plannerMoveDate),
             result,
           },
         }),
