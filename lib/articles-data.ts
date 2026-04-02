@@ -41,6 +41,14 @@ export const ARTICLES: Article[] = [
     readMins: 11,
   },
   {
+    href: '/resources/pune-neighbourhood-guide-for-returning-nri-families',
+    label: 'Pune Neighbourhood Guide for Returning NRI Families',
+    icon: 'PN',
+    sub: '5 zones, 17 parameters, and the old Pune vs new Pune trade-off',
+    category: 'Housing',
+    readMins: 12,
+  },
+  {
     href: '/resources/should-i-return-to-india-from-usa',
     label: 'Should I return to India from the USA?',
     icon: '🤔',

@@ -171,3 +171,24 @@ on public.consultation_requests
 for insert
 to authenticated
 with check (user_id is null or auth.uid() = user_id);
+
+create table if not exists public.resource_comments (
+  id uuid primary key default gen_random_uuid(),
+  article_slug text not null,
+  user_id uuid references auth.users(id) on delete set null,
+  display_name text not null default 'Anonymous',
+  comment text not null default '',
+  status text not null default 'published',
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists resource_comments_article_slug_created_at_idx
+  on public.resource_comments (article_slug, created_at desc);
+
+drop trigger if exists resource_comments_set_updated_at on public.resource_comments;
+create trigger resource_comments_set_updated_at
+before update on public.resource_comments
+for each row execute procedure public.set_updated_at();
+
+alter table public.resource_comments enable row level security;
