@@ -78,8 +78,8 @@ export default function FounderConsultationCard({
 
       <p style={{ fontSize: 14, color: '#665848', lineHeight: 1.7, marginBottom: 14 }}>
         {isResults
-          ? 'Talk to the founder for a free 15-minute intro call and get calm, practical clarity on your move, housing, finances, tax planning, and next steps.'
-          : 'Talk to the founder for a free 15-minute intro call if you want a human second opinion on what to do next in your move.'}
+          ? 'Talk to the founder for a free intro call and get calm, practical clarity on your move, housing, finances, tax planning, and next steps.'
+          : 'Talk to the founder for a free intro call if you want a human second opinion on what to do next in your move.'}
       </p>
 
       <div style={{ display: 'grid', gap: 10, marginBottom: 14 }}>
@@ -95,7 +95,7 @@ export default function FounderConsultationCard({
             What to expect
           </div>
           <div style={{ fontSize: 13, color: '#665848', lineHeight: 1.65 }}>
-            Free 15-minute intro consultation. If useful, you can continue with a paid consultation afterward.
+            Free intro consultation. If useful, you can continue with a paid consultation afterward.
           </div>
         </div>
       </div>
