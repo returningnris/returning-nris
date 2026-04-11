@@ -34,6 +34,7 @@ type StoredPlannerAnswers = Partial<Answers> & {
 }
 
 const GUEST_PLANNER_STORAGE_KEY = 'planner:guest-state'
+const GUEST_JOURNEY_STORAGE_KEY = 'journey:guest-state'
 
 async function savePlannerProfile(params: {
   answers: StoredPlannerAnswers
@@ -112,6 +113,55 @@ function loadGuestPlannerState(): GuestPlannerState | null {
   } catch {
     return null
   }
+}
+
+function hasCompletePlannerAnswers(answers: Partial<Answers>) {
+  return REFINED_READINESS_QUESTIONS.every((question) => Boolean(answers[question.key]))
+}
+
+function loadJourneyPlannerState(): GuestPlannerState | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = window.localStorage.getItem(GUEST_JOURNEY_STORAGE_KEY)
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw) as { answers?: Partial<Record<string, unknown>> }
+    const savedAnswerSource =
+      parsed.answers && typeof parsed.answers === 'object' ? parsed.answers : null
+
+    if (!savedAnswerSource) return null
+
+    const savedAnswers = normalizeAnswers(savedAnswerSource)
+    const recoveredMoveDate =
+      getStoredMoveDate(savedAnswerSource) || defaultMoveDateForTimeline(savedAnswers.timeline)
+    const hydratedAnswers = recoveredMoveDate
+      ? { ...savedAnswers, timeline: plannerTimelineFromMoveDate(recoveredMoveDate) }
+      : savedAnswers
+
+    return {
+      answers: hydratedAnswers,
+      result: hasCompletePlannerAnswers(hydratedAnswers)
+        ? computeRefinedResult(hydratedAnswers as Answers)
+        : null,
+      moveDate: recoveredMoveDate,
+    }
+  } catch {
+    return null
+  }
+}
+
+function getPlannerStatePriority(state: GuestPlannerState | null) {
+  if (!state) return -1
+
+  const answeredCount = REFINED_READINESS_QUESTIONS.filter((question) => Boolean(state.answers[question.key])).length
+  return (state.result ? 100 : 0) + answeredCount
+}
+
+function getBestGuestPlannerState(...states: Array<GuestPlannerState | null>) {
+  return states.reduce<GuestPlannerState | null>((best, current) => {
+    return getPlannerStatePriority(current) > getPlannerStatePriority(best) ? current : best
+  }, null)
 }
 
 function getStoredMoveDate(raw: Partial<Record<string, unknown>> | null | undefined): string {
@@ -1226,12 +1276,17 @@ export default function Planner() {
         return
       }
 
-      const guestState = loadGuestPlannerState()
+      const guestState = getBestGuestPlannerState(loadGuestPlannerState(), loadJourneyPlannerState())
 
       if (!isAuthenticated || !userId) {
         if (!active) return
         setAnswers(guestState?.answers || {})
-        setResult(guestState?.result || null)
+        setResult(
+          guestState?.result ||
+            (hasCompletePlannerAnswers(guestState?.answers || {})
+              ? computeRefinedResult((guestState?.answers || {}) as Answers)
+              : null)
+        )
         setPlannerMoveDate(guestState?.moveDate || '')
         setLoadingSavedResult(false)
         return
@@ -1700,8 +1755,8 @@ export default function Planner() {
               <FounderConsultationCard
                 variant="results"
                 source="readiness_results"
-                email={user?.email}
-                firstName={user?.firstName}
+                email={user?.email || guestEmailAddress.trim() || signupEmail.trim()}
+                firstName={user?.firstName || guestEmailName.trim() || signupName.trim()}
                 lastName={user?.lastName}
                 readinessStatus={r.status}
               />
