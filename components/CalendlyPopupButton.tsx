@@ -1,7 +1,7 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 type CalendlyPrefill = {
@@ -14,6 +14,11 @@ type CalendlyPrefill = {
 type CalendlyPopupOptions = {
   url: string
   prefill?: CalendlyPrefill
+}
+
+type CalendlyMessageData = {
+  event?: string
+  payload?: unknown
 }
 
 declare global {
@@ -81,6 +86,7 @@ export default function CalendlyPopupButton({
   style,
 }: CalendlyPopupButtonProps) {
   const [runtimeCalendlyUrl, setRuntimeCalendlyUrl] = useState<string>(() => process.env.NEXT_PUBLIC_CALENDLY_URL?.trim() || FALLBACK_CALENDLY_URL)
+  const scheduledEventKeysRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -139,6 +145,80 @@ export default function CalendlyPopupButton({
     }
   }, [runtimeCalendlyUrl])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    function isCalendlyEvent(event: MessageEvent<CalendlyMessageData>) {
+      return event.origin === 'https://calendly.com' && typeof event.data?.event === 'string' && event.data.event.startsWith('calendly.')
+    }
+
+    async function handleCalendlyMessage(event: MessageEvent<CalendlyMessageData>) {
+      if (!isCalendlyEvent(event) || event.data.event !== 'calendly.event_scheduled') return
+
+      const payload =
+        event.data.payload && typeof event.data.payload === 'object'
+          ? (event.data.payload as Record<string, unknown>)
+          : {}
+
+      const inviteeUri =
+        getNestedPayloadUri(payload, 'invitee')
+      const eventUri =
+        getNestedPayloadUri(payload, 'event') ||
+        (typeof payload.scheduled_event === 'object' && payload.scheduled_event && typeof (payload.scheduled_event as Record<string, unknown>).uri === 'string'
+          ? (payload.scheduled_event as Record<string, unknown>).uri
+          : '')
+      const dedupeKey = [source, inviteeUri, eventUri, readinessStatus || ''].join('|')
+
+      if (dedupeKey && scheduledEventKeysRef.current.has(dedupeKey)) {
+        return
+      }
+
+      if (dedupeKey) {
+        scheduledEventKeysRef.current.add(dedupeKey)
+      }
+
+      let accessToken = ''
+
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        accessToken = session?.access_token || ''
+      } catch (error) {
+        console.error('Failed to read consultation session:', error)
+      }
+
+      try {
+        await fetch('/api/consultation-requests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify({
+            mode: 'scheduled',
+            source,
+            email,
+            firstName,
+            lastName,
+            readinessStatus,
+            calendlyUrl: runtimeCalendlyUrl,
+            calendlyEvent: event.data.event,
+            payload,
+          }),
+        })
+      } catch (error) {
+        console.error('Failed to capture scheduled consultation:', error)
+      }
+    }
+
+    window.addEventListener('message', handleCalendlyMessage)
+
+    return () => {
+      window.removeEventListener('message', handleCalendlyMessage)
+    }
+  }, [email, firstName, lastName, readinessStatus, runtimeCalendlyUrl, source])
+
   const calendlyUrl = buildCalendlyUrl(runtimeCalendlyUrl, source, readinessStatus)
   const prefill = buildPrefill(firstName, lastName, email)
   const isConfigured = Boolean(calendlyUrl)
@@ -160,24 +240,29 @@ export default function CalendlyPopupButton({
           console.error('Failed to read consultation session:', error)
         }
 
-        try {
-          await fetch('/api/consultation-requests', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-            },
-            body: JSON.stringify({
-              source,
-              email,
-              firstName,
-              lastName,
-              readinessStatus,
-              calendlyUrl,
-            }),
-          })
-        } catch (error) {
-          console.error('Failed to log consultation request:', error)
+        const hasKnownContact = Boolean(email?.trim() || firstName?.trim() || lastName?.trim() || accessToken)
+
+        if (hasKnownContact) {
+          try {
+            await fetch('/api/consultation-requests', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+              },
+              body: JSON.stringify({
+                mode: 'initiated',
+                source,
+                email,
+                firstName,
+                lastName,
+                readinessStatus,
+                calendlyUrl,
+              }),
+            })
+          } catch (error) {
+            console.error('Failed to log consultation request:', error)
+          }
         }
 
         if (window.Calendly?.initPopupWidget) {
@@ -212,7 +297,20 @@ export default function CalendlyPopupButton({
       aria-label={buttonLabel}
     >
       <span>{buttonLabel}</span>
-      <span style={{ fontSize: 15, lineHeight: 1 }}>-&gt;</span>
+      <span style={{ fontSize: 15, lineHeight: 1 }}>{'->'}</span>
     </button>
   )
+}
+
+function getNestedPayloadUri(payload: Record<string, unknown>, key: string) {
+  if (typeof payload[`${key}_uri`] === 'string') {
+    return payload[`${key}_uri`] as string
+  }
+
+  const nestedValue = payload[key]
+  if (nestedValue && typeof nestedValue === 'object' && typeof (nestedValue as Record<string, unknown>).uri === 'string') {
+    return (nestedValue as Record<string, unknown>).uri as string
+  }
+
+  return ''
 }
