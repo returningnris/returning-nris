@@ -463,6 +463,8 @@ function hasCompleteJourneyProfile(answers: Partial<Answers>): answers is Answer
   })
 }
 
+void hasCompleteJourneyProfile
+
 function buildJourneySubmissionResult(answers: Answers): JourneySubmissionResult {
   const score = computeScore(answers)
 
@@ -902,7 +904,7 @@ function journeyReducer(state: JourneyState, action: Action): JourneyState {
 }
 
 const initialState: JourneyState = {
-  step: 'profile',
+  step: 'journey',
   editingProfile: false,
   answers: {},
   completedTasks: new Set(),
@@ -1657,6 +1659,8 @@ function ProfileSetup({ state, dispatch }: { state: JourneyState; dispatch: Reac
   )
 }
 
+void ProfileSetup
+
 function JourneyDashboard({
   state,
   dispatch,
@@ -1673,8 +1677,7 @@ function JourneyDashboard({
   onGuestActions: () => void
 }) {
   const [tab, setTab] = useState<'tasks' | 'guidance'>('tasks')
-  const [draftTaskTitle, setDraftTaskTitle] = useState('')
-  const [draftTaskDesc, setDraftTaskDesc] = useState('')
+  const [draftTasks, setDraftTasks] = useState<Record<number, { title: string; desc: string }>>({})
 
   const A = state.answers as Answers
   const alreadyMoved = A.alreadyMoved === 'yes'
@@ -1708,7 +1711,6 @@ function JourneyDashboard({
   const visiblePhases = useMemo(() => (alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]), [alreadyMoved])
   const activeTimelinePhase = getActiveTimelinePhase(A.moveDate)
   const journeyPhaseIndex = visiblePhases.includes(activeTimelinePhase) ? activeTimelinePhase : visiblePhases[0]
-  const selectedPhaseIndex = visiblePhases.includes(state.currentPhase) ? state.currentPhase : journeyPhaseIndex
   const currentPhaseLabel = PHASES[journeyPhaseIndex]
   const currentPhaseTasks = TASKS.filter((task) => task.phase === journeyPhaseIndex)
   const journeyHealthPhases = visiblePhases.filter((phase) => phase <= journeyPhaseIndex)
@@ -1900,23 +1902,6 @@ function JourneyDashboard({
                 })}
               </div>
 
-              <button
-                type="button"
-                onClick={() => dispatch({ type: 'EDIT_PROFILE' })}
-                className="journey-edit-button"
-                style={{
-                  padding: '0.8rem 1.05rem',
-                  borderRadius: 999,
-                  border: `1px solid ${T.border}`,
-                  background: T.paper,
-                  color: T.muted,
-                  fontSize: 13,
-                  fontWeight: 700,
-                }}
-              >
-                Update profile answers
-              </button>
-
               {isGuest ? (
                 <button
                   type="button"
@@ -2076,48 +2061,44 @@ function JourneyDashboard({
           <div style={{ display: 'grid', gap: '1rem' }}>
             <SurfaceCard style={{ padding: '1.35rem' }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                Task flow
+                Full checklist
               </div>
-              <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 10 }}>Move through the journey in phases</h2>
+              <h2 style={{ fontSize: '1.35rem', color: T.ink, marginBottom: 10 }}>View the complete move-back checklist</h2>
               <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.75, marginBottom: 16 }}>
-                Select a phase above to focus on that part of the move.
+                Every phase is shown below so users can work through the full journey without filling out a setup form first.
               </p>
 
               <div className="phase-grid" style={{ gridTemplateColumns: `repeat(${alreadyMoved ? 2 : 5}, minmax(0, 1fr))` }}>
-                {(alreadyMoved ? [3, 4] : [0, 1, 2, 3, 4]).map((phase) => {
+                {visiblePhases.map((phase) => {
                   const stats = phaseTaskStats(phase, effectiveCompletedTasks, state.customTasks, state.completedCustomTaskIds)
-                  const active = selectedPhaseIndex === phase
                   const phaseStatus = getPhaseTimeStatus(phase, activeTimelinePhase)
                   return (
-                    <button
-                      type="button"
+                    <div
                       key={phase}
-                      onClick={() => dispatch({ type: 'SET_PHASE', phase })}
                       style={{
                         textAlign: 'left',
                         padding: '0.95rem',
                         borderRadius: 18,
-                        border: `1.5px solid ${active ? T.saffron : T.border}`,
-                        background: active ? T.saffronSoft : phaseStatus === 'future' ? 'rgba(29,22,15,0.03)' : T.white,
-                        opacity: phaseStatus === 'future' && !active ? 0.68 : 1,
+                        border: `1.5px solid ${phase === journeyPhaseIndex ? T.saffron : T.border}`,
+                        background: phase === journeyPhaseIndex ? T.saffronSoft : phaseStatus === 'future' ? 'rgba(29,22,15,0.03)' : T.white,
+                        opacity: phaseStatus === 'future' && phase !== journeyPhaseIndex ? 0.68 : 1,
                       }}
                     >
-                      <div style={{ fontSize: 12, fontWeight: 700, color: active ? T.bronze : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: phase === journeyPhaseIndex ? T.bronze : T.soft, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                         {PHASE_WINDOWS[phase]}
                       </div>
                       <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 10 }}>{PHASES[phase]}</div>
                       <div style={{ height: 8, borderRadius: 999, background: 'rgba(29,22,15,0.08)', overflow: 'hidden', marginBottom: 10 }}>
-                        <div style={{ width: `${stats.pct}%`, height: '100%', background: active ? T.saffron : T.green }} />
+                        <div style={{ width: `${stats.pct}%`, height: '100%', background: phase === journeyPhaseIndex ? T.saffron : T.green }} />
                       </div>
                       <div style={{ fontSize: 13, color: T.muted }}>{stats.done} of {stats.total} complete</div>
-                    </button>
+                    </div>
                   )
                 })}
               </div>
             </SurfaceCard>
 
-            {(() => {
-              const phase = selectedPhaseIndex
+            {visiblePhases.map((phase) => {
               const tasks = TASKS.filter((task) => task.phase === phase)
               const customTasks = customTasksByPhase.get(phase) || []
               const done =
@@ -2125,9 +2106,11 @@ function JourneyDashboard({
                 customTasks.filter((task) => state.completedCustomTaskIds.has(task.id)).length
               const totalTasks = tasks.length + customTasks.length
               const allDone = done === totalTasks && totalTasks > 0
+              const phaseDraft = draftTasks[phase] || { title: '', desc: '' }
 
               return (
                 <SurfaceCard
+                  key={phase}
                   style={{
                     overflow: 'hidden',
                     borderColor: allDone ? 'rgba(23,117,58,0.18)' : T.border,
@@ -2264,8 +2247,16 @@ function JourneyDashboard({
                       <div style={{ display: 'grid', gap: 10 }}>
                         <input
                           type="text"
-                          value={draftTaskTitle}
-                          onChange={(e) => setDraftTaskTitle(e.target.value)}
+                          value={phaseDraft.title}
+                          onChange={(e) =>
+                            setDraftTasks((current) => ({
+                              ...current,
+                              [phase]: {
+                                ...phaseDraft,
+                                title: e.target.value,
+                              },
+                            }))
+                          }
                           placeholder="Custom task title"
                           style={{
                             width: '100%',
@@ -2278,8 +2269,16 @@ function JourneyDashboard({
                           }}
                         />
                         <textarea
-                          value={draftTaskDesc}
-                          onChange={(e) => setDraftTaskDesc(e.target.value)}
+                          value={phaseDraft.desc}
+                          onChange={(e) =>
+                            setDraftTasks((current) => ({
+                              ...current,
+                              [phase]: {
+                                ...phaseDraft,
+                                desc: e.target.value,
+                              },
+                            }))
+                          }
                           placeholder="Optional details, deadline, vendor, school name, banker, CA note, or reminder"
                           style={{
                             width: '100%',
@@ -2299,12 +2298,14 @@ function JourneyDashboard({
                           <button
                             type="button"
                             onClick={() => {
-                              const title = draftTaskTitle.trim()
-                              const desc = draftTaskDesc.trim()
+                              const title = phaseDraft.title.trim()
+                              const desc = phaseDraft.desc.trim()
                               if (!title) return
                               dispatch({ type: 'ADD_CUSTOM_TASK', phase, title, desc })
-                              setDraftTaskTitle('')
-                              setDraftTaskDesc('')
+                              setDraftTasks((current) => ({
+                                ...current,
+                                [phase]: { title: '', desc: '' },
+                              }))
                             }}
                             style={{
                               padding: '0.75rem 1rem',
@@ -2336,7 +2337,7 @@ function JourneyDashboard({
                   </div>
                 </SurfaceCard>
               )
-            })()}
+            })}
           </div>
         )}
       </div>
@@ -2511,7 +2512,7 @@ export default function JourneyPage() {
         const guestState = readPersistedJourneyState(GUEST_JOURNEY_STORAGE_KEY)
         dispatch({
           type: 'LOAD_SAVED',
-          payload: guestState || { firstName: '', step: 'profile' },
+          payload: guestState || { firstName: '', step: 'journey' },
         })
         setLoadingSavedJourney(false)
         return
@@ -2562,24 +2563,12 @@ export default function JourneyPage() {
             timeline: moveDateToTimeline(recoveredMoveDate),
           }
         : restoredAnswersBase
-      const isJourneyReady = hasCompleteJourneyProfile(restoredAnswers)
-      const restoredStep =
-        persisted.step === 'journey'
-          ? isJourneyReady
-            ? 'journey'
-            : 'profile'
-          : persisted.step === 'profile'
-            ? 'profile'
-            : isJourneyReady
-              ? 'journey'
-              : 'profile'
-
       dispatch({
         type: 'LOAD_SAVED',
         payload: {
           firstName: user.firstName || '',
           answers: restoredAnswers,
-          step: restoredStep,
+          step: 'journey',
           editingProfile: persisted.editingProfile ?? false,
           completedTasks: persisted.completedTasks,
           completedCustomTaskIds: persisted.completedCustomTaskIds,
@@ -2616,7 +2605,7 @@ export default function JourneyPage() {
   }, [loadingSavedJourney, state, user?.id])
 
   useEffect(() => {
-    if (authLoading || loadingSavedJourney || !user || !hasCompleteJourneyProfile(state.answers)) return
+    if (authLoading || loadingSavedJourney || !user) return
     const completeAnswers = state.answers as Answers
 
     const timeoutId = window.setTimeout(() => {
@@ -2649,8 +2638,6 @@ export default function JourneyPage() {
   }, [state.firstName])
 
   async function handleGuestEmailSend() {
-    if (!hasCompleteJourneyProfile(state.answers)) return
-
     setGuestEmailSending(true)
     setGuestEmailError('')
 
@@ -2684,8 +2671,6 @@ export default function JourneyPage() {
   }
 
   async function handleGuestSignupSave() {
-    if (!hasCompleteJourneyProfile(state.answers)) return
-
     setSignupError('')
     setSignupSuccess('')
 
@@ -2749,8 +2734,6 @@ export default function JourneyPage() {
   }
 
   if (loadingSavedJourney) return null
-
-  if (state.step === 'profile') return <ProfileSetup state={state} dispatch={dispatch} />
 
   return (
     <>
