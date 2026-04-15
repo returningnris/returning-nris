@@ -1,7 +1,9 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib'
-import { JOURNEY_CHECKLIST, JOURNEY_FILTERS, type JourneyChecklistItem } from './moveBackContent'
-
-type JourneyBucketId = 'mustDo' | 'ifRelevant' | 'niceToDo'
+import { JOURNEY_FILTERS } from './moveBackContent'
+import {
+  getImportantTimelineSections,
+  getJourneyChecklistItemId,
+} from './journeyChecklistPresentation'
 
 const PAGE_WIDTH = 595.28
 const PAGE_HEIGHT = 841.89
@@ -10,7 +12,6 @@ const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2
 
 const BRAND = {
   saffron: rgb(1, 0.6, 0.2),
-  saffronDark: rgb(0.8, 0.478, 0),
   green: rgb(0.075, 0.533, 0.031),
   navy: rgb(0, 0, 0.502),
   ink: rgb(0.102, 0.071, 0.031),
@@ -23,25 +24,6 @@ const BRAND = {
 
 const FILTER_LABELS = Object.fromEntries(JOURNEY_FILTERS.map((filter) => [filter.id, filter.label]))
 
-const BUCKETS: Array<{ id: JourneyBucketId; label: string; color: ReturnType<typeof rgb> }> = [
-  { id: 'mustDo', label: 'Must do', color: BRAND.saffronDark },
-  { id: 'ifRelevant', label: 'If relevant', color: BRAND.navy },
-  { id: 'niceToDo', label: 'Nice to do', color: BRAND.green },
-]
-
-function getBucketItems(sectionId: string, bucketId: JourneyBucketId) {
-  const section = JOURNEY_CHECKLIST.find((entry) => entry.id === sectionId)
-  if (!section) return []
-
-  if (bucketId === 'mustDo') return section.mustDo
-  if (bucketId === 'ifRelevant') return section.ifRelevant
-  return section.niceToDo
-}
-
-function getChecklistItemId(sectionId: string, bucketId: JourneyBucketId, itemIndex: number) {
-  return `${sectionId}:${bucketId}:${itemIndex}`
-}
-
 function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number) {
   const words = text.trim().split(/\s+/)
   const lines: string[] = []
@@ -49,9 +31,7 @@ function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: numbe
 
   for (const word of words) {
     const nextLine = currentLine ? `${currentLine} ${word}` : word
-    const nextWidth = font.widthOfTextAtSize(nextLine, fontSize)
-
-    if (nextWidth <= maxWidth || !currentLine) {
+    if (font.widthOfTextAtSize(nextLine, fontSize) <= maxWidth || !currentLine) {
       currentLine = nextLine
       continue
     }
@@ -74,30 +54,9 @@ function drawLogo(page: PDFPage, x: number, y: number, scale: number, boldFont: 
   const bottomHeight = 9 * scale
   const totalHeight = topHeight + middleHeight + bottomHeight
 
-  page.drawRectangle({
-    x,
-    y: y - topHeight,
-    width,
-    height: topHeight,
-    color: BRAND.saffron,
-  })
-
-  page.drawRectangle({
-    x,
-    y: y - topHeight - middleHeight,
-    width,
-    height: middleHeight,
-    color: BRAND.panel,
-  })
-
-  page.drawRectangle({
-    x,
-    y: y - totalHeight,
-    width,
-    height: bottomHeight,
-    color: BRAND.green,
-  })
-
+  page.drawRectangle({ x, y: y - topHeight, width, height: topHeight, color: BRAND.saffron })
+  page.drawRectangle({ x, y: y - topHeight - middleHeight, width, height: middleHeight, color: BRAND.panel })
+  page.drawRectangle({ x, y: y - totalHeight, width, height: bottomHeight, color: BRAND.green })
   page.drawCircle({
     x: x + width / 2,
     y: y - totalHeight / 2,
@@ -105,7 +64,6 @@ function drawLogo(page: PDFPage, x: number, y: number, scale: number, boldFont: 
     borderColor: BRAND.navy,
     borderWidth: 1.15 * scale,
   })
-
   page.drawCircle({
     x: x + width / 2,
     y: y - totalHeight / 2,
@@ -136,19 +94,19 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
   const pdf = await PDFDocument.create()
   const regularFont = await pdf.embedFont(StandardFonts.Helvetica)
   const boldFont = await pdf.embedFont(StandardFonts.HelveticaBold)
+  const checkedItemSet = new Set(checkedItemIds)
+  const timelineSections = getImportantTimelineSections()
 
   let page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT])
   let cursorY = PAGE_HEIGHT - PAGE_MARGIN
 
-  const checkedItemSet = new Set(checkedItemIds)
-
-  function addPage(withCompactHeader = true) {
+  function addPage(withHeader = true, sectionTitle?: string) {
     page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT])
     cursorY = PAGE_HEIGHT - PAGE_MARGIN
 
-    if (withCompactHeader) {
+    if (withHeader) {
       drawLogo(page, PAGE_MARGIN, cursorY + 2, 0.8, boldFont)
-      page.drawText('Back2India Journey Checklist', {
+      page.drawText(sectionTitle || 'Back2India Journey Checklist', {
         x: PAGE_MARGIN,
         y: cursorY - 28,
         size: 12,
@@ -165,102 +123,20 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
     }
   }
 
-  function ensureSpace(requiredHeight: number) {
+  function ensureSpace(requiredHeight: number, sectionTitle?: string) {
     if (cursorY - requiredHeight < PAGE_MARGIN) {
-      addPage(true)
+      addPage(true, sectionTitle)
     }
   }
 
-  function drawWrappedParagraph(
-    text: string,
-    options: {
-      x: number
-      maxWidth: number
-      size: number
-      lineHeight: number
-      font?: PDFFont
-      color?: ReturnType<typeof rgb>
-    }
-  ) {
-    const font = options.font || regularFont
-    const color = options.color || BRAND.inkMuted
-    const lines = wrapText(text, font, options.size, options.maxWidth)
-
-    ensureSpace(lines.length * options.lineHeight)
+  function drawWrapped(text: string, size: number, lineHeight: number, x = PAGE_MARGIN, width = CONTENT_WIDTH, font = regularFont, color = BRAND.inkMuted) {
+    const lines = wrapText(text, font, size, width)
+    ensureSpace(lines.length * lineHeight)
 
     for (const line of lines) {
-      page.drawText(line, {
-        x: options.x,
-        y: cursorY,
-        size: options.size,
-        font,
-        color,
-      })
-      cursorY -= options.lineHeight
+      page.drawText(line, { x, y: cursorY, size, font, color })
+      cursorY -= lineHeight
     }
-  }
-
-  function drawChecklistRow(item: JourneyChecklistItem, checked: boolean) {
-    const checkboxSize = 11
-    const textX = PAGE_MARGIN + checkboxSize + 12
-    const maxTextWidth = CONTENT_WIDTH - checkboxSize - 12
-    const itemLines = wrapText(item.text, regularFont, 10.5, maxTextWidth)
-    const filterText =
-      item.filters?.length
-        ? `Relevant for: ${item.filters.map((filter) => FILTER_LABELS[filter]).join(', ')}`
-        : ''
-    const filterLines = filterText ? wrapText(filterText, regularFont, 8.5, maxTextWidth) : []
-    const rowHeight = Math.max(checkboxSize, itemLines.length * 14 + filterLines.length * 11)
-
-    ensureSpace(rowHeight + 10)
-
-    page.drawRectangle({
-      x: PAGE_MARGIN,
-      y: cursorY - checkboxSize + 1,
-      width: checkboxSize,
-      height: checkboxSize,
-      borderColor: checked ? BRAND.green : BRAND.inkMuted,
-      borderWidth: 1,
-      color: checked ? rgb(0.91, 0.968, 0.91) : BRAND.white,
-    })
-
-    if (checked) {
-      page.drawLine({
-        start: { x: PAGE_MARGIN + 2.5, y: cursorY - 5.5 },
-        end: { x: PAGE_MARGIN + 5, y: cursorY - 8.5 },
-        thickness: 1.4,
-        color: BRAND.green,
-      })
-      page.drawLine({
-        start: { x: PAGE_MARGIN + 5, y: cursorY - 8.5 },
-        end: { x: PAGE_MARGIN + 8.8, y: cursorY - 2.5 },
-        thickness: 1.4,
-        color: BRAND.green,
-      })
-    }
-
-    const textStartY = cursorY
-    itemLines.forEach((line, index) => {
-      page.drawText(line, {
-        x: textX,
-        y: textStartY - index * 14,
-        size: 10.5,
-        font: regularFont,
-        color: BRAND.ink,
-      })
-    })
-
-    filterLines.forEach((line, index) => {
-      page.drawText(line, {
-        x: textX,
-        y: textStartY - itemLines.length * 14 - index * 11 - 1,
-        size: 8.5,
-        font: regularFont,
-        color: BRAND.inkMuted,
-      })
-    })
-
-    cursorY -= rowHeight + 10
   }
 
   drawLogo(page, PAGE_MARGIN, cursorY, 1.15, boldFont)
@@ -271,7 +147,7 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
     font: boldFont,
     color: BRAND.ink,
   })
-  page.drawText('A complete move-back checklist for NRIs returning to India.', {
+  page.drawText('A cleaner, phase-by-phase checklist for NRIs returning to India.', {
     x: PAGE_MARGIN,
     y: cursorY - 72,
     size: 11.5,
@@ -279,9 +155,19 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
     color: BRAND.inkMuted,
   })
 
-  const checkedTotal = checkedItemIds.length
-  const totalItems = JOURNEY_CHECKLIST.reduce(
-    (sum, section) => sum + section.mustDo.length + section.ifRelevant.length + section.niceToDo.length,
+  const totalItems = timelineSections.reduce((sum, section) => sum + section.total, 0)
+  const totalCompleted = timelineSections.reduce(
+    (sum, section) =>
+      sum +
+      section.buckets.reduce(
+        (bucketSum, bucket) =>
+          bucketSum +
+          bucket.items.reduce((itemSum, _item, itemIndex) => {
+            const itemId = getJourneyChecklistItemId(section.id, bucket.id, itemIndex)
+            return itemSum + (checkedItemSet.has(itemId) ? 1 : 0)
+          }, 0),
+        0
+      ),
     0
   )
 
@@ -289,88 +175,174 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
     x: PAGE_MARGIN,
     y: cursorY - 126,
     width: CONTENT_WIDTH,
-    height: 42,
+    height: 48,
     color: BRAND.panelWarm,
     borderColor: BRAND.border,
     borderWidth: 1,
   })
-  page.drawText(`${checkedTotal} of ${totalItems} items marked complete`, {
+  page.drawText(`${totalCompleted} of ${totalItems} important items marked complete`, {
     x: PAGE_MARGIN + 14,
-    y: cursorY - 110,
-    size: 11,
+    y: cursorY - 108,
+    size: 12,
     font: boldFont,
     color: BRAND.ink,
   })
-  page.drawText(
-    'This PDF includes all checklist sections and preserves any checked items from the page download.',
-    {
-      x: PAGE_MARGIN + 14,
-      y: cursorY - 124,
-      size: 9.5,
-      font: regularFont,
-      color: BRAND.inkMuted,
-    }
-  )
+  page.drawText('This PDF mirrors the shorter website checklist and keeps the design crisp for printing or sharing.', {
+    x: PAGE_MARGIN + 14,
+    y: cursorY - 123,
+    size: 9.5,
+    font: regularFont,
+    color: BRAND.inkMuted,
+  })
 
-  cursorY -= 152
+  cursorY -= 150
 
-  drawWrappedParagraph(
-    'Use this checklist as a practical planning document from early decision stage through the first year back in India.',
-    {
-      x: PAGE_MARGIN,
-      maxWidth: CONTENT_WIDTH,
-      size: 10.5,
-      lineHeight: 15,
-    }
-  )
+  drawWrapped('Timeline overview', 11, 15, PAGE_MARGIN, CONTENT_WIDTH, boldFont, BRAND.ink)
+  cursorY -= 4
 
-  cursorY -= 8
-
-  for (const section of JOURNEY_CHECKLIST) {
-    ensureSpace(44)
-
+  timelineSections.forEach((section) => {
+    ensureSpace(30)
     page.drawRectangle({
       x: PAGE_MARGIN,
-      y: cursorY - 20,
+      y: cursorY - 18,
       width: CONTENT_WIDTH,
-      height: 24,
+      height: 22,
       color: BRAND.panel,
       borderColor: BRAND.border,
       borderWidth: 1,
     })
-    page.drawText(section.title, {
-      x: PAGE_MARGIN + 12,
-      y: cursorY - 12,
-      size: 13,
+    page.drawText(`Phase ${section.index + 1} | ${section.title}`, {
+      x: PAGE_MARGIN + 10,
+      y: cursorY - 10,
+      size: 10.5,
       font: boldFont,
       color: BRAND.ink,
     })
-    cursorY -= 34
+    page.drawText(`${section.total} items`, {
+      x: PAGE_WIDTH - PAGE_MARGIN - 54,
+      y: cursorY - 10,
+      size: 9.5,
+      font: regularFont,
+      color: BRAND.inkMuted,
+    })
+    cursorY -= 28
+  })
 
-    for (const bucket of BUCKETS) {
-      const items = getBucketItems(section.id, bucket.id)
-      if (!items.length) continue
+  timelineSections.forEach((section) => {
+    addPage(true, section.title)
 
-      ensureSpace(28)
-      page.drawText(bucket.label.toUpperCase(), {
+    page.drawText(`Phase ${section.index + 1}`, {
+      x: PAGE_MARGIN,
+      y: cursorY,
+      size: 10,
+      font: boldFont,
+      color: BRAND.saffron,
+    })
+    cursorY -= 18
+
+    page.drawText(section.title, {
+      x: PAGE_MARGIN,
+      y: cursorY,
+      size: 20,
+      font: boldFont,
+      color: BRAND.ink,
+    })
+    cursorY -= 24
+
+    drawWrapped('Only the most important items are shown below, matching the cleaner website view.', 10, 15)
+    cursorY -= 6
+
+    section.buckets.forEach((bucket) => {
+      ensureSpace(52, section.title)
+
+      page.drawRectangle({
         x: PAGE_MARGIN,
-        y: cursorY,
-        size: 9,
-        font: boldFont,
-        color: bucket.color,
+        y: cursorY - 24,
+        width: CONTENT_WIDTH,
+        height: 28,
+        color: bucket.id === 'mustDo' ? BRAND.panelWarm : BRAND.panel,
+        borderColor: BRAND.border,
+        borderWidth: 1,
       })
-      cursorY -= 16
+      page.drawText(bucket.label, {
+        x: PAGE_MARGIN + 12,
+        y: cursorY - 14,
+        size: 11,
+        font: boldFont,
+        color: BRAND.ink,
+      })
+      page.drawText(bucket.eyebrow, {
+        x: PAGE_MARGIN + 86,
+        y: cursorY - 14,
+        size: 9,
+        font: regularFont,
+        color: BRAND.inkMuted,
+      })
+      cursorY -= 36
 
-      items.forEach((item, itemIndex) => {
-        const itemId = getChecklistItemId(section.id, bucket.id, itemIndex)
-        drawChecklistRow(item, checkedItemSet.has(itemId))
+      bucket.items.forEach((item, itemIndex) => {
+        const itemId = getJourneyChecklistItemId(section.id, bucket.id, itemIndex)
+        const checked = checkedItemSet.has(itemId)
+        const filterText = item.filters?.length
+          ? `Relevant for: ${item.filters.map((filter) => FILTER_LABELS[filter]).join(', ')}`
+          : ''
+        const itemLines = wrapText(item.text, regularFont, 10.5, CONTENT_WIDTH - 30)
+        const filterLines = filterText ? wrapText(filterText, regularFont, 8.5, CONTENT_WIDTH - 30) : []
+        const blockHeight = Math.max(16, itemLines.length * 14 + filterLines.length * 11)
+
+        ensureSpace(blockHeight + 12, section.title)
+
+        page.drawRectangle({
+          x: PAGE_MARGIN,
+          y: cursorY - 12,
+          width: 12,
+          height: 12,
+          borderColor: checked ? BRAND.green : BRAND.inkMuted,
+          borderWidth: 1,
+          color: checked ? rgb(0.91, 0.968, 0.91) : BRAND.white,
+        })
+
+        if (checked) {
+          page.drawLine({
+            start: { x: PAGE_MARGIN + 2.3, y: cursorY - 6.3 },
+            end: { x: PAGE_MARGIN + 5.1, y: cursorY - 9.1 },
+            thickness: 1.2,
+            color: BRAND.green,
+          })
+          page.drawLine({
+            start: { x: PAGE_MARGIN + 5.1, y: cursorY - 9.1 },
+            end: { x: PAGE_MARGIN + 9.3, y: cursorY - 3.3 },
+            thickness: 1.2,
+            color: BRAND.green,
+          })
+        }
+
+        itemLines.forEach((line, lineIndex) => {
+          page.drawText(line, {
+            x: PAGE_MARGIN + 20,
+            y: cursorY - lineIndex * 14,
+            size: 10.5,
+            font: regularFont,
+            color: BRAND.ink,
+          })
+        })
+
+        filterLines.forEach((line, lineIndex) => {
+          page.drawText(line, {
+            x: PAGE_MARGIN + 20,
+            y: cursorY - itemLines.length * 14 - lineIndex * 11 - 1,
+            size: 8.5,
+            font: regularFont,
+            color: BRAND.inkMuted,
+          })
+        })
+
+        cursorY -= blockHeight + 12
       })
 
       cursorY -= 4
-    }
-
-    cursorY -= 10
-  }
+    })
+  })
 
   const pages = pdf.getPages()
   pages.forEach((pdfPage, index) => {

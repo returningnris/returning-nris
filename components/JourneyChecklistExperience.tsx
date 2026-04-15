@@ -2,14 +2,13 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { JOURNEY_FILTERS } from '../lib/moveBackContent'
 import {
-  JOURNEY_CHECKLIST,
-  JOURNEY_FILTERS,
-} from '../lib/moveBackContent'
+  getImportantTimelineSections,
+  getJourneyChecklistItemId,
+} from '../lib/journeyChecklistPresentation'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
-
-type JourneyBucketId = 'mustDo' | 'ifRelevant' | 'niceToDo'
 
 type JourneyState = {
   checkedItemIds: string[]
@@ -21,38 +20,44 @@ const pageStyles = `
     margin: 0 auto;
     padding: 0 1.25rem 4rem;
   }
-  .journey-checklist-layout,
+  .journey-layout,
   .journey-link-grid,
-  .journey-section-list {
+  .journey-bucket-grid,
+  .journey-stat-grid {
     display: grid;
     gap: 1rem;
   }
-  .journey-checklist-layout {
-    grid-template-columns: 260px minmax(0, 1fr);
+  .journey-layout {
+    grid-template-columns: 300px minmax(0, 1fr);
     align-items: start;
   }
   .journey-link-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .journey-section-list {
-    grid-template-columns: 1fr;
+  .journey-bucket-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .journey-bucket-tabs {
-    display: grid;
-    gap: 0.85rem;
+  .journey-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .journey-timeline-rail {
     position: sticky;
     top: 1.25rem;
+    display: grid;
+    gap: 0.9rem;
   }
-  @media (max-width: 1100px) {
-    .journey-link-grid {
+  @media (max-width: 1120px) {
+    .journey-bucket-grid,
+    .journey-link-grid,
+    .journey-stat-grid {
       grid-template-columns: 1fr;
     }
   }
   @media (max-width: 960px) {
-    .journey-checklist-layout {
+    .journey-layout {
       grid-template-columns: 1fr;
     }
-    .journey-bucket-tabs {
+    .journey-timeline-rail {
       position: static;
     }
   }
@@ -64,7 +69,8 @@ const pageStyles = `
       flex-direction: column;
       align-items: stretch !important;
     }
-    .journey-cta-row a {
+    .journey-cta-row a,
+    .journey-cta-row button {
       width: 100%;
       justify-content: center;
     }
@@ -75,45 +81,6 @@ const FILTER_LABELS = Object.fromEntries(JOURNEY_FILTERS.map((filter) => [filter
   (typeof JOURNEY_FILTERS)[number]['id'],
   string
 >
-
-const BUCKETS: Array<{
-  id: JourneyBucketId
-  label: string
-  eyebrow: string
-  description: string
-}> = [
-  {
-    id: 'mustDo',
-    label: 'Must do',
-    eyebrow: 'Core actions',
-    description: 'The essentials that usually deserve attention regardless of your exact move-back profile.',
-  },
-  {
-    id: 'ifRelevant',
-    label: 'If relevant',
-    eyebrow: 'Situation-specific',
-    description: 'Useful only when they fit your family, housing, investment, or relocation setup.',
-  },
-  {
-    id: 'niceToDo',
-    label: 'Nice to do',
-    eyebrow: 'Helpful extras',
-    description: 'Lower-pressure steps that make the move smoother once the fundamentals are handled.',
-  },
-]
-
-function getBucketItems(sectionId: string, bucketId: JourneyBucketId) {
-  const section = JOURNEY_CHECKLIST.find((entry) => entry.id === sectionId)
-  if (!section) return []
-
-  if (bucketId === 'mustDo') return section.mustDo
-  if (bucketId === 'ifRelevant') return section.ifRelevant
-  return section.niceToDo
-}
-
-function getChecklistItemId(sectionId: string, bucketId: JourneyBucketId, itemIndex: number) {
-  return `${sectionId}:${bucketId}:${itemIndex}`
-}
 
 function readJourneyState(value: unknown): JourneyState {
   if (!value || typeof value !== 'object') {
@@ -153,27 +120,50 @@ function formatSaveLabel(saveStatus: 'idle' | 'saving' | 'saved' | 'error', isAu
 
 export default function JourneyChecklistExperience() {
   const { user, isAuthenticated, loading } = useAuth()
-  const [activeBucket, setActiveBucket] = useState<JourneyBucketId>('mustDo')
+  const timelineSections = useMemo(() => getImportantTimelineSections(), [])
+  const [activePhaseId, setActivePhaseId] = useState<string>(timelineSections[0]?.id ?? '')
   const [checkedItemIds, setCheckedItemIds] = useState<string[]>([])
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [pdfStatus, setPdfStatus] = useState<'idle' | 'downloading' | 'error'>('idle')
   const [progressLoaded, setProgressLoaded] = useState(false)
   const lastSavedSignatureRef = useRef('[]')
 
-  const activeBucketMeta = BUCKETS.find((bucket) => bucket.id === activeBucket) || BUCKETS[0]
+  const activePhase = timelineSections.find((phase) => phase.id === activePhaseId) || timelineSections[0]
 
-  const activeSections = useMemo(
+  const phasesWithProgress = useMemo(
     () =>
-      JOURNEY_CHECKLIST.map((section) => ({
-        ...section,
-        items: getBucketItems(section.id, activeBucket),
-      })).filter((section) => section.items.length > 0),
-    [activeBucket]
+      timelineSections.map((phase) => {
+        const completed = phase.buckets.reduce(
+          (sum, bucket) =>
+            sum +
+            bucket.items.reduce((bucketSum, _item, itemIndex) => {
+              const itemId = getJourneyChecklistItemId(phase.id, bucket.id, itemIndex)
+              return bucketSum + (checkedItemIds.includes(itemId) ? 1 : 0)
+            }, 0),
+          0
+        )
+
+        return {
+          ...phase,
+          completed,
+        }
+      }),
+    [checkedItemIds, timelineSections]
   )
 
+  const activePhaseWithProgress =
+    phasesWithProgress.find((phase) => phase.id === activePhase?.id) || phasesWithProgress[0]
+
+  const totalImportantItems = phasesWithProgress.reduce((sum, phase) => sum + phase.total, 0)
+  const totalCompletedItems = phasesWithProgress.reduce((sum, phase) => sum + phase.completed, 0)
   const checklistDisabled = loading || (isAuthenticated && !progressLoaded)
-  const completedCount = checkedItemIds.filter((itemId) => itemId.includes(`:${activeBucket}:`)).length
-  const totalCount = activeSections.reduce((sum, section) => sum + section.items.length, 0)
+
+  useEffect(() => {
+    if (!activePhase) return
+    if (!timelineSections.some((phase) => phase.id === activePhaseId)) {
+      setActivePhaseId(timelineSections[0]?.id ?? '')
+    }
+  }, [activePhase, activePhaseId, timelineSections])
 
   useEffect(() => {
     let active = true
@@ -360,7 +350,7 @@ export default function JourneyChecklistExperience() {
                 marginBottom: '1rem',
               }}
             >
-              Checklist first
+              Timeline checklist
             </div>
 
             <h1
@@ -384,8 +374,8 @@ export default function JourneyChecklistExperience() {
                 marginBottom: '1.5rem',
               }}
             >
-              A practical move-back checklist from decision stage to year one in India. Check items off as you go and,
-              if you are signed in, we will save your progress automatically.
+              A timeline-first checklist with only the most important items for each phase, so the page stays readable
+              without endless scrolling on desktop or mobile.
             </p>
 
             <div className="journey-cta-row" style={{ display: 'flex', gap: '0.9rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -410,7 +400,7 @@ export default function JourneyChecklistExperience() {
 
       <section style={{ padding: '0 0 3rem' }}>
         <div className="journey-shell">
-          <div className="journey-checklist-layout">
+          <div className="journey-layout">
             <aside
               style={{
                 background: '#ffffff',
@@ -420,26 +410,25 @@ export default function JourneyChecklistExperience() {
                 boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
               }}
             >
-              <div className="journey-bucket-tabs">
+              <div className="journey-timeline-rail">
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                    Checklist buckets
+                    Timeline cards
                   </div>
                   <div style={{ fontSize: 14, color: '#665848', lineHeight: 1.7 }}>
-                    Move through the checklist one bucket at a time.
+                    Pick a phase on the left. Each card opens a shorter, cleaner checklist.
                   </div>
                 </div>
 
-                {BUCKETS.map((bucket) => {
-                  const isActive = bucket.id === activeBucket
-                  const bucketCount = JOURNEY_CHECKLIST.reduce((sum, section) => sum + getBucketItems(section.id, bucket.id).length, 0)
-                  const bucketCompleted = checkedItemIds.filter((itemId) => itemId.includes(`:${bucket.id}:`)).length
+                {phasesWithProgress.map((phase) => {
+                  const isActive = phase.id === activePhaseWithProgress?.id
+                  const progressWidth = phase.total ? `${(phase.completed / phase.total) * 100}%` : '0%'
 
                   return (
                     <button
-                      key={bucket.id}
+                      key={phase.id}
                       type="button"
-                      onClick={() => setActiveBucket(bucket.id)}
+                      onClick={() => setActivePhaseId(phase.id)}
                       aria-pressed={isActive}
                       style={{
                         width: '100%',
@@ -454,11 +443,29 @@ export default function JourneyChecklistExperience() {
                       }}
                     >
                       <div style={{ fontSize: 11, fontWeight: 700, color: isActive ? '#8d5c22' : '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-                        {bucket.eyebrow}
+                        Phase {phase.index + 1}
                       </div>
-                      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>{bucket.label}</div>
-                      <div style={{ fontSize: 13, color: '#665848', lineHeight: 1.65 }}>
-                        {bucketCompleted}/{bucketCount} checked
+                      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>{phase.title}</div>
+                      <div style={{ fontSize: 13, color: '#665848', lineHeight: 1.65, marginBottom: 10 }}>
+                        {phase.completed}/{phase.total} checked
+                      </div>
+                      <div
+                        style={{
+                          width: '100%',
+                          height: 6,
+                          borderRadius: 999,
+                          background: 'rgba(29,22,15,0.08)',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: progressWidth,
+                            height: '100%',
+                            borderRadius: 999,
+                            background: isActive ? '#DA7716' : '#138808',
+                          }}
+                        />
                       </div>
                     </button>
                   )
@@ -476,29 +483,58 @@ export default function JourneyChecklistExperience() {
                   boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                      {activeBucketMeta.eyebrow}
+                <div className="journey-stat-grid">
+                  <div
+                    style={{
+                      padding: '1rem',
+                      borderRadius: 18,
+                      background: '#fff7eb',
+                      border: '1px solid rgba(240,138,36,0.18)',
+                    }}
+                  >
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      Current phase
                     </div>
-                    <h2 style={{ fontSize: 28, color: '#1d160f', marginBottom: 10 }}>{activeBucketMeta.label}</h2>
-                    <p style={{ fontSize: 14, color: '#665848', lineHeight: 1.75, maxWidth: 700 }}>{activeBucketMeta.description}</p>
+                    <div style={{ fontSize: 26, fontWeight: 800, color: '#1d160f', marginBottom: 4 }}>
+                      {activePhaseWithProgress?.completed ?? 0}/{activePhaseWithProgress?.total ?? 0}
+                    </div>
+                    <div style={{ fontSize: 13, color: '#665848', lineHeight: 1.65 }}>
+                      Important items checked in {activePhaseWithProgress?.title ?? 'this phase'}.
+                    </div>
                   </div>
 
                   <div
                     style={{
-                      minWidth: 220,
-                      padding: '0.95rem 1rem',
+                      padding: '1rem',
                       borderRadius: 18,
                       background: '#f8f5f0',
                       border: '1px solid rgba(29,22,15,0.08)',
                     }}
                   >
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                      Progress
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      Overall progress
                     </div>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: '#1d160f', marginBottom: 4 }}>
-                      {completedCount}/{totalCount}
+                    <div style={{ fontSize: 26, fontWeight: 800, color: '#1d160f', marginBottom: 4 }}>
+                      {totalCompletedItems}/{totalImportantItems}
+                    </div>
+                    <div style={{ fontSize: 13, color: '#665848', lineHeight: 1.65 }}>
+                      Across the shorter checklist shown on this page.
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      padding: '1rem',
+                      borderRadius: 18,
+                      background: '#f6faf6',
+                      border: '1px solid rgba(19,136,8,0.12)',
+                    }}
+                  >
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      Save status
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#1d160f', marginBottom: 6 }}>
+                      {saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving' : 'In sync'}
                     </div>
                     <div style={{ fontSize: 13, color: saveStatus === 'error' ? '#a24a2d' : '#665848', lineHeight: 1.65 }}>
                       {formatSaveLabel(saveStatus, isAuthenticated, loading || !progressLoaded)}
@@ -514,105 +550,148 @@ export default function JourneyChecklistExperience() {
                 </div>
               </div>
 
-              <div className="journey-section-list">
-                {activeSections.map((section) => (
-                  <article
-                    key={section.id}
+              {activePhaseWithProgress ? (
+                <article
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid rgba(29,22,15,0.10)',
+                    borderRadius: 24,
+                    boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
                     style={{
-                      background: '#ffffff',
-                      border: '1px solid rgba(29,22,15,0.10)',
-                      borderRadius: 24,
-                      boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
-                      overflow: 'hidden',
+                      padding: '1.15rem 1.25rem',
+                      background: 'linear-gradient(135deg, #20160f 0%, #302117 46%, #173e2c 100%)',
+                      color: '#fff',
                     }}
                   >
-                    <div
-                      style={{
-                        padding: '1.1rem 1.2rem',
-                        background: 'linear-gradient(135deg, #20160f 0%, #302117 46%, #173e2c 100%)',
-                        color: '#fff',
-                      }}
-                    >
-                      <div style={{ fontSize: 18, fontWeight: 800 }}>{section.title}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.72)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      Phase {activePhaseWithProgress.index + 1}
                     </div>
-
-                    <div style={{ padding: '1.2rem', display: 'grid', gap: 12 }}>
-                      {section.items.map((item, itemIndex) => {
-                        const itemId = getChecklistItemId(section.id, activeBucket, itemIndex)
-                        const checked = checkedItemIds.includes(itemId)
+                    <div style={{ fontSize: 'clamp(1.5rem, 3vw, 2.1rem)', fontWeight: 800, marginBottom: 8 }}>
+                      {activePhaseWithProgress.title}
+                    </div>
+                    <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.76)', lineHeight: 1.75, maxWidth: 720 }}>
+                      The most important checklist items for this phase, grouped into three buckets.
+                    </div>
+                  </div>
+                  <div style={{ padding: '1.2rem', display: 'grid', gap: 12 }}>
+                    <div className="journey-bucket-grid">
+                      {activePhaseWithProgress.buckets.map((bucket) => {
+                        const bucketCompleted = bucket.items.reduce((sum, _item, itemIndex) => {
+                          const itemId = getJourneyChecklistItemId(activePhaseWithProgress.id, bucket.id, itemIndex)
+                          return sum + (checkedItemIds.includes(itemId) ? 1 : 0)
+                        }, 0)
 
                         return (
-                          <label
-                            key={itemId}
+                          <section
+                            key={bucket.id}
                             style={{
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: 14,
-                              padding: '0.95rem 1rem',
-                              borderRadius: 18,
-                              background: checked ? '#fff7eb' : '#fffdf9',
-                              border: `1px solid ${checked ? 'rgba(240,138,36,0.24)' : 'rgba(29,22,15,0.08)'}`,
-                              cursor: checklistDisabled ? 'not-allowed' : 'pointer',
-                              opacity: checklistDisabled ? 0.72 : 1,
+                              display: 'grid',
+                              gap: 12,
+                              alignContent: 'start',
+                              background: '#fffdf9',
+                              border: '1px solid rgba(29,22,15,0.08)',
+                              borderRadius: 20,
+                              padding: '1rem',
                             }}
                           >
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              disabled={checklistDisabled}
-                              onChange={() => toggleChecklistItem(itemId)}
-                              style={{
-                                width: 18,
-                                height: 18,
-                                marginTop: 3,
-                                accentColor: '#DA7716',
-                                flexShrink: 0,
-                              }}
-                            />
-
-                            <div style={{ minWidth: 0 }}>
-                              <div
-                                style={{
-                                  fontSize: 14,
-                                  color: checked ? '#514336' : '#1d160f',
-                                  lineHeight: 1.75,
-                                  textDecoration: checked ? 'line-through' : 'none',
-                                  marginBottom: item.filters?.length ? 8 : 0,
-                                }}
-                              >
-                                {item.text}
+                            <div>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                                {bucket.eyebrow}
                               </div>
-
-                              {item.filters?.length ? (
-                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                  {item.filters.map((filter) => (
-                                    <span
-                                      key={filter}
-                                      style={{
-                                        fontSize: 11,
-                                        fontWeight: 700,
-                                        color: '#8d5c22',
-                                        background: '#fff1de',
-                                        border: '1px solid rgba(255,153,51,0.2)',
-                                        borderRadius: 999,
-                                        padding: '0.3rem 0.55rem',
-                                        letterSpacing: '0.04em',
-                                        textTransform: 'uppercase',
-                                      }}
-                                    >
-                                      {FILTER_LABELS[filter]}
-                                    </span>
-                                  ))}
-                                </div>
-                              ) : null}
+                              <div style={{ fontSize: 21, fontWeight: 800, color: '#1d160f', marginBottom: 8 }}>{bucket.label}</div>
+                              <div style={{ fontSize: 13, color: '#665848', lineHeight: 1.65, marginBottom: 8 }}>
+                                {bucket.description}
+                              </div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: '#1d160f' }}>
+                                {bucketCompleted}/{bucket.items.length} checked
+                              </div>
                             </div>
-                          </label>
+
+                            <div style={{ display: 'grid', gap: 10 }}>
+                              {bucket.items.map((item, itemIndex) => {
+                                const itemId = getJourneyChecklistItemId(activePhaseWithProgress.id, bucket.id, itemIndex)
+                                const checked = checkedItemIds.includes(itemId)
+
+                                return (
+                                  <label
+                                    key={itemId}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'flex-start',
+                                      gap: 12,
+                                      padding: '0.95rem',
+                                      borderRadius: 16,
+                                      background: checked ? '#fff7eb' : '#ffffff',
+                                      border: `1px solid ${checked ? 'rgba(240,138,36,0.22)' : 'rgba(29,22,15,0.08)'}`,
+                                      cursor: checklistDisabled ? 'not-allowed' : 'pointer',
+                                      opacity: checklistDisabled ? 0.72 : 1,
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      disabled={checklistDisabled}
+                                      onChange={() => toggleChecklistItem(itemId)}
+                                      style={{
+                                        width: 18,
+                                        height: 18,
+                                        marginTop: 3,
+                                        accentColor: '#DA7716',
+                                        flexShrink: 0,
+                                      }}
+                                    />
+
+                                    <div style={{ minWidth: 0 }}>
+                                      <div
+                                        style={{
+                                          fontSize: 14,
+                                          color: checked ? '#514336' : '#1d160f',
+                                          lineHeight: 1.75,
+                                          textDecoration: checked ? 'line-through' : 'none',
+                                          marginBottom: item.filters?.length ? 8 : 0,
+                                        }}
+                                      >
+                                        {item.text}
+                                      </div>
+
+                                      {item.filters?.length ? (
+                                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                          {item.filters.map((filter) => (
+                                            <span
+                                              key={filter}
+                                              style={{
+                                                fontSize: 11,
+                                                fontWeight: 700,
+                                                color: '#8d5c22',
+                                                background: '#fff1de',
+                                                border: '1px solid rgba(255,153,51,0.2)',
+                                                borderRadius: 999,
+                                                padding: '0.3rem 0.55rem',
+                                                letterSpacing: '0.04em',
+                                                textTransform: 'uppercase',
+                                              }}
+                                            >
+                                              {FILTER_LABELS[filter]}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  </label>
+                                )
+                              })}
+                            </div>
+                          </section>
                         )
                       })}
                     </div>
-                  </article>
-                ))}
-              </div>
+                  </div>
+                </article>
+              ) : null}
             </div>
           </div>
         </div>
