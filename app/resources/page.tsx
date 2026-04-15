@@ -76,11 +76,25 @@ export default function ResourceGuideIndex() {
               color: '#6B5E50',
               lineHeight: 1.75,
               maxWidth: '620px',
-              margin: '0 auto 2rem',
+              margin: '0 auto 1rem',
             }}
           >
             Practical guides on RNOR, moving checklists, city choice, schools, housing, and financial planning for
             NRIs moving back to India.
+          </p>
+
+          <p
+            style={{
+              fontSize: '0.98rem',
+              color: '#6B5E50',
+              lineHeight: 1.75,
+              maxWidth: '680px',
+              margin: '0 auto 2rem',
+            }}
+          >
+            Browse practical guides for NRIs returning to India from the USA, UK, Canada, UAE, and other countries.
+            Learn about RNOR tax status, move planning, choosing the right city, school boards, housing decisions, and
+            first-year setup.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -97,10 +111,10 @@ export default function ResourceGuideIndex() {
                 boxShadow: '0 4px 16px rgba(255,153,51,0.35)',
               }}
             >
-              Start Readiness Check
+              See readiness by persona
             </Link>
             <Link
-              href="/Tools"
+              href="/journey"
               style={{
                 background: '#fff',
                 color: '#1A1208',
@@ -112,7 +126,7 @@ export default function ResourceGuideIndex() {
                 border: '1px solid #E5E1DA',
               }}
             >
-              Explore Free Tools
+              View move-back checklist
             </Link>
             <span style={{ fontSize: '13px', color: '#B5A898' }}>
               {GUIDES.length} guide{GUIDES.length !== 1 ? 's' : ''} and counting
@@ -271,8 +285,8 @@ export default function ResourceGuideIndex() {
             Reading guides is a good place to start.
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.58)', fontSize: '1rem', lineHeight: 1.75, marginBottom: '1.75rem' }}>
-            Use the readiness check to turn these guides into a plan around timing, RNOR, city choice, schools, and
-            housing.
+            Start with readiness by persona, then use these guides to go deeper on RNOR, city choice, schools, housing,
+            and first-year planning.
           </p>
           <Link
             href="/planner"
@@ -288,7 +302,7 @@ export default function ResourceGuideIndex() {
               boxShadow: '0 4px 20px rgba(255,153,51,0.4)',
             }}
           >
-            Start Readiness Check
+            See readiness by persona
           </Link>
         </div>
       </section>
