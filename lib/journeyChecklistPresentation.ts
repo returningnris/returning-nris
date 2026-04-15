@@ -1,6 +1,6 @@
-import { JOURNEY_CHECKLIST, type JourneyChecklistSection } from './moveBackContent'
+import { JOURNEY_CHECKLIST, type JourneyChecklistItem, type JourneyChecklistSection } from './moveBackContent'
 
-export type JourneyBucketId = 'mustDo' | 'ifRelevant' | 'niceToDo'
+export type JourneyBucketId = 'mustDo' | 'ifRelevant'
 
 export const JOURNEY_BUCKETS: Array<{
   id: JourneyBucketId
@@ -20,19 +20,44 @@ export const JOURNEY_BUCKETS: Array<{
     eyebrow: 'Situation-specific',
     description: 'Only the extra items that clearly fit your setup.',
   },
-  {
-    id: 'niceToDo',
-    label: 'Nice to do',
-    eyebrow: 'Helpful extras',
-    description: 'Lightweight tasks that make the move smoother.',
-  },
 ]
 
 const WEBSITE_BUCKET_LIMITS: Record<JourneyBucketId, number> = {
-  mustDo: 3,
-  ifRelevant: 2,
-  niceToDo: 1,
+  mustDo: 2,
+  ifRelevant: 1,
 }
+
+const MERGED_TIMELINES: Array<{
+  id: string
+  title: string
+  sourceIds: string[]
+}> = [
+  {
+    id: '6-12-months',
+    title: '6-12 Months Before Move',
+    sourceIds: ['12-6-months', '6-3-months'],
+  },
+  {
+    id: '90-30-days',
+    title: '90-30 Days Before Move',
+    sourceIds: ['90-days', '30-days'],
+  },
+  {
+    id: 'landing-week',
+    title: 'Landing Week',
+    sourceIds: ['landing-week'],
+  },
+  {
+    id: 'first-90-days',
+    title: 'First 90 Days',
+    sourceIds: ['first-30-days', 'first-90-days'],
+  },
+  {
+    id: 'first-year',
+    title: 'First Year',
+    sourceIds: ['first-year'],
+  },
+]
 
 export function getJourneyChecklistItemId(sectionId: string, bucketId: JourneyBucketId, itemIndex: number) {
   return `${sectionId}:${bucketId}:${itemIndex}`
@@ -40,23 +65,45 @@ export function getJourneyChecklistItemId(sectionId: string, bucketId: JourneyBu
 
 export function getBucketItems(section: JourneyChecklistSection, bucketId: JourneyBucketId) {
   if (bucketId === 'mustDo') return section.mustDo
-  if (bucketId === 'ifRelevant') return section.ifRelevant
-  return section.niceToDo
+  return section.ifRelevant
 }
 
-export function getImportantBucketItems(section: JourneyChecklistSection, bucketId: JourneyBucketId) {
-  return getBucketItems(section, bucketId).slice(0, WEBSITE_BUCKET_LIMITS[bucketId])
+function mergeItems(sections: JourneyChecklistSection[], bucketId: JourneyBucketId) {
+  const seen = new Set<string>()
+  const items: JourneyChecklistItem[] = []
+
+  sections.forEach((section) => {
+    getBucketItems(section, bucketId).forEach((item) => {
+      const key = `${item.text}|${(item.filters || []).join(',')}`
+      if (seen.has(key)) return
+      seen.add(key)
+      items.push(item)
+    })
+  })
+
+  return items
+}
+
+export function getImportantBucketItems(items: JourneyChecklistItem[], bucketId: JourneyBucketId) {
+  return items.slice(0, WEBSITE_BUCKET_LIMITS[bucketId])
 }
 
 export function getImportantTimelineSections() {
-  return JOURNEY_CHECKLIST.map((section, index) => {
+  const sectionById = new Map(JOURNEY_CHECKLIST.map((section) => [section.id, section]))
+
+  return MERGED_TIMELINES.map((timeline, index) => {
+    const sourceSections = timeline.sourceIds
+      .map((sourceId) => sectionById.get(sourceId))
+      .filter((section): section is JourneyChecklistSection => Boolean(section))
+
     const buckets = JOURNEY_BUCKETS.map((bucket) => ({
       ...bucket,
-      items: getImportantBucketItems(section, bucket.id),
+      items: getImportantBucketItems(mergeItems(sourceSections, bucket.id), bucket.id),
     })).filter((bucket) => bucket.items.length > 0)
 
     return {
-      ...section,
+      id: timeline.id,
+      title: timeline.title,
       index,
       buckets,
       total: buckets.reduce((sum, bucket) => sum + bucket.items.length, 0),

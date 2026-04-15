@@ -35,7 +35,7 @@ const pageStyles = `
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .journey-bucket-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .journey-stat-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -323,15 +323,15 @@ export default function JourneyChecklistExperience() {
     >
       <style>{pageStyles}</style>
 
-      <section style={{ padding: '3rem 0 2rem' }}>
+      <section style={{ padding: '1rem 0 1rem' }}>
         <div className="journey-shell">
           <div
             style={{
               background: '#fffdf9',
               border: '1px solid rgba(29,22,15,0.10)',
-              borderRadius: 28,
-              boxShadow: '0 22px 48px rgba(29,22,15,0.06)',
-              padding: '2rem',
+              borderRadius: 20,
+              boxShadow: '0 12px 28px rgba(29,22,15,0.05)',
+              padding: '0.7rem 1rem',
             }}
           >
             <div
@@ -339,15 +339,15 @@ export default function JourneyChecklistExperience() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
-                padding: '0.45rem 0.85rem',
+                padding: '0.3rem 0.65rem',
                 borderRadius: 999,
                 background: '#fff1de',
                 color: '#8d5c22',
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: '0.05em',
                 textTransform: 'uppercase',
-                marginBottom: '1rem',
+                marginBottom: '0.55rem',
               }}
             >
               Timeline checklist
@@ -355,11 +355,11 @@ export default function JourneyChecklistExperience() {
 
             <h1
               style={{
-                fontSize: 'clamp(2.3rem, 5vw, 4.5rem)',
-                lineHeight: 0.98,
+                fontSize: 'clamp(1.4rem, 3vw, 2rem)',
+                lineHeight: 1.02,
                 color: '#1d160f',
-                marginBottom: '1rem',
-                maxWidth: 780,
+                marginBottom: '0.35rem',
+                maxWidth: 520,
               }}
             >
               Back2India Journey
@@ -367,27 +367,20 @@ export default function JourneyChecklistExperience() {
 
             <p
               style={{
-                fontSize: 17,
+                fontSize: 14,
                 color: '#665848',
-                lineHeight: 1.8,
-                maxWidth: 760,
-                marginBottom: '1.5rem',
+                lineHeight: 1.65,
+                maxWidth: 580,
+                marginBottom: '0.75rem',
               }}
             >
-              A timeline-first checklist with only the most important items for each phase, so the page stays readable
-              without endless scrolling on desktop or mobile.
+              A shorter timeline-first checklist with only the key items for each phase.
             </p>
 
-            <div className="journey-cta-row" style={{ display: 'flex', gap: '0.9rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Link href="/planner" className="btn-primary">
-                See Readiness by Persona
-              </Link>
+            <div className="journey-cta-row" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
               <button type="button" onClick={handleDownloadPdf} className="btn-ghost" disabled={pdfStatus === 'downloading'}>
                 {pdfStatus === 'downloading' ? 'Preparing PDF...' : 'Download PDF Checklist'}
               </button>
-              <Link href="/resources" className="btn-ghost">
-                Browse Practical Guides
-              </Link>
             </div>
             {pdfStatus === 'error' ? (
               <div style={{ marginTop: '0.9rem', fontSize: 13, color: '#a24a2d' }}>
@@ -574,7 +567,7 @@ export default function JourneyChecklistExperience() {
                       {activePhaseWithProgress.title}
                     </div>
                     <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.76)', lineHeight: 1.75, maxWidth: 720 }}>
-                      The most important checklist items for this phase, grouped into three buckets.
+                      The most important checklist items for this phase, grouped into two focused buckets.
                     </div>
                   </div>
                   <div style={{ padding: '1.2rem', display: 'grid', gap: 12 }}>

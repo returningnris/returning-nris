@@ -100,13 +100,13 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
   let page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT])
   let cursorY = PAGE_HEIGHT - PAGE_MARGIN
 
-  function addPage(withHeader = true, sectionTitle?: string) {
+  function addPage(withHeader = true) {
     page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT])
     cursorY = PAGE_HEIGHT - PAGE_MARGIN
 
     if (withHeader) {
       drawLogo(page, PAGE_MARGIN, cursorY + 2, 0.8, boldFont)
-      page.drawText(sectionTitle || 'Back2India Journey Checklist', {
+      page.drawText('Back2India Journey Checklist', {
         x: PAGE_MARGIN,
         y: cursorY - 28,
         size: 12,
@@ -123,9 +123,9 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
     }
   }
 
-  function ensureSpace(requiredHeight: number, sectionTitle?: string) {
+  function ensureSpace(requiredHeight: number) {
     if (cursorY - requiredHeight < PAGE_MARGIN) {
-      addPage(true, sectionTitle)
+      addPage(true)
     }
   }
 
@@ -197,39 +197,8 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
 
   cursorY -= 150
 
-  drawWrapped('Timeline overview', 11, 15, PAGE_MARGIN, CONTENT_WIDTH, boldFont, BRAND.ink)
-  cursorY -= 4
-
   timelineSections.forEach((section) => {
-    ensureSpace(30)
-    page.drawRectangle({
-      x: PAGE_MARGIN,
-      y: cursorY - 18,
-      width: CONTENT_WIDTH,
-      height: 22,
-      color: BRAND.panel,
-      borderColor: BRAND.border,
-      borderWidth: 1,
-    })
-    page.drawText(`Phase ${section.index + 1} | ${section.title}`, {
-      x: PAGE_MARGIN + 10,
-      y: cursorY - 10,
-      size: 10.5,
-      font: boldFont,
-      color: BRAND.ink,
-    })
-    page.drawText(`${section.total} items`, {
-      x: PAGE_WIDTH - PAGE_MARGIN - 54,
-      y: cursorY - 10,
-      size: 9.5,
-      font: regularFont,
-      color: BRAND.inkMuted,
-    })
-    cursorY -= 28
-  })
-
-  timelineSections.forEach((section) => {
-    addPage(true, section.title)
+    addPage(true)
 
     page.drawText(`Phase ${section.index + 1}`, {
       x: PAGE_MARGIN,
@@ -253,7 +222,7 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
     cursorY -= 6
 
     section.buckets.forEach((bucket) => {
-      ensureSpace(52, section.title)
+      ensureSpace(52)
 
       page.drawRectangle({
         x: PAGE_MARGIN,
@@ -290,7 +259,7 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
         const filterLines = filterText ? wrapText(filterText, regularFont, 8.5, CONTENT_WIDTH - 30) : []
         const blockHeight = Math.max(16, itemLines.length * 14 + filterLines.length * 11)
 
-        ensureSpace(blockHeight + 12, section.title)
+        ensureSpace(blockHeight + 12)
 
         page.drawRectangle({
           x: PAGE_MARGIN,
@@ -352,7 +321,7 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
       thickness: 1,
       color: BRAND.border,
     })
-    pdfPage.drawText(`ReturningNRIs | Back2India Journey | Page ${index + 1} of ${pages.length}`, {
+    pdfPage.drawText(`ReturningNRIs.com | Page ${index + 1} of ${pages.length}`, {
       x: PAGE_MARGIN,
       y: PAGE_MARGIN - 22,
       size: 8.5,
