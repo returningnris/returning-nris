@@ -4,14 +4,14 @@ import JourneyChecklistExperience from '../../components/JourneyChecklistExperie
 export const metadata: Metadata = {
   title: 'Back2India Journey | Move-Back Checklist for NRIs',
   description:
-    'A practical move-back checklist for NRIs returning to India, from decision stage to the first year back. Filter by kids, USA move, renting first, investments, and more.',
+    'A practical move-back checklist for NRIs returning to India, from decision stage to the first year back, with trackable progress for signed-in users.',
   alternates: {
     canonical: 'https://www.returningnris.com/journey',
   },
   openGraph: {
     title: 'Back2India Journey | Move-Back Checklist for NRIs',
     description:
-      'A practical move-back checklist for NRIs returning to India, from decision stage to the first year back. Filter by kids, USA move, renting first, investments, and more.',
+      'A practical move-back checklist for NRIs returning to India, from decision stage to the first year back, with trackable progress for signed-in users.',
     url: 'https://www.returningnris.com/journey',
   },
 }
