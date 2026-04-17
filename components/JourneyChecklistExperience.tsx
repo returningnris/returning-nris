@@ -358,7 +358,7 @@ export default function JourneyChecklistExperience() {
                 fontSize: 'clamp(1.4rem, 3vw, 2rem)',
                 lineHeight: 1.02,
                 color: '#1d160f',
-                marginBottom: '0.35rem',
+                margin: '0 0 0.35rem',
                 maxWidth: 520,
               }}
             >
@@ -378,7 +378,29 @@ export default function JourneyChecklistExperience() {
             </p>
 
             <div className="journey-cta-row" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <button type="button" onClick={handleDownloadPdf} className="btn-ghost" disabled={pdfStatus === 'downloading'}>
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={pdfStatus === 'downloading'}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  minHeight: 46,
+                  padding: '0.8rem 1.15rem',
+                  borderRadius: 999,
+                  border: '1px solid rgba(218,119,22,0.18)',
+                  background: pdfStatus === 'downloading' ? '#f3c797' : 'linear-gradient(135deg, #DA7716 0%, #F08A24 100%)',
+                  color: '#fffdf9',
+                  fontSize: 14,
+                  fontWeight: 800,
+                  letterSpacing: '0.01em',
+                  boxShadow: pdfStatus === 'downloading' ? 'none' : '0 14px 28px rgba(218,119,22,0.22)',
+                  cursor: pdfStatus === 'downloading' ? 'wait' : 'pointer',
+                  transition: 'transform 160ms ease, box-shadow 160ms ease',
+                }}
+              >
                 {pdfStatus === 'downloading' ? 'Preparing PDF...' : 'Download PDF Checklist'}
               </button>
             </div>

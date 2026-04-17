@@ -97,17 +97,20 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
   const checkedItemSet = new Set(checkedItemIds)
   const timelineSections = getImportantTimelineSections()
 
-  let page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT])
-  let cursorY = PAGE_HEIGHT - PAGE_MARGIN
+  let page: PDFPage
+  let cursorY = 0
 
   function addPage(withHeader = true) {
     page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT])
     cursorY = PAGE_HEIGHT - PAGE_MARGIN
 
     if (withHeader) {
+      const headerTitle = 'Back2India Journey Checklist'
+      const headerTitleWidth = boldFont.widthOfTextAtSize(headerTitle, 12)
+
       drawLogo(page, PAGE_MARGIN, cursorY + 2, 0.8, boldFont)
-      page.drawText('Back2India Journey Checklist', {
-        x: PAGE_MARGIN,
+      page.drawText(headerTitle, {
+        x: (PAGE_WIDTH - headerTitleWidth) / 2,
         y: cursorY - 28,
         size: 12,
         font: boldFont,
@@ -139,66 +142,12 @@ export async function buildJourneyChecklistPdf(checkedItemIds: string[] = []) {
     }
   }
 
-  drawLogo(page, PAGE_MARGIN, cursorY, 1.15, boldFont)
-  page.drawText('Back2India Journey Checklist', {
-    x: PAGE_MARGIN,
-    y: cursorY - 50,
-    size: 24,
-    font: boldFont,
-    color: BRAND.ink,
-  })
-  page.drawText('A cleaner, phase-by-phase checklist for NRIs returning to India.', {
-    x: PAGE_MARGIN,
-    y: cursorY - 72,
-    size: 11.5,
-    font: regularFont,
-    color: BRAND.inkMuted,
-  })
+  addPage(true)
 
-  const totalItems = timelineSections.reduce((sum, section) => sum + section.total, 0)
-  const totalCompleted = timelineSections.reduce(
-    (sum, section) =>
-      sum +
-      section.buckets.reduce(
-        (bucketSum, bucket) =>
-          bucketSum +
-          bucket.items.reduce((itemSum, _item, itemIndex) => {
-            const itemId = getJourneyChecklistItemId(section.id, bucket.id, itemIndex)
-            return itemSum + (checkedItemSet.has(itemId) ? 1 : 0)
-          }, 0),
-        0
-      ),
-    0
-  )
-
-  page.drawRectangle({
-    x: PAGE_MARGIN,
-    y: cursorY - 126,
-    width: CONTENT_WIDTH,
-    height: 48,
-    color: BRAND.panelWarm,
-    borderColor: BRAND.border,
-    borderWidth: 1,
-  })
-  page.drawText(`${totalCompleted} of ${totalItems} important items marked complete`, {
-    x: PAGE_MARGIN + 14,
-    y: cursorY - 108,
-    size: 12,
-    font: boldFont,
-    color: BRAND.ink,
-  })
-  page.drawText('This PDF mirrors the shorter website checklist and keeps the design crisp for printing or sharing.', {
-    x: PAGE_MARGIN + 14,
-    y: cursorY - 123,
-    size: 9.5,
-    font: regularFont,
-    color: BRAND.inkMuted,
-  })
-
-  cursorY -= 150
-
-  timelineSections.forEach((section) => {
-    addPage(true)
+  timelineSections.forEach((section, sectionIndex) => {
+    if (sectionIndex > 0) {
+      addPage(true)
+    }
 
     page.drawText(`Phase ${section.index + 1}`, {
       x: PAGE_MARGIN,
