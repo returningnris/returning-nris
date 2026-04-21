@@ -36,44 +36,25 @@ export default async function YouTubeFeed({ config = youtubeFeedConfig }: YouTub
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-[1160px] items-stretch gap-6 lg:grid-cols-[minmax(0,1.18fr)_360px] lg:gap-8">
-          <div className="order-1">
-            <div className="overflow-hidden rounded-[32px] border border-[rgba(29,22,15,0.1)] bg-white p-3 shadow-[0_28px_60px_rgba(29,22,15,0.08)] sm:p-4">
-              <YouTubeEmbed
-                className="aspect-video min-h-[200px] overflow-hidden rounded-[24px] bg-[#f3eee6]"
-                src={embedSrc}
-                title={embedTitle}
-              />
-            </div>
+        <div className="mx-auto max-w-[920px]">
+          <div className="overflow-hidden rounded-[32px] border border-[rgba(29,22,15,0.1)] bg-white p-3 shadow-[0_28px_60px_rgba(29,22,15,0.08)] sm:p-4">
+            <YouTubeEmbed
+              className="aspect-video min-h-[200px] overflow-hidden rounded-[24px] bg-[#f3eee6]"
+              src={embedSrc}
+              title={embedTitle}
+            />
           </div>
 
-          <aside className="order-2 flex h-full flex-col rounded-[28px] border border-[rgba(29,22,15,0.08)] bg-white p-6 shadow-[0_20px_44px_rgba(29,22,15,0.06)] sm:p-7 lg:justify-between">
-            <div className="mb-4 inline-flex rounded-full bg-[#f8f5f0] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--ink-muted)]">
-              Featured video
-            </div>
-            <h3 className="mb-3 max-w-[14ch] text-[28px] leading-[1.12] text-[var(--ink)]">
-              {feed.featuredVideo?.title ?? 'Watch our latest featured guidance'}
-            </h3>
-            <p className="mb-6 max-w-[30ch] text-[15px] leading-7 text-[var(--ink-muted)]">
-              {feed.featuredVideo?.description ?? 'A calm starting point for understanding the move back to India with more clarity.'}
-            </p>
-
-            <div className="mt-auto flex flex-col gap-3">
-              <Link href="/videos" className="btn-primary justify-center">
-                Explore All Videos
-              </Link>
-              {feed.channelUrl ? (
-                <a
-                  className="btn-ghost justify-center"
-                  href={feed.channelUrl}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  Visit YouTube Channel
-                </a>
-              ) : null}
-            </div>
-          </aside>
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link href="/videos" className="btn-primary justify-center">
+              Explore All Videos
+            </Link>
+            {feed.channelUrl ? (
+              <a className="btn-ghost justify-center" href={feed.channelUrl} rel="noreferrer" target="_blank">
+                Visit YouTube Channel
+              </a>
+            ) : null}
+          </div>
         </div>
       </div>
     </section>
