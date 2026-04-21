@@ -23,13 +23,13 @@ export default function VideosPage() {
     <main className="bg-[#fffdf9]">
       <section className="border-b border-[rgba(29,22,15,0.08)] bg-[linear-gradient(180deg,#fffaf4_0%,#fffdf9_100%)] py-16 lg:py-20">
         <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
-          <div className="max-w-[760px]">
+          <div className="mx-auto max-w-[760px] text-center">
             <div className="section-label">Videos</div>
             <h1 className="section-title mb-4">
               Practical video guidance for returning NRIs
             </h1>
-            <p className="section-sub max-w-[680px]">
-              Start with the latest featured video, then explore practical guidance on RNOR, shipping, family planning, and the real decisions that shape a smoother move back to India.
+            <p className="section-sub mx-auto max-w-[620px]">
+              Clear, practical videos on RNOR, relocation logistics, and family planning for NRIs moving back to India.
             </p>
           </div>
         </div>

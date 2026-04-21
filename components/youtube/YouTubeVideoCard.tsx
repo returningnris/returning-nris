@@ -7,7 +7,7 @@ type YouTubeVideoCardProps = {
 
 export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-[rgba(29,22,15,0.1)] bg-white shadow-[0_18px_40px_rgba(29,22,15,0.05)] transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(29,22,15,0.08)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[26px] border border-[rgba(29,22,15,0.1)] bg-white shadow-[0_18px_40px_rgba(29,22,15,0.05)] transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(29,22,15,0.08)]">
       <a
         aria-label={`Watch ${video.title} on YouTube`}
         className="flex h-full flex-col"
@@ -29,12 +29,12 @@ export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col p-5">
-          <h3 className="mb-3 text-[22px] leading-8 text-[var(--ink)] transition-colors duration-200 group-hover:text-[#8d5c22]">
+        <div className="flex flex-1 flex-col p-6">
+          <h3 className="mb-3 text-[20px] leading-7 text-[var(--ink)] transition-colors duration-200 group-hover:text-[#8d5c22]">
             {video.title}
           </h3>
           {video.description ? (
-            <p className="mb-5 text-[15px] leading-7 text-[var(--ink-muted)]">
+            <p className="mb-5 text-[14px] leading-7 text-[var(--ink-muted)]">
               {video.description}
             </p>
           ) : null}

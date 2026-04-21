@@ -12,7 +12,7 @@ export const youtubeFeedConfig: YouTubeFeedConfig = {
   featuredVideo: {
     title: 'Our Second Move from America to India',
     description:
-      'A practical starting point for families thinking through what a second move back to India really feels like on the ground.',
+      'A practical starting point for families planning the move back.',
     // Replace with the featured YouTube URL or video ID.
     url: 'https://youtu.be/GarsO5OCNBY?si=ZnwvjrW3VOyMJHo8',
   },
@@ -20,21 +20,21 @@ export const youtubeFeedConfig: YouTubeFeedConfig = {
     {
       title: "Returning NRIs: Don't Miss RNOR Status",
       description:
-        'A short reminder on why RNOR timing matters and how missing it can create expensive avoidable mistakes.',
+        'Why RNOR timing matters for returning NRIs.',
       // Replace with your next YouTube URL or video ID.
       url: 'https://youtu.be/6nBtBzF8-eQ?si=Gs6UQ2GSCXYiS4WJ',
     },
     {
       title: 'Carrying Gold Jewellery from the USA to India',
       description:
-        'A simple walkthrough of the rules and practical considerations for carrying gold jewellery when moving back.',
+        'A quick guide to the key rules and limits.',
       // Replace with your next YouTube URL or video ID.
       url: 'https://youtu.be/uWFbdNnG4wY?si=gNDiPwAcDC5nOc7W',
     },
     {
       title: 'USA to India Luggage Shipping Guide',
       description:
-        'A practical look at luggage and shipping decisions for NRIs preparing for a smoother relocation.',
+        'A quick overview of luggage and shipping decisions.',
       // Replace with your next YouTube URL or video ID.
       url: 'https://youtu.be/ThlXCgeQ1Ws?si=YfJkbs3hjJCD1y1D',
     },
