@@ -151,7 +151,7 @@ export default function CityLifeGuide() {
     const filtered = activeCategory === 'all' ? result.places : result.places.filter(p => p.category === activeCategory)
 
     return (
-      <div style={{ background: 'var(--india-white)', minHeight: '100vh' }}>
+      <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
         <style>{`
           .citylife-report-shell {
             max-width: 960px;
@@ -256,7 +256,7 @@ export default function CityLifeGuide() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F5F0', backgroundImage: 'radial-gradient(ellipse 70% 55% at 50% 10%, rgba(255,153,51,0.1) 0%, transparent 65%), radial-gradient(ellipse 45% 45% at 15% 80%, rgba(19,136,8,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 85% 75%, rgba(0,0,128,0.05) 0%, transparent 60%)', fontFamily: 'DM Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', backgroundImage: 'radial-gradient(ellipse 70% 55% at 50% 10%, rgba(255,153,51,0.1) 0%, transparent 65%), radial-gradient(ellipse 45% 45% at 15% 80%, rgba(19,136,8,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 85% 75%, rgba(0,0,128,0.05) 0%, transparent 60%)', fontFamily: 'DM Sans, sans-serif' }}>
       <style>{`
         .citylife-shell { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
         .citylife-grid { display:grid; grid-template-columns:minmax(280px,360px) minmax(0,1fr); gap:1.25rem; align-items:start; }

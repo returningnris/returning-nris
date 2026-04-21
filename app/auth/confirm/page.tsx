@@ -9,7 +9,7 @@ const EMAIL_OTP_TYPES = ['email', 'signup', 'invite', 'magiclink', 'recovery', '
 type EmailOtpType = (typeof EMAIL_OTP_TYPES)[number]
 
 const T = {
-  bg: '#F8F5F0',
+  bg: '#FFFFFF',
   white: '#FFFFFF',
   ink: '#1A1208',
   muted: '#6B5E50',

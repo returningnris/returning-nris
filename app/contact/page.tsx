@@ -83,7 +83,7 @@ export default function Contact() {
   return (
     <>
       {/* HEADER */}
-      <section style={{ background: 'var(--india-white)', padding: '4rem 2rem 3rem', textAlign: 'center' }}>
+      <section style={{ background: 'var(--white)', padding: '4rem 2rem 3rem', textAlign: 'center' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div className="section-label">Join the Waitlist</div>
           <h1 className="section-title">Secure your founding spot</h1>
@@ -279,7 +279,7 @@ export default function Contact() {
       </section>
 
       {/* FEEDBACK STRIP */}
-      <section style={{ background: 'var(--india-white)', padding: '3rem 2rem' }}>
+      <section style={{ background: 'var(--white)', padding: '3rem 2rem' }}>
         <div style={{
           maxWidth: '1000px',
           margin: '0 auto',

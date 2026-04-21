@@ -158,9 +158,9 @@ export default function Home() {
         }
         .home-hero {
           background:
-            radial-gradient(circle at top left, rgba(240,138,36,0.16), transparent 34%),
-            radial-gradient(circle at 82% 18%, rgba(23,117,58,0.14), transparent 26%),
-            linear-gradient(180deg, #fffaf3 0%, #f5efe6 56%, #f2eadf 100%);
+            radial-gradient(circle at top left, rgba(240,138,36,0.12), transparent 34%),
+            radial-gradient(circle at 82% 18%, rgba(23,117,58,0.1), transparent 26%),
+            linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
           padding: 3rem 0 4rem;
         }
         .home-hero-grid,
@@ -222,7 +222,7 @@ export default function Home() {
           <div className="home-hero-grid">
             <div
               style={{
-                background: '#fffdf9',
+                background: '#ffffff',
                 border: '1px solid rgba(29,22,15,0.10)',
                 borderRadius: 28,
                 boxShadow: '0 22px 48px rgba(29,22,15,0.06)',

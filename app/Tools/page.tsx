@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useProtectedRoute } from '../../components/useProtectedRoute'
 
 const T = {
-  bg: '#F8F5F0',
+  bg: '#FFFFFF',
   white: '#FFFFFF',
   ink: '#1A1208',
   muted: '#6B5E50',

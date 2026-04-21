@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
 const T = {
-  bg: '#F6F3EE',
+  bg: '#FFFFFF',
   white: '#FFFFFF',
   ink: '#16110A',
   muted: '#6F6458',
@@ -24,7 +24,7 @@ const T = {
   red: '#C0392B',
   redLight: '#FCEBEB',
   heroGrad:
-    'radial-gradient(ellipse 75% 60% at 8% 12%, rgba(255,143,42,0.14) 0%, transparent 55%), radial-gradient(ellipse 65% 55% at 92% 8%, rgba(15,39,71,0.08) 0%, transparent 58%), linear-gradient(180deg, #F8F5F0 0%, #F6F3EE 100%)',
+    'radial-gradient(ellipse 75% 60% at 8% 12%, rgba(255,143,42,0.14) 0%, transparent 55%), radial-gradient(ellipse 65% 55% at 92% 8%, rgba(15,39,71,0.08) 0%, transparent 58%), linear-gradient(180deg, #FFFFFF 0%, #FFFFFF 100%)',
 }
 
 function normalizeSignInError(message: string) {

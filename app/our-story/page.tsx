@@ -5,7 +5,7 @@ export default function OurStory() {
   return (
     <>
       {/* HEADER */}
-      <section style={{ background: 'var(--india-white)', padding: '5rem 2rem 4rem', textAlign: 'center' }}>
+      <section style={{ background: 'var(--white)', padding: '5rem 2rem 4rem', textAlign: 'center' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto' }}>
           <div className="section-label">About Us</div>
           <h1 className="section-title">We&apos;re not building this<br />from a whiteboard.</h1>
@@ -152,7 +152,7 @@ export default function OurStory() {
       </section>
 
       {/* CTA */}
-      <section style={{ background: 'var(--india-white)', padding: '4rem 2rem', textAlign: 'center' }}>
+      <section style={{ background: 'var(--white)', padding: '4rem 2rem', textAlign: 'center' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto' }}>
           <h2 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', marginBottom: '1rem', color: 'var(--ink)' }}>
             Same boat? Let&apos;s figure this out together.
