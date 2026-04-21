@@ -38,7 +38,7 @@ export default async function YouTubeFeed({ config = youtubeFeedConfig }: YouTub
       >
         <div
           style={{
-            maxWidth: 920,
+            maxWidth: 1240,
             margin: '0 auto',
             textAlign: 'center',
           }}
@@ -59,7 +59,7 @@ export default async function YouTubeFeed({ config = youtubeFeedConfig }: YouTub
           <div
             style={{
               width: '100%',
-              maxWidth: 920,
+              maxWidth: 1240,
               margin: '0 auto',
             }}
           >
