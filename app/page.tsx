@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ReadinessPersonaCard from '../components/ReadinessPersonaCard'
+import YouTubeFeed from '../components/YouTubeFeed'
 import { READINESS_PERSONAS } from '../lib/moveBackContent'
 
 export const metadata: Metadata = {
@@ -477,6 +478,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <YouTubeFeed />
 
       <section style={{ background: '#1f1610', padding: '5rem 0' }}>
         <div className="home-shell">
