@@ -36,24 +36,26 @@ export default async function YouTubeFeed({ config = youtubeFeedConfig }: YouTub
           </p>
         </div>
 
-        <div className="mx-auto max-w-[920px]">
-          <div className="overflow-hidden rounded-[32px] border border-[rgba(29,22,15,0.1)] bg-white p-3 shadow-[0_28px_60px_rgba(29,22,15,0.08)] sm:p-4">
-            <YouTubeEmbed
-              className="aspect-video min-h-[200px] overflow-hidden rounded-[24px] bg-[#f3eee6]"
-              src={embedSrc}
-              title={embedTitle}
-            />
-          </div>
+        <div className="flex justify-center">
+          <div className="w-full max-w-[920px] text-center">
+            <div className="overflow-hidden rounded-[32px] border border-[rgba(29,22,15,0.1)] bg-white p-3 shadow-[0_28px_60px_rgba(29,22,15,0.08)] sm:p-4">
+              <YouTubeEmbed
+                className="aspect-video w-full min-h-[200px] overflow-hidden rounded-[24px] bg-[#f3eee6]"
+                src={embedSrc}
+                title={embedTitle}
+              />
+            </div>
 
-          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/videos" className="btn-primary justify-center">
-              Explore All Videos
-            </Link>
-            {feed.channelUrl ? (
-              <a className="btn-ghost justify-center" href={feed.channelUrl} rel="noreferrer" target="_blank">
-                Visit YouTube Channel
-              </a>
-            ) : null}
+            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/videos" className="btn-primary justify-center">
+                Explore All Videos
+              </Link>
+              {feed.channelUrl ? (
+                <a className="btn-ghost justify-center" href={feed.channelUrl} rel="noreferrer" target="_blank">
+                  Visit YouTube Channel
+                </a>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
