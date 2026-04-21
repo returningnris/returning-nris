@@ -20,11 +20,13 @@ const TOOLS = [
 const TOP_LINKS = [
   { href: '/planner', label: 'Readiness Check' },
   { href: '/journey', label: 'Back2India Journey' },
+  { href: '/videos', label: 'Videos' },
 ]
 
 const PUBLIC_NAV_PATHS = new Set([
   '/planner',
   '/journey',
+  '/videos',
   '/Tools',
   '/rnor',
   '/city',

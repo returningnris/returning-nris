@@ -361,6 +361,8 @@ export default function Home() {
         </div>
       </section>
 
+      <YouTubeFeed />
+
       <section style={{ background: '#fffdf9', padding: '0 0 5rem' }}>
         <div className="home-shell">
           <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto 2.5rem' }}>
@@ -478,8 +480,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <YouTubeFeed />
 
       <section style={{ background: '#1f1610', padding: '5rem 0' }}>
         <div className="home-shell">

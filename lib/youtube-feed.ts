@@ -4,6 +4,7 @@ export type YouTubeFeedMode = 'manual' | 'api'
 
 export type YouTubeVideoInput = {
   title: string
+  description?: string
   url?: string
   videoId?: string
 }
@@ -14,6 +15,7 @@ export type YouTubeFeedConfig = {
   channelId?: string
   channelUrl?: string
   playlistId?: string
+  featuredVideo?: YouTubeVideoInput
   videos?: YouTubeVideoInput[]
   api?: {
     maxResults?: number
@@ -23,6 +25,7 @@ export type YouTubeFeedConfig = {
 export type YouTubeFeedItem = {
   id: string
   title: string
+  description?: string
   watchUrl: string
   embedUrl: string
   thumbnailUrl: string
@@ -30,8 +33,7 @@ export type YouTubeFeedItem = {
 
 export type ResolvedYouTubeFeed = {
   channelUrl?: string
-  featuredEmbedUrl?: string
-  featuredTitle?: string
+  featuredVideo?: YouTubeFeedItem
   playlistUrl?: string
   playlistEmbedUrl?: string
   source: 'manual' | 'api' | 'playlist'
@@ -76,14 +78,14 @@ export async function getYouTubeFeed(config: YouTubeFeedConfig): Promise<Resolve
 }
 
 function getYouTubeFeedFromManualConfig(config: YouTubeFeedConfig): ResolvedYouTubeFeed | null {
-  const videos = normalizeManualVideos(config.videos)
-  const firstVideo = videos[0]
+  const manualVideos = normalizeManualVideos(config.videos)
+  const featuredVideo = createVideoItem(config.featuredVideo) ?? manualVideos[0]
+  const videos = manualVideos.filter((video) => video.id !== featuredVideo?.id)
 
-  if (firstVideo) {
+  if (featuredVideo) {
     return {
       channelUrl: getChannelUrl(config),
-      featuredEmbedUrl: firstVideo.embedUrl,
-      featuredTitle: firstVideo.title,
+      featuredVideo,
       playlistEmbedUrl: getPlaylistEmbedUrl(config.playlistId),
       playlistUrl: getPlaylistUrl(config.playlistId),
       source: 'manual',
@@ -97,8 +99,6 @@ function getYouTubeFeedFromManualConfig(config: YouTubeFeedConfig): ResolvedYouT
 
   return {
     channelUrl: getChannelUrl(config),
-    featuredEmbedUrl: getPlaylistEmbedUrl(config.playlistId),
-    featuredTitle: 'Latest uploads playlist',
     playlistEmbedUrl: getPlaylistEmbedUrl(config.playlistId),
     playlistUrl: getPlaylistUrl(config.playlistId),
     source: 'playlist',
@@ -122,20 +122,20 @@ async function getYouTubeFeedFromApi(config: YouTubeFeedConfig): Promise<Resolve
 
   const maxResults = Math.max(1, Math.min(config.api?.maxResults ?? 4, 12))
   const videos = await getPlaylistVideos(uploadsPlaylistId, apiKey, maxResults)
-  const firstVideo = videos[0]
+  const featuredVideo = createVideoItem(config.featuredVideo) ?? videos[0]
+  const remainingVideos = videos.filter((video) => video.id !== featuredVideo?.id)
 
-  if (!firstVideo) {
+  if (!featuredVideo) {
     return null
   }
 
   return {
     channelUrl: getChannelUrl(config),
-    featuredEmbedUrl: firstVideo.embedUrl,
-    featuredTitle: firstVideo.title,
+    featuredVideo,
     playlistEmbedUrl: getPlaylistEmbedUrl(uploadsPlaylistId),
     playlistUrl: getPlaylistUrl(uploadsPlaylistId),
     source: 'api',
-    videos,
+    videos: remainingVideos,
   }
 }
 
@@ -201,7 +201,11 @@ function normalizeManualVideos(videos: YouTubeVideoInput[] | undefined): YouTube
     .filter((item): item is YouTubeFeedItem => item !== null)
 }
 
-function createVideoItem(video: YouTubeVideoInput): YouTubeFeedItem | null {
+function createVideoItem(video: YouTubeVideoInput | undefined): YouTubeFeedItem | null {
+  if (!video) {
+    return null
+  }
+
   const title = video.title.trim()
   const videoId = video.videoId ?? extractYouTubeVideoId(video.url)
 
@@ -212,6 +216,7 @@ function createVideoItem(video: YouTubeVideoInput): YouTubeFeedItem | null {
   return {
     id: videoId,
     title,
+    description: video.description?.trim(),
     watchUrl: buildWatchUrl(videoId),
     embedUrl: buildVideoEmbedUrl(videoId),
     thumbnailUrl: buildThumbnailUrl(videoId),
