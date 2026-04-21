@@ -172,10 +172,6 @@ export default function Home() {
           display: grid;
           gap: 1rem;
         }
-        .home-hero-grid {
-          grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-          align-items: stretch;
-        }
         .home-persona-grid,
         .home-topic-grid,
         .home-link-grid {
@@ -185,7 +181,6 @@ export default function Home() {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         @media (max-width: 1100px) {
-          .home-hero-grid,
           .home-persona-grid,
           .home-topic-grid,
           .home-link-grid,
@@ -200,7 +195,6 @@ export default function Home() {
           .home-hero {
             padding: 1.5rem 0 3rem;
           }
-          .home-hero-grid,
           .home-persona-grid,
           .home-topic-grid,
           .home-link-grid,
@@ -220,142 +214,77 @@ export default function Home() {
 
       <section className="home-hero">
         <div className="home-shell">
-          <div className="home-hero-grid">
+          <div
+            style={{
+              maxWidth: 1040,
+              margin: '0 auto',
+              background: '#ffffff',
+              border: '1px solid rgba(29,22,15,0.10)',
+              borderRadius: 28,
+              boxShadow: '0 22px 48px rgba(29,22,15,0.06)',
+              padding: '2.35rem 2rem',
+              textAlign: 'center',
+            }}
+          >
             <div
               style={{
-                background: '#ffffff',
-                border: '1px solid rgba(29,22,15,0.10)',
-                borderRadius: 28,
-                boxShadow: '0 22px 48px rgba(29,22,15,0.06)',
-                padding: '2rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0.5rem 1.3rem',
+                borderRadius: 999,
+                background: '#fff1de',
+                color: '#8d5c22',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                marginBottom: '1rem',
               }}
             >
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '0.45rem 0.85rem',
-                  borderRadius: 999,
-                  background: '#fff1de',
-                  color: '#8d5c22',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                  marginBottom: '1rem',
-                }}
-              >
-                Free tools for NRIs returning to India
-              </div>
-
-              <h1
-                style={{
-                  fontSize: 'clamp(2.5rem, 5.4vw, 4.9rem)',
-                  lineHeight: 0.98,
-                  color: '#1d160f',
-                  marginBottom: '1rem',
-                  maxWidth: 780,
-                }}
-              >
-                Returning to India? Start with clarity.
-              </h1>
-
-              <p
-                style={{
-                  fontSize: 17,
-                  color: '#665848',
-                  lineHeight: 1.8,
-                  maxWidth: 760,
-                  marginBottom: '2rem',
-                }}
-              >
-                Explore readiness by persona, follow a practical move-back checklist, and use focused tools for RNOR, cities, schools, housing, and first-year planning.
-              </p>
-
-              <div
-                className="home-cta-row"
-                style={{
-                  display: 'flex',
-                  gap: '1rem',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <Link href="/planner" className="btn-primary">
-                  See Readiness by Persona
-                </Link>
-                <Link href="/journey" className="btn-secondary">
-                  View Move-Back Checklist
-                </Link>
-              </div>
+              Free tools for NRIs returning to India
             </div>
 
-            <div
+            <h1
               style={{
-                background: 'linear-gradient(135deg, #20160f 0%, #302117 46%, #173e2c 100%)',
-                borderRadius: 28,
-                boxShadow: '0 22px 48px rgba(29,22,15,0.08)',
-                overflow: 'hidden',
-                color: '#fff',
+                fontSize: 'clamp(2.7rem, 5.6vw, 5rem)',
+                lineHeight: 0.98,
+                color: '#1d160f',
+                margin: '0 auto 1rem',
+                maxWidth: 860,
               }}
             >
-              <div style={{ padding: '1.6rem' }}>
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 7,
-                    padding: '0.4rem 0.8rem',
-                    borderRadius: 999,
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    color: 'rgba(255,255,255,0.76)',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  Start here
-                </div>
+              Returning to India? Start with clarity.
+            </h1>
 
-                <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', lineHeight: 1.05, color: '#fff', marginBottom: '0.8rem' }}>
-                  Value first, questions later.
-                </h2>
+            <p
+              style={{
+                fontSize: 17,
+                color: '#665848',
+                lineHeight: 1.8,
+                maxWidth: 820,
+                margin: '0 auto 2rem',
+              }}
+            >
+              Explore readiness by persona, follow a practical move-back checklist, and use focused tools for RNOR, cities, schools, housing, and first-year planning.
+            </p>
 
-                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.72)', lineHeight: 1.75, marginBottom: '1.25rem' }}>
-                  Cold visitors should be able to see where they broadly stand, what to do next, and which guides matter before filling out anything detailed.
-                </p>
-
-                <div style={{ display: 'grid', gap: 10 }}>
-                  {[
-                    ['Readiness by persona', 'See the broad situation closest to yours before you refine details.', '/planner'],
-                    ['Move-back checklist', 'Open the full timeline from decision stage to year one in India.', '/journey'],
-                    ['Practical guides', 'Go deeper on RNOR, cities, schools, housing, and moving from the USA.', '/resources'],
-                  ].map(([title, body, href]) => (
-                    <Link
-                      key={title}
-                      href={href}
-                      style={{
-                        display: 'block',
-                        padding: '1rem',
-                        borderRadius: 20,
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        textDecoration: 'none',
-                      }}
-                    >
-                      <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 6 }}>{title}</div>
-                      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.68)', lineHeight: 1.7, marginBottom: 10 }}>
-                        {body}
-                      </div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#f3a44f' }}>Open</div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+            <div
+              className="home-cta-row"
+              style={{
+                display: 'flex',
+                gap: '1rem',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}
+            >
+              <Link href="/planner" className="btn-primary">
+                See Readiness by Persona
+              </Link>
+              <Link href="/journey" className="btn-secondary">
+                View Move-Back Checklist
+              </Link>
             </div>
           </div>
         </div>
