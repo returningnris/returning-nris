@@ -162,7 +162,7 @@ export default function Home() {
             radial-gradient(circle at top left, rgba(240,138,36,0.12), transparent 34%),
             radial-gradient(circle at 82% 18%, rgba(23,117,58,0.1), transparent 26%),
             linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
-          padding: 3rem 0 4rem;
+          padding: 3rem 0 2.25rem;
         }
         .home-hero-grid,
         .home-persona-grid,
@@ -193,7 +193,7 @@ export default function Home() {
             padding: 0 1rem;
           }
           .home-hero {
-            padding: 1.5rem 0 3rem;
+            padding: 1.5rem 0 2rem;
           }
           .home-persona-grid,
           .home-topic-grid,

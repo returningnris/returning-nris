@@ -26,7 +26,7 @@ export default async function YouTubeFeed({ config = youtubeFeedConfig }: YouTub
       aria-labelledby="homepage-videos-heading"
       style={{
         background: '#fffaf4',
-        padding: '5rem 0 6rem',
+        padding: '2.5rem 0 6rem',
       }}
     >
       <div
