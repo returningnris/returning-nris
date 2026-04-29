@@ -192,3 +192,28 @@ before update on public.resource_comments
 for each row execute procedure public.set_updated_at();
 
 alter table public.resource_comments enable row level security;
+
+create table if not exists public.community_join_requests (
+  id uuid primary key default gen_random_uuid(),
+  full_name text not null,
+  current_city_country text not null,
+  returning_city text not null,
+  returning_year text not null,
+  mobile_number text not null,
+  consent boolean not null default false,
+  help_topics_json jsonb not null default '[]'::jsonb,
+  status text not null default 'pending_review',
+  metadata_json jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists community_join_requests_created_at_idx
+  on public.community_join_requests (created_at desc);
+
+drop trigger if exists community_join_requests_set_updated_at on public.community_join_requests;
+create trigger community_join_requests_set_updated_at
+before update on public.community_join_requests
+for each row execute procedure public.set_updated_at();
+
+alter table public.community_join_requests enable row level security;

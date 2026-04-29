@@ -5,6 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://www.returningnris.com', lastModified: new Date() },
     { url: 'https://www.returningnris.com/planner', lastModified: new Date() },
     { url: 'https://www.returningnris.com/journey', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/community', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources/bangalore-neighbourhood-guide-for-returning-nri-families', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources/hyderabad-neighbourhood-guide-for-returning-nri-families', lastModified: new Date() },
