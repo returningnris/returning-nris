@@ -230,7 +230,7 @@ export default function CommunityJoinForm({ formId = 'join-community' }: Communi
       <div style={{ marginBottom: '1.5rem' }}>
         <div className="section-label">Join Form</div>
         <h3 style={{ fontSize: 'clamp(1.9rem, 4vw, 2.5rem)', color: '#1a1208', marginBottom: '0.75rem' }}>
-          Request your WhatsApp invite
+          Request your WhatsApp community invite
         </h3>
         <p style={{ ...helperStyle, fontSize: '0.95rem' }}>
           Share a few basic details so we can route you to the most relevant community group and upcoming sessions.

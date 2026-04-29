@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     canonical: 'https://www.returningnris.com/community',
   },
   openGraph: {
-    title: 'Returning NRI Community - WhatsApp, Online Meets & Hyderabad 2026 Meetups',
+    title: 'Returning NRI WhatsApp Community | ReturningNRIs.com',
     description:
       'Join the Returning NRI WhatsApp Community for families moving back to India. Connect with 250+ active Hyderabad members and get practical help on schools, housing, tax, finance, and settling in.',
     url: 'https://www.returningnris.com/community',
@@ -166,6 +166,10 @@ export default function CommunityPage() {
           .community-cta-card {
             padding: 1.5rem !important;
           }
+          .community-hero-badge {
+            width: 100%;
+            justify-content: flex-start;
+          }
         }
       `}</style>
 
@@ -189,7 +193,55 @@ export default function CommunityPage() {
               boxShadow: '0 24px 54px rgba(29,22,15,0.07)',
             }}
           >
-            <div className="section-label">Returning NRI Community - WhatsApp, Online Meets & Hyderabad 2026 Meetups</div>
+            <div
+              className="community-hero-badge"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.7rem',
+                padding: '0.65rem 1rem',
+                borderRadius: 999,
+                background: '#edf9f0',
+                border: '1px solid rgba(19,136,8,0.18)',
+                color: '#0f6f07',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                marginBottom: '1rem',
+              }}
+            >
+              <span
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '50%',
+                  background: '#1a9a42',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 10px 22px rgba(26,154,66,0.18)',
+                  flexShrink: 0,
+                }}
+                aria-hidden="true"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M20 11.5C20 16.194 16.194 20 11.5 20C10.095 20 8.77 19.659 7.604 19.055L4 20L4.979 16.534C4.349 15.1 4 13.515 4 11.5C4 6.806 7.806 3 12.5 3C17.194 3 21 6.806 21 11.5H20Z"
+                    fill="white"
+                    fillOpacity="0.18"
+                  />
+                  <path
+                    d="M9.25 8.8C9.44 8.36 9.61 8.35 9.92 8.34C10.17 8.33 10.46 8.33 10.75 8.33C11.04 8.33 11.51 8.22 11.9 8.68C12.29 9.14 13.39 10.21 13.39 10.39C13.39 10.57 13.1 10.84 12.96 11C12.82 11.16 12.68 11.35 12.96 11.82C13.24 12.29 14.18 13.81 15.62 14.43C16.76 14.92 16.98 14.83 17.24 14.55C17.5 14.27 18.34 13.29 18.66 12.82C18.98 12.35 19.31 12.43 19.58 12.59C19.85 12.75 21.31 13.46 21.61 13.63C21.91 13.8 22.11 13.88 22.19 14.02C22.27 14.16 22.27 14.84 21.95 15.74C21.63 16.64 20.12 17.46 19.46 17.55C18.8 17.64 17.99 17.95 15.08 16.81C12.17 15.67 10.27 13.16 9.75 12.43C9.23 11.7 8.23 10.35 8.23 8.96C8.23 7.57 8.96 6.9 9.25 6.57"
+                    stroke="white"
+                    strokeWidth="1.35"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              Returning NRI WhatsApp Community
+            </div>
             <h1
               style={{
                 fontSize: 'clamp(2.35rem, 6vw, 4.7rem)',
@@ -199,7 +251,7 @@ export default function CommunityPage() {
                 marginBottom: '1rem',
               }}
             >
-              Moving back to India? Join a real community, not just another WhatsApp group.
+              Join the Returning NRI WhatsApp Community for your move back to India.
             </h1>
             <p
               style={{
@@ -246,6 +298,7 @@ export default function CommunityPage() {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
+                  gap: '0.6rem',
                   justifyContent: 'center',
                   padding: '0.95rem 1.5rem',
                   borderRadius: 999,
@@ -256,7 +309,30 @@ export default function CommunityPage() {
                   boxShadow: '0 16px 30px rgba(19,136,8,0.22)',
                 }}
               >
-                Join the Community
+                <span
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.18)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                  aria-hidden="true"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M20 11.5C20 16.194 16.194 20 11.5 20C10.095 20 8.77 19.659 7.604 19.055L4 20L4.979 16.534C4.349 15.1 4 13.515 4 11.5C4 6.806 7.806 3 12.5 3C17.194 3 21 6.806 21 11.5H20Z"
+                      stroke="white"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                Join the WhatsApp Community
               </Link>
               <p style={{ fontSize: '0.92rem', color: '#6d6357' }}>
                 Currently active city group: Hyderabad. More city groups coming soon.
