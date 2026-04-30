@@ -38,6 +38,12 @@ export const youtubeFeedConfig: YouTubeFeedConfig = {
       // Replace with your next YouTube URL or video ID.
       url: 'https://youtu.be/ThlXCgeQ1Ws?si=YfJkbs3hjJCD1y1D',
     },
+    {
+      title: 'Returning NRIs: Practical Move-Back Planning',
+      description:
+        'Another practical video for families planning their move back to India.',
+      url: 'https://www.youtube.com/watch?v=rQh9hJStwO8&t=39s',
+    },
   ],
   api: {
     // Switch `mode` to `api` and add YOUTUBE_API_KEY in `.env.local` to auto-load latest uploads.
