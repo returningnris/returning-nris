@@ -32,16 +32,6 @@ export default async function YouTubeVideoLibrary({
   return (
     <section aria-label="All videos" className="space-y-8">
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          {feed.channelUrl ? (
-            <a
-              className="inline-flex items-center justify-center rounded-[999px] border border-[#c9302c] bg-[#e53935] px-7 py-[0.85rem] text-[0.95rem] font-medium text-white shadow-[0_14px_32px_rgba(229,57,53,0.22)] transition-all duration-200 hover:-translate-y-[1px] hover:border-[#a92421] hover:bg-[#c62828]"
-              href={feed.channelUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Visit YouTube Channel
-            </a>
-          ) : null}
           {feed.playlistUrl ? (
             <a
               className="btn-primary justify-center"
