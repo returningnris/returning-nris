@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { YouTubeIcon } from '../../lib/social-icons'
 import type { YouTubeFeedItem } from '../../lib/youtube-feed'
 
 type YouTubeVideoCardProps = {
@@ -38,7 +39,8 @@ export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
               {video.description}
             </p>
           ) : null}
-          <span className="mt-auto inline-flex items-center text-sm font-semibold text-[var(--ink)]">
+          <span className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-[var(--ink)]">
+            <YouTubeIcon size={16} />
             Watch on YouTube
           </span>
         </div>

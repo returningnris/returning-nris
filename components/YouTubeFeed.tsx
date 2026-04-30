@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { YouTubeIcon } from '../lib/social-icons'
 import { youtubeFeedConfig } from '../lib/youtube-feed-config'
 import { getYouTubeFeed, type YouTubeFeedConfig } from '../lib/youtube-feed'
 import YouTubeEmbed from './youtube/YouTubeEmbed'
@@ -73,10 +74,12 @@ export default async function YouTubeFeed({ config = youtubeFeedConfig }: YouTub
 
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/videos" className="btn-primary justify-center">
+                <YouTubeIcon size={18} />
                 Explore All Videos
               </Link>
               {feed.channelUrl ? (
                 <a className="btn-ghost justify-center" href={feed.channelUrl} rel="noreferrer" target="_blank">
+                  <YouTubeIcon size={18} />
                   Visit YouTube Channel
                 </a>
               ) : null}

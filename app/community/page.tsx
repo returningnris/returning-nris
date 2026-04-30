@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import CommunityJoinForm from '../../components/CommunityJoinForm'
+import { InstagramIcon, WhatsAppIcon } from '../../lib/social-icons'
 import { INSTAGRAM_URL } from '../../lib/social-links'
 
 export const metadata: Metadata = {
@@ -235,6 +236,7 @@ export default function CommunityPage() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  gap: '0.5rem',
                   padding: '0.95rem 1.35rem',
                   borderRadius: 999,
                   background: 'linear-gradient(180deg, #1a9a42 0%, #138808 100%)',
@@ -244,6 +246,7 @@ export default function CommunityPage() {
                   boxShadow: '0 16px 30px rgba(19,136,8,0.22)',
                 }}
               >
+                <WhatsAppIcon size={18} />
                 Join the Community
               </Link>
               <a
@@ -252,6 +255,7 @@ export default function CommunityPage() {
                 rel="noopener noreferrer"
                 className="btn-ghost"
               >
+                <InstagramIcon size={18} />
                 Follow on Instagram
               </a>
             </div>
@@ -501,6 +505,7 @@ export default function CommunityPage() {
                   Follow quick move-back tips on RNOR, schools, housing, Hyderabad living, money, and the first 90 days.
                 </p>
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                  <InstagramIcon size={18} />
                   Follow on Instagram
                 </a>
               </div>
@@ -612,6 +617,7 @@ export default function CommunityPage() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                gap: '0.5rem',
                 padding: '0.95rem 1.35rem',
                 borderRadius: 999,
                 background: 'linear-gradient(180deg, #1a9a42 0%, #138808 100%)',
@@ -621,6 +627,7 @@ export default function CommunityPage() {
                 boxShadow: '0 16px 30px rgba(19,136,8,0.22)',
               }}
             >
+              <WhatsAppIcon size={18} />
               Request WhatsApp Invite
             </Link>
           </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../lib/social-icons'
 import { INSTAGRAM_URL } from '../lib/social-links'
 
 export const metadata: Metadata = {
@@ -165,16 +166,6 @@ function ArrowIcon() {
   )
 }
 
-function InstagramIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4.25" y="4.25" width="15.5" height="15.5" rx="4.5" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="12" cy="12" r="3.25" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="17.2" cy="6.9" r="0.9" fill="currentColor" />
-    </svg>
-  )
-}
-
 export default function Home() {
   return (
     <>
@@ -321,9 +312,11 @@ export default function Home() {
                   Start Planner
                 </Link>
                 <Link href="/community#join-community" className="btn-secondary">
+                  <WhatsAppIcon size={18} />
                   Join Community
                 </Link>
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                  <InstagramIcon size={18} />
                   Instagram Tips
                 </a>
               </div>
@@ -374,15 +367,15 @@ export default function Home() {
                         width: 40,
                         height: 40,
                         borderRadius: 14,
-                        background: 'rgba(255,153,51,0.18)',
-                        color: '#f3b163',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <InstagramIcon />
+                      background: 'rgba(255,153,51,0.18)',
+                      color: '#f3b163',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                      <InstagramIcon size={22} />
                     </div>
                   </a>
                 ) : (
@@ -418,7 +411,7 @@ export default function Home() {
                         flexShrink: 0,
                       }}
                     >
-                      <ArrowIcon />
+                      {channel.title === 'WhatsApp Community' ? <WhatsAppIcon size={22} /> : <YouTubeIcon size={22} />}
                     </div>
                   </Link>
                 )
@@ -536,12 +529,15 @@ export default function Home() {
             </p>
             <div className="home-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <Link href="/community#join-community" className="btn-secondary">
+                <WhatsAppIcon size={18} />
                 Join Community
               </Link>
               <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                <InstagramIcon size={18} />
                 Follow Instagram Tips
               </a>
               <Link href="/videos" className="btn-ghost">
+                <YouTubeIcon size={18} />
                 Watch Videos
               </Link>
             </div>
@@ -618,6 +614,7 @@ export default function Home() {
                 Start Planner
               </Link>
               <Link href="/community#join-community" className="btn-secondary">
+                <WhatsAppIcon size={18} />
                 Join Community
               </Link>
             </div>

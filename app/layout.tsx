@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import './globals.css'
 import NavBar from './NavBar'
+import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../lib/social-icons'
 import { INSTAGRAM_URL } from '../lib/social-links'
 
 export const metadata: Metadata = {
@@ -97,10 +98,12 @@ function Footer() {
             <Link href="/planner" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
               Planner
             </Link>
-            <Link href="/community" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
+            <Link href="/community" style={{ fontSize: '0.9rem', color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+              <WhatsAppIcon size={16} />
               Join Community
             </Link>
-            <Link href="/videos" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
+            <Link href="/videos" style={{ fontSize: '0.9rem', color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+              <YouTubeIcon size={16} />
               Videos & Short Tips
             </Link>
             <Link href="/resources" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
@@ -115,10 +118,12 @@ function Footer() {
             <a href="mailto:hello@returningnris.com" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
               hello@returningnris.com
             </a>
-            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.9rem', color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+              <InstagramIcon size={16} />
               Instagram Tips
             </a>
-            <Link href="/community#join-community" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
+            <Link href="/community#join-community" style={{ fontSize: '0.9rem', color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+              <WhatsAppIcon size={16} />
               Request WhatsApp Invite
             </Link>
             <Link href="/our-story" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>

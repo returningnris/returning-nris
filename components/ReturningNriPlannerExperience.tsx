@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../lib/social-icons'
 import { INSTAGRAM_URL } from '../lib/social-links'
 
 type ReadinessId = 'almost-ready' | 'planning-seriously' | 'still-exploring'
@@ -341,16 +342,6 @@ function ArrowIcon() {
   )
 }
 
-function InstagramIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4.25" y="4.25" width="15.5" height="15.5" rx="4.5" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="12" cy="12" r="3.25" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="17.2" cy="6.9" r="0.9" fill="currentColor" />
-    </svg>
-  )
-}
-
 function persistPlannerState(selectedReadiness: ReadinessId | null, checkedTaskIds: string[]) {
   if (typeof window === 'undefined') {
     return
@@ -680,7 +671,7 @@ export default function ReturningNriPlannerExperience() {
                         flexShrink: 0,
                       }}
                     >
-                      <InstagramIcon />
+                      <InstagramIcon size={22} />
                     </div>
                   </a>
                 ) : (
@@ -716,7 +707,7 @@ export default function ReturningNriPlannerExperience() {
                         flexShrink: 0,
                       }}
                     >
-                      {channel.title === 'WhatsApp Community' ? <CommunityIcon /> : <TimelineIcon />}
+                      {channel.title === 'WhatsApp Community' ? <WhatsAppIcon size={22} /> : <YouTubeIcon size={22} />}
                     </div>
                   </Link>
                 )
@@ -1119,6 +1110,7 @@ export default function ReturningNriPlannerExperience() {
                     boxShadow: '0 16px 30px rgba(19,136,8,0.2)',
                   }}
                 >
+                  <WhatsAppIcon size={18} />
                   Join WhatsApp Community
                 </Link>
                 <a
@@ -1127,6 +1119,7 @@ export default function ReturningNriPlannerExperience() {
                   target="_blank"
                   className="btn-ghost"
                 >
+                  <InstagramIcon size={18} />
                   Follow on Instagram
                 </a>
               </div>
@@ -1198,7 +1191,7 @@ export default function ReturningNriPlannerExperience() {
                     flexShrink: 0,
                   }}
                 >
-                  <InstagramIcon />
+                  <InstagramIcon size={18} />
                   Follow on Instagram
                 </a>
               </div>
@@ -1300,9 +1293,10 @@ export default function ReturningNriPlannerExperience() {
                   fontWeight: 700,
                   boxShadow: '0 16px 30px rgba(19,136,8,0.2)',
                 }}
-              >
-                Join WhatsApp Community
-              </Link>
+                >
+                  <WhatsAppIcon size={18} />
+                  Join WhatsApp Community
+                </Link>
               <a
                 href={INSTAGRAM_URL}
                 rel="noopener noreferrer"
@@ -1321,8 +1315,8 @@ export default function ReturningNriPlannerExperience() {
                   fontSize: 15,
                   fontWeight: 700,
                 }}
-              >
-                <InstagramIcon />
+                >
+                <InstagramIcon size={18} />
                 Follow on Instagram
               </a>
             </div>
@@ -1347,6 +1341,7 @@ export default function ReturningNriPlannerExperience() {
             fontWeight: 700,
           }}
         >
+          <WhatsAppIcon size={18} />
           Join Community
         </Link>
         <a
@@ -1366,6 +1361,7 @@ export default function ReturningNriPlannerExperience() {
             fontWeight: 700,
           }}
         >
+          <InstagramIcon size={18} />
           Instagram Tips
         </a>
       </div>

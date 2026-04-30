@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import YouTubeEmbed from '../../components/youtube/YouTubeEmbed'
 import YouTubeVideoCard from '../../components/youtube/YouTubeVideoCard'
+import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../../lib/social-icons'
 import { INSTAGRAM_URL } from '../../lib/social-links'
 import { getYouTubeFeed, type YouTubeFeedItem } from '../../lib/youtube-feed'
 import { youtubeFeedConfig } from '../../lib/youtube-feed-config'
@@ -58,16 +59,6 @@ const channelCards = [
     body: 'Real community and discussions',
   },
 ]
-
-function InstagramIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4.25" y="4.25" width="15.5" height="15.5" rx="4.5" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="12" cy="12" r="3.25" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="17.2" cy="6.9" r="0.9" fill="currentColor" />
-    </svg>
-  )
-}
 
 export default async function VideosPage() {
   const feed = await getYouTubeFeed(youtubeFeedConfig)
@@ -186,12 +177,15 @@ export default async function VideosPage() {
 
               <div className="videos-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <a href="#youtube-guides" className="btn-primary">
+                  <YouTubeIcon size={18} />
                   Watch YouTube Guides
                 </a>
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                  <InstagramIcon size={18} />
                   Follow Instagram Reels
                 </a>
                 <Link href="/community#join-community" className="btn-secondary">
+                  <WhatsAppIcon size={18} />
                   Join WhatsApp Community
                 </Link>
               </div>
@@ -243,7 +237,15 @@ export default async function VideosPage() {
                       flexShrink: 0,
                     }}
                   >
-                    {index + 1}
+                    {card.title === 'YouTube' ? (
+                      <YouTubeIcon size={22} />
+                    ) : card.title === 'Instagram' ? (
+                      <InstagramIcon size={22} />
+                    ) : card.title === 'WhatsApp' ? (
+                      <WhatsAppIcon size={22} />
+                    ) : (
+                      index + 1
+                    )}
                   </span>
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>{card.title}</div>
@@ -306,10 +308,12 @@ export default async function VideosPage() {
 
                 <div style={{ display: 'flex', gap: '0.7rem', flexWrap: 'wrap' }}>
                   <a href={featuredVideo.watchUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
+                    <YouTubeIcon size={18} />
                     Watch on YouTube
                   </a>
                   {feed?.channelUrl ? (
                     <a href={feed.channelUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                      <YouTubeIcon size={18} />
                       Visit YouTube Channel
                     </a>
                   ) : null}
@@ -389,7 +393,7 @@ export default async function VideosPage() {
                   flexShrink: 0,
                 }}
               >
-                <InstagramIcon />
+                <InstagramIcon size={18} />
                 Follow on Instagram
               </a>
             </div>
@@ -422,6 +426,7 @@ export default async function VideosPage() {
 
             {feed?.playlistUrl ? (
               <a href={feed.playlistUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                <YouTubeIcon size={18} />
                 Open Playlist
               </a>
             ) : null}
@@ -491,6 +496,7 @@ export default async function VideosPage() {
 
             <div className="videos-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap' }}>
               <Link href="/community#join-community" className="btn-secondary">
+                <WhatsAppIcon size={18} />
                 Join WhatsApp Community
               </Link>
               <Link href="/planner" className="btn-ghost">

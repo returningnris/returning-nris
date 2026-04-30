@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import AuthButton from '../components/AuthButton'
+import { WhatsAppIcon } from '../lib/social-icons'
 
 const NAV_LINKS = [
   { href: '/', label: 'Start Here' },
@@ -113,6 +114,7 @@ export default function NavBar() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                gap: '0.45rem',
                 minHeight: 38,
                 padding: '0.65rem 1rem',
                 borderRadius: 999,
@@ -123,6 +125,7 @@ export default function NavBar() {
                 boxShadow: '0 10px 24px rgba(19,136,8,0.2)',
               }}
             >
+              <WhatsAppIcon size={16} />
               Join Community
             </Link>
             <AuthButton />
@@ -174,6 +177,7 @@ export default function NavBar() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: '0.45rem',
                     minHeight: 46,
                     borderRadius: 16,
                     background: 'linear-gradient(180deg, #1a9a42 0%, #138808 100%)',
@@ -182,6 +186,7 @@ export default function NavBar() {
                     fontWeight: 700,
                   }}
                 >
+                  <WhatsAppIcon size={18} />
                   Join Community
                 </Link>
                 <Link
