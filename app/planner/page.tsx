@@ -1,21 +1,30 @@
 import type { Metadata } from 'next'
-import PlannerPersonaExperience from '../../components/PlannerPersonaExperience'
+import ReturningNriPlannerExperience from '../../components/ReturningNriPlannerExperience'
 
 export const metadata: Metadata = {
-  title: 'Readiness for NRIs Returning to India | Persona Guide and Next Steps',
+  title: 'Returning NRI Planner | Move Back to India Checklist',
   description:
-    'Start with the readiness persona closest to your situation. See what to watch, the liquid buffer many families need, and the next steps before moving back to India.',
+    'A simple planner for NRIs moving back to India. See where you stand, follow the key move-back timeline, and join a trusted Returning NRI community.',
   alternates: {
     canonical: 'https://www.returningnris.com/planner',
   },
   openGraph: {
-    title: 'Readiness for NRIs Returning to India | Persona Guide and Next Steps',
+    title: 'Returning NRI Planner | Move Back to India Checklist',
     description:
-      'Start with the readiness persona closest to your situation. See what to watch, the liquid buffer many families need, and the next steps before moving back to India.',
+      'A simple planner for NRIs moving back to India. See where you stand, follow the key move-back timeline, and join a trusted Returning NRI community.',
     url: 'https://www.returningnris.com/planner',
+    siteName: 'ReturningNRIs',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Returning NRI Planner | Move Back to India Checklist',
+    description:
+      'A simple planner for NRIs moving back to India. See where you stand, follow the key move-back timeline, and join a trusted Returning NRI community.',
+    images: ['https://www.returningnris.com/og-image.png'],
   },
 }
 
 export default function PlannerPage() {
-  return <PlannerPersonaExperience />
+  return <ReturningNriPlannerExperience />
 }

@@ -18,8 +18,7 @@ const TOOLS = [
 ]
 
 const TOP_LINKS = [
-  { href: '/planner', label: 'Readiness Check' },
-  { href: '/journey', label: 'Back2India Journey' },
+  { href: '/planner', label: 'Planner' },
   { href: '/videos', label: 'Videos' },
 ]
 
