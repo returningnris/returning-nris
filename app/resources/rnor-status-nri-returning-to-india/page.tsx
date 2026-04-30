@@ -242,14 +242,14 @@ export default function RNORGuide() {
             Estimate your RNOR savings
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1rem', lineHeight: 1.7, marginBottom: '1.75rem' }}>
-            Use the RNOR Calculator to estimate your eligibility window and approximate tax savings — or take the readiness check to see how RNOR fits into your overall return plan.
+            Use the RNOR Calculator to estimate your eligibility window and approximate tax savings — or open the planner to see how RNOR fits into your wider move-back plan.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/rnor" style={{ display: 'inline-block', background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '12px 26px', fontSize: '14px', fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 16px rgba(255,153,51,0.4)' }}>
               RNOR Calculator →
             </Link>
             <Link href="/planner" style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '100px', padding: '12px 26px', fontSize: '14px', fontWeight: 600, textDecoration: 'none', border: '1px solid rgba(255,255,255,0.2)' }}>
-              Readiness Check →
+              Open Planner →
             </Link>
           </div>
           <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', marginTop: '1rem' }}>Free · no account needed</div>
@@ -264,7 +264,7 @@ export default function RNORGuide() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
               {[
                 { href: '/rnor', icon: '📊', label: 'RNOR Calculator', sub: 'Estimate your tax savings instantly' },
-                { href: '/planner', icon: '📋', label: 'Readiness Check', sub: 'Full return readiness score' },
+                { href: '/planner', icon: '📋', label: 'Return Planner', sub: 'See where RNOR fits in your plan' },
                 { href: '/resources/nri-returning-to-india-checklist', icon: '✅', label: 'NRI Return Checklist', sub: '14-step complete guide' },
                 { href: '/resources/should-i-return-to-india-from-usa', icon: '🤔', label: 'Should I return?', sub: '2026 decision guide' },
               ].map(item => (

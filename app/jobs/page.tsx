@@ -494,11 +494,11 @@ export default function JobCareerGuide() {
 
           <div className="jobs-report-cta" style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>See your complete return readiness score</div>
-              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Get your personalised readiness report — financial, career, schools, housing all in one place.</div>
+              <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>See your full move-back plan</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Use the planner to see where you stand and what to tackle next across career, schools, housing, and money.</div>
             </div>
             <div className="jobs-report-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <Link href="/planner" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>Readiness check →</Link>
+                <Link href="/planner" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>Open planner →</Link>
               <button onClick={restart} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>Recalculate</button>
             </div>
           </div>
@@ -536,7 +536,7 @@ export default function JobCareerGuide() {
                   <span style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Job & Career Guide</span>
                 </div>
                 <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(2.2rem,5vw,4.2rem)', lineHeight: 0.98, color: '#fff', marginBottom: '.9rem' }}>Navigate your career move with <em style={{ fontStyle: 'italic', color: '#FF9933' }}>more clarity.</em></h1>
-                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>Answer the same guided questions as the readiness check and we&apos;ll build your India career strategy in one pass.</p>
+                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>Answer the same move-planning questions used in the planner and we&apos;ll build your India career strategy in one pass.</p>
               </div>
               <div style={{ padding: '1.25rem 1.4rem 1.4rem' }}>
                 <div style={{ marginBottom: 14 }}>

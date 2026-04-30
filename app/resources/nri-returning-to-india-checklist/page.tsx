@@ -190,7 +190,7 @@ export default function NRIChecklist() {
             </div>
             <p style={{ fontSize: '13px', color: '#6B5E50', margin: 0 }}>
               Want a personalised checklist based on your exact situation? →{' '}
-              <Link href="/planner" style={{ color: '#FF9933', fontWeight: 600, textDecoration: 'none' }}>Take the 2-minute readiness check</Link>
+              <Link href="/planner" style={{ color: '#FF9933', fontWeight: 600, textDecoration: 'none' }}>Open the planner</Link>
             </p>
           </div>
         </div>
@@ -282,10 +282,10 @@ export default function NRIChecklist() {
           <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📋</div>
           <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.5rem,3vw,2rem)', color: '#fff', marginBottom: '0.75rem', lineHeight: 1.3 }}>Get your personalised checklist</h2>
           <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', lineHeight: 1.7, marginBottom: '1.75rem' }}>
-            This generic checklist gives you the structure. The readiness planner gives you a score, your specific risks, and the exact actions that matter for your profile — in under 2 minutes.
+            This generic checklist gives you the structure. The planner helps you see where you stand, what to plan next, and which parts of the timeline matter most for your family — in under 2 minutes.
           </p>
           <Link href="/planner" style={{ display: 'inline-block', background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '13px 30px', fontSize: '15px', fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 20px rgba(255,153,51,0.45)', marginBottom: '0.75rem' }}>
-            Check my readiness score →
+            Start my planner →
           </Link>
           <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>Free · no account needed · 2 minutes</div>
         </div>
@@ -298,7 +298,7 @@ export default function NRIChecklist() {
             <div style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Related Resources</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
               {[
-                { href: '/planner', icon: '📋', label: 'Readiness Check', sub: 'Get your personalised score' },
+                { href: '/planner', icon: '📋', label: 'Return Planner', sub: 'See where you stand and what to do next' },
                 { href: '/rnor', icon: '📊', label: 'RNOR Calculator', sub: 'Estimate your tax savings' },
                 { href: '/city', icon: '🏙️', label: 'City Match', sub: 'Find your ideal city' },
                 { href: '/resources/should-i-return-to-india-from-usa', icon: '🤔', label: 'Should I return?', sub: '2026 decision guide' },

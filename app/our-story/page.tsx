@@ -139,7 +139,7 @@ export default function OurStory() {
               { icon: '🎯', title: 'Built by NRIs', desc: 'Not consultants, not advisors. We are the exact customer we are building for. Every tool we ship, we use ourselves.' },
               { icon: '📊', title: 'Data over opinions', desc: 'Real school fees. Real rent ranges. Real tax windows. Everything quantified and personalised to your specific situation.' },
               { icon: '🤝', title: 'Community-driven', desc: 'The best intelligence comes from NRIs who have already done this. We aggregate that knowledge and make it accessible.' },
-              { icon: '🆓', title: 'Free to use', desc: 'All tools — readiness check, RNOR calculator, city match, school finder — are free. We believe this information should be accessible.' },
+              { icon: '🆓', title: 'Free to use', desc: 'All tools — the Returning NRI Planner, RNOR calculator, city match, and school finder — are free. We believe this information should be accessible.' },
             ].map(item => (
               <div key={item.title} style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '1.5rem' }}>
                 <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{item.icon}</div>
@@ -158,12 +158,12 @@ export default function OurStory() {
             Same boat? Let&apos;s figure this out together.
           </h2>
           <p style={{ color: 'var(--ink-muted)', marginBottom: '2rem', fontSize: '0.95rem', lineHeight: 1.7 }}>
-            Start with the readiness check — get your personalised score, top risks, and a clear recommendation in 2 minutes.
+            Start with the planner — see where you stand, what to plan next, and what not to miss before you move.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/planner" className="btn-primary">Take the readiness check →</Link>
-            <Link href="/journey" style={{ display: 'inline-flex', alignItems: 'center', padding: '0.75rem 1.5rem', borderRadius: '100px', border: '1px solid var(--border)', color: 'var(--ink)', fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none', fontFamily: 'DM Sans, sans-serif' }}>
-              Start my journey →
+            <Link href="/planner" className="btn-primary">Open the planner →</Link>
+            <Link href="/planner#timeline" style={{ display: 'inline-flex', alignItems: 'center', padding: '0.75rem 1.5rem', borderRadius: '100px', border: '1px solid var(--border)', color: 'var(--ink)', fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none', fontFamily: 'DM Sans, sans-serif' }}>
+              View move timeline →
             </Link>
           </div>
         </div>

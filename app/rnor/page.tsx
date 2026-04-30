@@ -1024,10 +1024,10 @@ export default function RNOROptimizer() {
           <div className="rnor-result-cta-grid" style={{ background: '#1A1208', borderRadius: '20px', padding: '2rem' }}>
             <div>
               <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>Want help with your full return plan?</div>
-              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Free tools to plan your full return — city match, school finder, readiness check, and more.</div>
+              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Free tools to plan your full return — city match, school finder, the planner, and more.</div>
             </div>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <Link href="/planner" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>Readiness check →</Link>
+              <Link href="/planner" style={{ background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>Open planner →</Link>
               <button onClick={restart} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '0.5px solid rgba(255,255,255,0.2)', borderRadius: '100px', padding: '0.75rem 1.5rem', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>Recalculate</button>
             </div>
           </div>

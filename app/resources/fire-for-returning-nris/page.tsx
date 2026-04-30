@@ -128,8 +128,8 @@ const relatedLinks = [
   {
     href: '/planner',
     icon: '📋',
-    label: 'Readiness Planner',
-    sub: 'See if your move timing is financially strong',
+    label: 'Return Planner',
+    sub: 'See where you stand and what to plan next',
   },
   {
     href: '/rnor',
@@ -642,7 +642,7 @@ export default function FireForReturningNRIsPage() {
               marginBottom: '0.75rem',
             }}
           >
-            Check my readiness score →
+            Open my planner →
           </Link>
           <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.32)' }}>Free · no account needed · 2 minutes</div>
         </div>

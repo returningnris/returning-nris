@@ -353,7 +353,7 @@ export default function HousingFinder() {
                   <span style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.74)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Rental & Housing Finder</span>
                 </div>
                 <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(2.2rem,5vw,4.2rem)', lineHeight: 0.98, color: '#fff', marginBottom: '.9rem' }}>Find your India home with <em style={{ fontStyle: 'italic', color: '#FF9933' }}>more confidence.</em></h1>
-                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>Answer the same guided questions as the readiness check and we&apos;ll shortlist the right neighbourhoods in one pass.</p>
+                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 15, lineHeight: 1.75 }}>Answer the same move-planning questions used in the planner and we&apos;ll shortlist the right neighbourhoods in one pass.</p>
               </div>
               <div style={{ padding: '1.25rem 1.4rem 1.4rem' }}>
                 <div style={{ marginBottom: 14 }}>

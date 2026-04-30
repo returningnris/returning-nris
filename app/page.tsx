@@ -71,8 +71,8 @@ const HELP_TOPICS = [
   {
     title: 'Move timing',
     body: 'Decide when to move based on work, tax, school calendars, and how prepared the family really is.',
-    href: '/journey',
-    cta: 'View the checklist',
+    href: '/planner#timeline',
+    cta: 'View move timeline',
   },
   {
     title: 'City selection',
@@ -280,10 +280,10 @@ export default function Home() {
               }}
             >
               <Link href="/planner" className="btn-primary">
-                See Readiness by Persona
+                Start My Plan
               </Link>
-              <Link href="/journey" className="btn-secondary">
-                View Move-Back Checklist
+              <Link href="/planner#timeline" className="btn-secondary">
+                View Move Timeline
               </Link>
             </div>
           </div>
@@ -436,14 +436,14 @@ export default function Home() {
               See where you broadly stand, then work through the plan.
             </h2>
             <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.68)', lineHeight: 1.85, maxWidth: 720, margin: '0 auto 1.75rem' }}>
-              Start with readiness by persona, then use the move-back checklist and practical guides to go deeper where you need it.
+              Start with the planner, then use the timeline and practical guides to go deeper where you need it.
             </p>
             <div className="home-cta-row" style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
               <Link href="/planner" className="btn-primary">
-                See Readiness by Persona
+                Open Planner
               </Link>
-              <Link href="/journey" className="btn-ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.16)' }}>
-                View Move-Back Checklist
+              <Link href="/planner#timeline" className="btn-ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.16)' }}>
+                View Move Timeline
               </Link>
             </div>
           </div>

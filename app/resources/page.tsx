@@ -114,7 +114,7 @@ export default function ResourceGuideIndex() {
               See readiness by persona
             </Link>
             <Link
-              href="/journey"
+              href="/planner#timeline"
               style={{
                 background: '#fff',
                 color: '#1A1208',
@@ -126,7 +126,7 @@ export default function ResourceGuideIndex() {
                 border: '1px solid #E5E1DA',
               }}
             >
-              View move-back checklist
+              View move timeline
             </Link>
             <span style={{ fontSize: '13px', color: '#B5A898' }}>
               {GUIDES.length} guide{GUIDES.length !== 1 ? 's' : ''} and counting

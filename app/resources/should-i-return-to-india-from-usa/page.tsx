@@ -83,9 +83,9 @@ export default function ShouldIReturnToIndia() {
               ))}
             </ul>
             <p style={{ fontSize: '13px', color: '#6B5E50', margin: 0 }}>
-              Not sure how you score? →{' '}
+              Not sure where you stand? →{' '}
               <Link href="/planner" style={{ color: '#FF9933', fontWeight: 600, textDecoration: 'none' }}>
-                Take the 2-minute readiness check
+                Open the planner
               </Link>
             </p>
           </div>
@@ -242,13 +242,13 @@ export default function ShouldIReturnToIndia() {
         <div style={{ maxWidth: '620px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🎯</div>
           <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.5rem,3vw,2rem)', color: '#fff', marginBottom: '0.75rem', lineHeight: 1.3 }}>
-            Get your personalised readiness score
+            See your move-back plan clearly
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', lineHeight: 1.7, marginBottom: '1.75rem' }}>
-            Answer 10 questions about your finances, career, family, and timeline. Get a score out of 100, your key risks, and a clear move-or-delay recommendation — in under 2 minutes.
+            Use the planner to understand where you stand across finances, career, family, and timing. Then focus on the next steps that actually matter — in under 2 minutes.
           </p>
           <Link href="/planner" style={{ display: 'inline-block', background: '#FF9933', color: '#1A1208', borderRadius: '100px', padding: '13px 30px', fontSize: '15px', fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 20px rgba(255,153,51,0.45)', marginBottom: '1rem' }}>
-            Check my readiness score →
+            Start my planner →
           </Link>
           <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>Free · no account needed · takes 2 minutes</div>
         </div>
@@ -265,7 +265,7 @@ export default function ShouldIReturnToIndia() {
             A 6–12 month delay to get income confirmed, savings built, RNOR planned, and housing sorted isn't a failure of commitment. It's the difference between arriving in India from a position of strength versus arriving and immediately dealing with financial pressure on top of an already complex transition.
           </p>
           <p style={{ ...pStyle }}>
-            Use the tools available to you. Get your readiness score. Talk to an NRI CA about RNOR. Do a scouting trip. Research schools before you leave. The families who plan carefully almost always report that their return was the right decision. The families who rush it almost always wish they'd waited six more months.
+            Use the tools available to you. Use the planner. Talk to an NRI CA about RNOR. Do a scouting trip. Research schools before you leave. The families who plan carefully almost always report that their return was the right decision. The families who rush it almost always wish they'd waited six more months.
           </p>
 
           {/* Related guides */}
@@ -273,7 +273,7 @@ export default function ShouldIReturnToIndia() {
             <div style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Related Tools</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
               {[
-                { href: '/planner', icon: '📋', label: 'Readiness Check', sub: 'Get your personalised score' },
+                { href: '/planner', icon: '📋', label: 'Return Planner', sub: 'See where you stand and what to do next' },
                 { href: '/rnor', icon: '📊', label: 'RNOR Calculator', sub: 'Calculate your tax savings' },
                 { href: '/city', icon: '🏙️', label: 'City Match', sub: 'Find your ideal city' },
                 { href: '/schools', icon: '🎓', label: 'Schools Finder', sub: 'Compare international schools' },

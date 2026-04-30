@@ -302,7 +302,7 @@ export default function SchoolCurriculumGuide() {
               Explore schools
             </Link>
             <Link href="/planner" style={{ display: 'inline-block', background: 'rgba(255,255,255,0.08)', color: '#fff', borderRadius: '100px', padding: '12px 26px', fontSize: '14px', fontWeight: 600, textDecoration: 'none', border: '1px solid rgba(255,255,255,0.18)' }}>
-              Check readiness
+              Open planner
             </Link>
           </div>
         </div>
@@ -317,7 +317,7 @@ export default function SchoolCurriculumGuide() {
             <div className="card-grid">
               {[
                 ['/schools', 'Schools Finder', 'Compare schools by city'],
-                ['/planner', 'Readiness Check', 'Get your personalised score'],
+                ['/planner', 'Return Planner', 'See where school planning fits'],
                 ['/city', 'City Match', 'Find the right city for your family'],
                 ['/resources/nri-returning-to-india-checklist', 'NRI Return Checklist', '14-step planning guide'],
               ].map((item) => (
