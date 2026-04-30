@@ -20,6 +20,7 @@ const TOOLS = [
 const TOP_LINKS = [
   { href: '/planner', label: 'Planner' },
   { href: '/videos', label: 'Videos' },
+  { href: '/community', label: 'Community' },
 ]
 
 const PUBLIC_NAV_PATHS = new Set([
@@ -94,7 +95,7 @@ export default function NavBar() {
               Home
             </Link>
 
-            {/* TOP LINKS — Readiness Check, Back2India Journey, Our Story */}
+            {/* TOP LINKS */}
             {TOP_LINKS.map(link => (
               <Link key={link.href} href={protectedHref(link.href)} style={{ fontSize: '13px', fontWeight: 500, color: pathname === link.href ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === link.href ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
                 {link.label}
@@ -174,10 +175,6 @@ export default function NavBar() {
             </div>
 
             {/* OUR STORY — last nav item */}
-            <Link href="/community" style={{ fontSize: '13px', fontWeight: 500, color: pathname === '/community' ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === '/community' ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
-              Community
-            </Link>
-
             <Link href="/our-story" style={{ fontSize: '13px', fontWeight: 500, color: pathname === '/our-story' ? '#fff' : 'rgba(255,255,255,0.5)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', background: pathname === '/our-story' ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'all 0.15s' }}>
               Our Story
             </Link>
@@ -245,10 +242,6 @@ export default function NavBar() {
                 ))}
               </div>
             )}
-
-            <Link href="/community" onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === '/community' ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
-              Community
-            </Link>
 
             <Link href="/our-story" onClick={() => setMobileOpen(false)} style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: pathname === '/our-story' ? '#FF9933' : 'rgba(255,255,255,0.7)', textDecoration: 'none', padding: '10px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
               Our Story
