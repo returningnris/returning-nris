@@ -31,10 +31,10 @@ export default async function YouTubeVideoLibrary({
 
   return (
     <section aria-label="All videos" className="space-y-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           {feed.channelUrl ? (
             <a
-              className="btn-ghost justify-center"
+              className="btn-ghost justify-center border-[#f2d0a4] bg-[#fff1de] text-[#8d5c22] shadow-[0_12px_30px_rgba(141,92,34,0.08)] transition-colors hover:border-[#e2b06d] hover:bg-[#ffe6c4] hover:text-[#6f4617]"
               href={feed.channelUrl}
               rel="noreferrer"
               target="_blank"
