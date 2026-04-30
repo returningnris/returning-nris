@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { INSTAGRAM_URL } from '../lib/social-links'
 
 type ReadinessId = 'almost-ready' | 'planning-seriously' | 'still-exploring'
 type TimelineStageId = 'clarity' | 'lock-decisions' | 'landing-week' | 'first-90-days' | 'first-year'
@@ -140,26 +141,50 @@ const SHORTCUTS = [
   },
 ]
 
+const CHANNEL_LINKS = [
+  {
+    title: 'WhatsApp Community',
+    label: 'Ask, discuss, connect',
+    href: '/community#join-community',
+    external: false,
+  },
+  {
+    title: 'YouTube Guides',
+    label: 'Deep-dive videos',
+    href: '/videos',
+    external: false,
+  },
+  {
+    title: 'Instagram Reels',
+    label: 'Quick move-back tips',
+    href: INSTAGRAM_URL,
+    external: true,
+  },
+]
+
+const INSTAGRAM_TOPICS = ['RNOR & Tax', 'Schools & Kids', 'Hyderabad Living', 'Money & Banking', 'First 90 Days']
+
 const plannerStyles = `
   .planner-page {
     min-height: 100vh;
     background:
-      radial-gradient(circle at top left, rgba(255,153,51,0.14), transparent 28%),
-      radial-gradient(circle at 84% 12%, rgba(19,136,8,0.1), transparent 24%),
-      linear-gradient(180deg, #fffdf9 0%, #f8f4ec 52%, #f7f1e8 100%);
+      radial-gradient(circle at top left, rgba(255,153,51,0.12), transparent 28%),
+      radial-gradient(circle at 84% 10%, rgba(19,136,8,0.08), transparent 24%),
+      linear-gradient(180deg, #fffdf9 0%, #f8f4ec 100%);
   }
   .planner-shell {
-    max-width: 1180px;
+    max-width: 1160px;
     margin: 0 auto;
     padding: 0 1rem;
   }
   .planner-section {
-    padding: 1.2rem 0 0;
+    padding: 1rem 0 0;
     scroll-margin-top: 84px;
   }
   .planner-hero-grid,
   .planner-readiness-grid,
-  .planner-shortcuts-grid {
+  .planner-shortcuts-grid,
+  .planner-channel-grid {
     display: grid;
     gap: 1rem;
   }
@@ -173,19 +198,22 @@ const plannerStyles = `
   .planner-shortcuts-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-  .planner-card-strip {
+  .planner-channel-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .planner-stage-rail {
     display: flex;
-    gap: 0.9rem;
+    gap: 0.85rem;
     overflow-x: auto;
     padding-bottom: 0.4rem;
-    scroll-snap-type: x proximity;
     scrollbar-width: none;
+    scroll-snap-type: x proximity;
   }
-  .planner-card-strip::-webkit-scrollbar {
+  .planner-stage-rail::-webkit-scrollbar {
     display: none;
   }
   .planner-stage-card {
-    min-width: min(275px, 80vw);
+    min-width: min(265px, 80vw);
     scroll-snap-align: start;
   }
   .planner-mobile-bar {
@@ -198,8 +226,19 @@ const plannerStyles = `
     }
   }
   @media (max-width: 900px) {
-    .planner-hero-grid {
+    .planner-hero-grid,
+    .planner-channel-grid {
       grid-template-columns: 1fr;
+    }
+  }
+  @media (min-width: 768px) {
+    .planner-stage-rail {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      overflow: visible;
+    }
+    .planner-stage-card {
+      min-width: 0;
     }
   }
   @media (max-width: 767px) {
@@ -207,19 +246,19 @@ const plannerStyles = `
       padding: 0 0.95rem;
     }
     .planner-section {
-      padding-top: 0.95rem;
+      padding-top: 0.9rem;
       scroll-margin-top: 76px;
     }
     .planner-readiness-grid,
     .planner-shortcuts-grid {
       grid-template-columns: 1fr;
     }
-    .planner-mobile-actions {
+    .planner-action-row {
       flex-direction: column;
       align-items: stretch !important;
     }
-    .planner-mobile-actions a,
-    .planner-mobile-actions button {
+    .planner-action-row a,
+    .planner-action-row button {
       width: 100%;
       justify-content: center;
     }
@@ -234,7 +273,7 @@ const plannerStyles = `
       gap: 0.7rem;
       padding: 0.7rem;
       border-radius: 22px;
-      background: rgba(255,253,249,0.96);
+      background: rgba(255,253,249,0.97);
       border: 1px solid rgba(29,22,15,0.1);
       box-shadow: 0 18px 40px rgba(29,22,15,0.12);
       backdrop-filter: blur(14px);
@@ -302,11 +341,12 @@ function ArrowIcon() {
   )
 }
 
-function SaveIcon() {
+function InstagramIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M6 4H16L20 8V18C20 19.1 19.1 20 18 20H6C4.9 20 4 19.1 4 18V6C4 4.9 4.9 4 6 4Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="M8 4V9H15V4M8 20V14H16V20" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4.25" y="4.25" width="15.5" height="15.5" rx="4.5" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="12" cy="12" r="3.25" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="17.2" cy="6.9" r="0.9" fill="currentColor" />
     </svg>
   )
 }
@@ -338,7 +378,7 @@ function renderReadinessIcon(id: ReadinessId) {
 }
 
 export default function ReturningNriPlannerExperience() {
-  const [selectedReadiness, setSelectedReadiness] = useState<ReadinessId | null>('planning-seriously')
+  const [selectedReadiness, setSelectedReadiness] = useState<ReadinessId | null>(null)
   const [selectedStageId, setSelectedStageId] = useState<TimelineStageId>('clarity')
   const [checkedTaskIds, setCheckedTaskIds] = useState<string[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
@@ -392,24 +432,12 @@ export default function ReturningNriPlannerExperience() {
     }
   }, [])
 
-  const selectedReadinessCard =
-    READINESS_OPTIONS.find((option) => option.id === selectedReadiness) ?? READINESS_OPTIONS[1]
+  const selectedReadinessCard = READINESS_OPTIONS.find((option) => option.id === selectedReadiness) ?? null
   const selectedStage = TIMELINE_STAGES.find((stage) => stage.id === selectedStageId) ?? TIMELINE_STAGES[0]
   const totalTasks = TIMELINE_STAGES.reduce((sum, stage) => sum + stage.tasks.length, 0)
   const completedTasks = checkedTaskIds.length
 
-  function toggleTask(taskId: string) {
-    setCheckedTaskIds((current) =>
-      current.includes(taskId) ? current.filter((entry) => entry !== taskId) : [...current, taskId]
-    )
-  }
-
-  function getStageCompleted(stage: TimelineStage) {
-    return stage.tasks.filter((task) => checkedTaskIds.includes(task.id)).length
-  }
-
-  function handleManualSave() {
-    persistPlannerState(selectedReadiness, checkedTaskIds)
+  function showSavedState() {
     setSaveNote('Saved on this device.')
 
     if (saveTimeoutRef.current) {
@@ -418,22 +446,38 @@ export default function ReturningNriPlannerExperience() {
 
     saveTimeoutRef.current = window.setTimeout(() => {
       setSaveNote('Auto-saves on this device.')
-    }, 2200)
+    }, 1800)
+  }
+
+  function toggleTask(taskId: string) {
+    setCheckedTaskIds((current) =>
+      current.includes(taskId) ? current.filter((entry) => entry !== taskId) : [...current, taskId]
+    )
+    showSavedState()
+  }
+
+  function selectReadiness(optionId: ReadinessId) {
+    setSelectedReadiness(optionId)
+    showSavedState()
+  }
+
+  function getStageCompleted(stage: TimelineStage) {
+    return stage.tasks.filter((task) => checkedTaskIds.includes(task.id)).length
   }
 
   return (
     <div className="planner-page">
       <style>{plannerStyles}</style>
 
-      <section className="planner-section" style={{ paddingTop: '1.4rem' }}>
+      <section className="planner-section" style={{ paddingTop: '1.25rem' }}>
         <div className="planner-shell">
           <div className="planner-hero-grid">
             <div
               style={{
-                background: 'rgba(255,255,255,0.82)',
+                background: 'rgba(255,255,255,0.86)',
                 border: '1px solid rgba(29,22,15,0.08)',
                 borderRadius: 32,
-                padding: '1.4rem',
+                padding: '1.35rem',
                 boxShadow: '0 26px 56px rgba(29,22,15,0.08)',
                 backdropFilter: 'blur(10px)',
               }}
@@ -451,7 +495,7 @@ export default function ReturningNriPlannerExperience() {
                   fontWeight: 700,
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase',
-                  marginBottom: '0.95rem',
+                  marginBottom: '0.9rem',
                 }}
               >
                 Returning NRI Planner
@@ -459,10 +503,10 @@ export default function ReturningNriPlannerExperience() {
 
               <h1
                 style={{
-                  fontSize: 'clamp(2.35rem, 6vw, 4.9rem)',
-                  lineHeight: 0.96,
+                  fontSize: 'clamp(2.35rem, 6vw, 4.6rem)',
+                  lineHeight: 0.97,
                   color: '#1a1208',
-                  marginBottom: '0.9rem',
+                  marginBottom: '0.8rem',
                   maxWidth: 620,
                 }}
               >
@@ -493,17 +537,14 @@ export default function ReturningNriPlannerExperience() {
                   color: '#4f4336',
                   fontSize: 14,
                   lineHeight: 1.5,
-                  marginBottom: '1.1rem',
+                  marginBottom: '1rem',
                 }}
               >
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#138808', flexShrink: 0 }} />
                 Built from real return experience - not generic advice.
               </div>
 
-              <div
-                className="planner-mobile-actions"
-                style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}
-              >
+              <div className="planner-action-row" style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <a href="#readiness" className="btn-primary">
                   Start My Plan
                 </a>
@@ -515,10 +556,10 @@ export default function ReturningNriPlannerExperience() {
 
             <div
               style={{
-                background: 'linear-gradient(180deg, rgba(30,22,15,0.96) 0%, rgba(38,27,18,0.96) 100%)',
+                background: 'linear-gradient(180deg, rgba(30,22,15,0.98) 0%, rgba(35,25,18,0.97) 58%, rgba(24,52,37,0.98) 100%)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 32,
-                padding: '1.3rem',
+                padding: '1.25rem',
                 boxShadow: '0 26px 56px rgba(18,13,8,0.16)',
                 color: '#fff',
               }}
@@ -526,7 +567,7 @@ export default function ReturningNriPlannerExperience() {
               <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)', marginBottom: 8 }}>
                 Move Clarity Snapshot
               </div>
-              <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.35rem)', color: '#fff', marginBottom: '0.95rem' }}>
+              <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', color: '#fff', marginBottom: '0.9rem' }}>
                 The move-back command center
               </h2>
 
@@ -587,17 +628,99 @@ export default function ReturningNriPlannerExperience() {
 
               <div
                 style={{
-                  marginTop: '0.35rem',
+                  marginTop: '0.3rem',
                   padding: '0.8rem 0.9rem',
                   borderRadius: 18,
                   background: 'rgba(255,255,255,0.04)',
-                  color: 'rgba(255,255,255,0.62)',
+                  color: 'rgba(255,255,255,0.64)',
                   fontSize: 13,
                   lineHeight: 1.55,
                 }}
               >
-                Short on time? Start with readiness, save progress, and come back where you left off.
+                Short on time? Choose your readiness state, track the essentials, and pick up later from the same device.
               </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '1rem' }}>
+            <div className="planner-channel-grid">
+              {CHANNEL_LINKS.map((channel) =>
+                channel.external ? (
+                  <a
+                    key={channel.title}
+                    href={channel.href}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.85rem',
+                      background: '#ffffff',
+                      border: '1px solid rgba(29,22,15,0.08)',
+                      borderRadius: 24,
+                      padding: '1rem',
+                      boxShadow: '0 16px 34px rgba(29,22,15,0.05)',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1208', marginBottom: 4 }}>{channel.title}</div>
+                      <div style={{ fontSize: 13, color: '#5c5346', lineHeight: 1.55 }}>{channel.label}</div>
+                    </div>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 14,
+                        background: '#fcf1e4',
+                        color: '#8d5c22',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <InstagramIcon />
+                    </div>
+                  </a>
+                ) : (
+                  <Link
+                    key={channel.title}
+                    href={channel.href}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.85rem',
+                      background: '#ffffff',
+                      border: '1px solid rgba(29,22,15,0.08)',
+                      borderRadius: 24,
+                      padding: '1rem',
+                      boxShadow: '0 16px 34px rgba(29,22,15,0.05)',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1208', marginBottom: 4 }}>{channel.title}</div>
+                      <div style={{ fontSize: 13, color: '#5c5346', lineHeight: 1.55 }}>{channel.label}</div>
+                    </div>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 14,
+                        background: channel.title === 'WhatsApp Community' ? '#edf9f0' : '#fcf1e4',
+                        color: channel.title === 'WhatsApp Community' ? '#138808' : '#8d5c22',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {channel.title === 'WhatsApp Community' ? <CommunityIcon /> : <TimelineIcon />}
+                    </div>
+                  </Link>
+                )
+              )}
             </div>
           </div>
         </div>
@@ -607,28 +730,30 @@ export default function ReturningNriPlannerExperience() {
         <div className="planner-shell">
           <div style={{ marginBottom: '1rem' }}>
             <div className="section-label">Readiness</div>
-            <h2 className="section-title" style={{ marginBottom: '0.45rem' }}>Where are you right now?</h2>
+            <h2 className="section-title" style={{ marginBottom: '0.45rem' }}>
+              Where are you right now?
+            </h2>
             <p className="section-sub">Pick the closest match. No long quiz.</p>
           </div>
 
           <div className="planner-readiness-grid">
             {READINESS_OPTIONS.map((option) => {
-              const isSelected = option.id === selectedReadiness
+              const isSelected = selectedReadiness === option.id
 
               return (
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() => setSelectedReadiness(option.id)}
+                  onClick={() => selectReadiness(option.id)}
                   aria-pressed={isSelected}
                   style={{
                     textAlign: 'left',
-                    background: isSelected ? '#fff6eb' : '#ffffff',
-                    border: `1px solid ${isSelected ? 'rgba(240,138,36,0.26)' : 'rgba(29,22,15,0.1)'}`,
+                    background: isSelected ? '#fff8ef' : '#ffffff',
+                    border: `1px solid ${isSelected ? 'rgba(240,138,36,0.24)' : 'rgba(29,22,15,0.1)'}`,
                     borderRadius: 28,
-                    padding: '1.2rem',
-                    boxShadow: isSelected ? '0 18px 40px rgba(240,138,36,0.14)' : '0 18px 40px rgba(29,22,15,0.05)',
-                    transition: 'transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease',
+                    padding: '1.15rem',
+                    boxShadow: isSelected ? '0 18px 40px rgba(240,138,36,0.12)' : '0 18px 40px rgba(29,22,15,0.05)',
+                    transition: 'transform 0.18s ease, box-shadow 0.18s ease',
                   }}
                 >
                   <div
@@ -636,12 +761,12 @@ export default function ReturningNriPlannerExperience() {
                       width: 44,
                       height: 44,
                       borderRadius: 16,
-                      background: isSelected ? 'rgba(255,153,51,0.14)' : '#fcf7ef',
-                      color: isSelected ? '#DA7716' : '#6b5e50',
+                      background: isSelected ? 'rgba(255,153,51,0.14)' : '#f7f2ea',
+                      color: isSelected ? '#8d5c22' : '#6b5e50',
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      marginBottom: '0.95rem',
+                      marginBottom: '0.9rem',
                     }}
                   >
                     {renderReadinessIcon(option.id)}
@@ -687,33 +812,38 @@ export default function ReturningNriPlannerExperience() {
             }}
           >
             <div style={{ fontSize: 12, fontWeight: 700, color: '#9d907f', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-              Your next focus
+              {selectedReadinessCard ? 'Your next focus' : 'Next step'}
             </div>
             <div style={{ fontSize: 15, color: '#4f4336', lineHeight: 1.7, marginBottom: '0.95rem', maxWidth: 780 }}>
-              {selectedReadinessCard.focus}
+              {selectedReadinessCard
+                ? selectedReadinessCard.focus
+                : 'Tap the card that feels closest to you. We will save your selection on this device so you can come back to it later.'}
             </div>
-            <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap' }}>
-              {selectedReadinessCard.chips.map((chip) => (
-                <span
-                  key={chip}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    padding: '0.45rem 0.75rem',
-                    borderRadius: 999,
-                    background: '#fcf6ed',
-                    border: '1px solid rgba(255,153,51,0.16)',
-                    color: '#8d5c22',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    letterSpacing: '0.04em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  {chip}
-                </span>
-              ))}
-            </div>
+
+            {selectedReadinessCard ? (
+              <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap' }}>
+                {selectedReadinessCard.chips.map((chip) => (
+                  <span
+                    key={chip}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '0.45rem 0.75rem',
+                      borderRadius: 999,
+                      background: '#fcf6ed',
+                      border: '1px solid rgba(255,153,51,0.16)',
+                      color: '#8d5c22',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div style={{ marginTop: '0.85rem' }}>
@@ -738,13 +868,15 @@ export default function ReturningNriPlannerExperience() {
           >
             <div>
               <div className="section-label">Timeline</div>
-              <h2 className="section-title" style={{ marginBottom: '0.45rem' }}>Your move-back timeline</h2>
+              <h2 className="section-title" style={{ marginBottom: '0.45rem' }}>
+                Your move-back timeline
+              </h2>
               <p className="section-sub">The big things, in the right order.</p>
             </div>
 
             <div
               style={{
-                minWidth: 240,
+                minWidth: 250,
                 background: '#ffffff',
                 border: '1px solid rgba(29,22,15,0.08)',
                 borderRadius: 22,
@@ -772,7 +904,7 @@ export default function ReturningNriPlannerExperience() {
             </div>
           </div>
 
-          <div className="planner-card-strip">
+          <div className="planner-stage-rail">
             {TIMELINE_STAGES.map((stage) => {
               const completed = getStageCompleted(stage)
               const isActive = stage.id === selectedStage.id
@@ -810,7 +942,7 @@ export default function ReturningNriPlannerExperience() {
                   >
                     {stage.label}
                   </div>
-                  <div style={{ fontSize: 24, fontWeight: 700, color: '#1a1208', marginBottom: 8 }}>{stage.title}</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#1a1208', marginBottom: 8 }}>{stage.title}</div>
                   <div style={{ display: 'grid', gap: 6, marginBottom: '0.85rem' }}>
                     {stage.tasks.map((task) => (
                       <div key={task.id} style={{ fontSize: 13, color: '#5c5346', lineHeight: 1.5 }}>
@@ -856,7 +988,7 @@ export default function ReturningNriPlannerExperience() {
               <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.62)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
                 Selected stage
               </div>
-              <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 700, marginBottom: 6 }}>
+              <div style={{ fontSize: 'clamp(1.45rem, 4vw, 1.95rem)', fontWeight: 700, marginBottom: 6 }}>
                 {selectedStage.label} / {selectedStage.title}
               </div>
               <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.72)', lineHeight: 1.6 }}>
@@ -921,8 +1053,12 @@ export default function ReturningNriPlannerExperience() {
               boxShadow: '0 22px 46px rgba(19,136,8,0.06)',
             }}
           >
-            <div className="section-label" style={{ color: '#138808' }}>Community</div>
-            <h2 className="section-title" style={{ marginBottom: '0.5rem' }}>Need help from people actually doing this?</h2>
+            <div className="section-label" style={{ color: '#138808' }}>
+              Community
+            </div>
+            <h2 className="section-title" style={{ marginBottom: '0.5rem' }}>
+              Need help from people actually doing this?
+            </h2>
             <p style={{ maxWidth: 640, fontSize: 15, color: '#4f4336', lineHeight: 1.7, marginBottom: '1rem' }}>
               The hardest part is not finding information. It is knowing what applies to your family.
             </p>
@@ -938,11 +1074,15 @@ export default function ReturningNriPlannerExperience() {
               <div style={{ fontSize: 24, fontWeight: 700, color: '#1a1208', marginBottom: 8 }}>
                 Join the Returning NRI Community
               </div>
-              <div style={{ fontSize: 15, color: '#4f4336', lineHeight: 1.7, marginBottom: '0.95rem', maxWidth: 700 }}>
-                250+ active Hyderabad members, regular online sessions, and in-person Hyderabad 2026 meetup planning.
+              <div style={{ fontSize: 15, color: '#4f4336', lineHeight: 1.7, marginBottom: '0.95rem', maxWidth: 720 }}>
+                250+ active Hyderabad members, a successful online group meeting already completed, more regular sessions being planned, and an in-person Hyderabad get-together in the works for 2026 returnees.
               </div>
               <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-                {['250+ active Hyderabad members', 'Regular online sessions', '2026 meetup planning'].map((badge) => (
+                {[
+                  '250+ active Hyderabad members',
+                  'Regular online sessions',
+                  'Hyderabad 2026 meetup planning',
+                ].map((badge) => (
                   <span
                     key={badge}
                     style={{
@@ -961,7 +1101,7 @@ export default function ReturningNriPlannerExperience() {
                   </span>
                 ))}
               </div>
-              <div className="planner-mobile-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div className="planner-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <Link
                   href="/community#join-community"
                   style={{
@@ -981,9 +1121,107 @@ export default function ReturningNriPlannerExperience() {
                 >
                   Join WhatsApp Community
                 </Link>
-                <Link href="/community" style={{ fontSize: 14, color: '#4f4336', textDecoration: 'underline' }}>
-                  See community details
-                </Link>
+                <a
+                  href={INSTAGRAM_URL}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  className="btn-ghost"
+                >
+                  Follow on Instagram
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="planner-section">
+        <div className="planner-shell">
+          <div
+            style={{
+              borderRadius: 32,
+              border: '1px solid rgba(29,22,15,0.08)',
+              background: '#ffffff',
+              padding: '1.25rem',
+              boxShadow: '0 18px 40px rgba(29,22,15,0.05)',
+            }}
+          >
+            <div className="section-label">Instagram</div>
+            <h2 className="section-title" style={{ marginBottom: '0.45rem' }}>
+              Short tips for your move-back journey
+            </h2>
+            <p className="section-sub" style={{ maxWidth: 620, marginBottom: '1rem' }}>
+              Prefer quick videos? Follow our Instagram page for short, practical reels on returning to India.
+            </p>
+
+            <div
+              style={{
+                borderRadius: 28,
+                background: 'linear-gradient(135deg, #fff5ea 0%, #ffffff 68%, #f7fbf8 100%)',
+                border: '1px solid rgba(29,22,15,0.08)',
+                padding: '1.1rem',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <div style={{ maxWidth: 560 }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: '#1a1208', marginBottom: 8 }}>
+                    Quick move-back reels, without the page speed hit
+                  </div>
+                  <div style={{ fontSize: 14, color: '#5c5346', lineHeight: 1.7 }}>
+                    Use Instagram for short reminders on RNOR, schools, Hyderabad living, money, and the first 90 days after landing.
+                  </div>
+                </div>
+                <a
+                  href={INSTAGRAM_URL}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    minHeight: 46,
+                    padding: '0.85rem 1.1rem',
+                    borderRadius: 999,
+                    background: '#1a1208',
+                    color: '#ffffff',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    flexShrink: 0,
+                  }}
+                >
+                  <InstagramIcon />
+                  Follow on Instagram
+                </a>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+                {INSTAGRAM_TOPICS.map((topic) => (
+                  <span
+                    key={topic}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '0.45rem 0.72rem',
+                      borderRadius: 999,
+                      background: '#ffffff',
+                      border: '1px solid rgba(29,22,15,0.08)',
+                      color: '#4f4336',
+                      fontSize: 12,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {topic}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
@@ -994,7 +1232,9 @@ export default function ReturningNriPlannerExperience() {
         <div className="planner-shell">
           <div style={{ marginBottom: '1rem' }}>
             <div className="section-label">Go Deeper</div>
-            <h2 className="section-title" style={{ marginBottom: '0.45rem' }}>Go deeper only where you need</h2>
+            <h2 className="section-title" style={{ marginBottom: '0.45rem' }}>
+              Go deeper only where you need
+            </h2>
           </div>
 
           <div className="planner-shortcuts-grid">
@@ -1023,7 +1263,7 @@ export default function ReturningNriPlannerExperience() {
         </div>
       </section>
 
-      <section className="planner-section" style={{ paddingBottom: '1.6rem' }}>
+      <section className="planner-section" style={{ paddingBottom: '1.55rem' }}>
         <div className="planner-shell">
           <div
             style={{
@@ -1040,10 +1280,10 @@ export default function ReturningNriPlannerExperience() {
             <h2 style={{ fontSize: 'clamp(1.85rem, 4vw, 2.7rem)', color: '#ffffff', marginBottom: '0.55rem' }}>
               Moving in 2026?
             </h2>
-            <p style={{ maxWidth: 560, fontSize: 15, color: 'rgba(255,255,255,0.72)', lineHeight: 1.7, marginBottom: '1rem' }}>
-              Start with your plan. Then join the community.
+            <p style={{ maxWidth: 620, fontSize: 15, color: 'rgba(255,255,255,0.72)', lineHeight: 1.7, marginBottom: '1rem' }}>
+              Start with your plan, join the community, and follow short video tips as you prepare.
             </p>
-            <div className="planner-mobile-actions" style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="planner-action-row" style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <Link
                 href="/community#join-community"
                 style={{
@@ -1063,9 +1303,10 @@ export default function ReturningNriPlannerExperience() {
               >
                 Join WhatsApp Community
               </Link>
-              <button
-                type="button"
-                onClick={handleManualSave}
+              <a
+                href={INSTAGRAM_URL}
+                rel="noopener noreferrer"
+                target="_blank"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -1081,11 +1322,10 @@ export default function ReturningNriPlannerExperience() {
                   fontWeight: 700,
                 }}
               >
-                <SaveIcon />
-                Save My Progress
-              </button>
+                <InstagramIcon />
+                Follow on Instagram
+              </a>
             </div>
-            <div style={{ marginTop: '0.9rem', fontSize: 13, color: 'rgba(255,255,255,0.56)' }}>{saveNote}</div>
           </div>
         </div>
       </section>
@@ -1110,7 +1350,9 @@ export default function ReturningNriPlannerExperience() {
           Join Community
         </Link>
         <a
-          href="#timeline"
+          href={INSTAGRAM_URL}
+          rel="noopener noreferrer"
+          target="_blank"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -1124,7 +1366,7 @@ export default function ReturningNriPlannerExperience() {
             fontWeight: 700,
           }}
         >
-          Timeline
+          Instagram Tips
         </a>
       </div>
     </div>
