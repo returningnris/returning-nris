@@ -34,7 +34,7 @@ export default async function YouTubeVideoLibrary({
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           {feed.channelUrl ? (
             <a
-              className="btn-ghost justify-center border-[#f2d0a4] bg-[#fff1de] text-[#8d5c22] shadow-[0_12px_30px_rgba(141,92,34,0.08)] transition-colors hover:border-[#e2b06d] hover:bg-[#ffe6c4] hover:text-[#6f4617]"
+              className="inline-flex items-center justify-center rounded-[999px] border border-[#c9302c] bg-[#e53935] px-7 py-[0.85rem] text-[0.95rem] font-medium text-white shadow-[0_14px_32px_rgba(229,57,53,0.22)] transition-all duration-200 hover:-translate-y-[1px] hover:border-[#a92421] hover:bg-[#c62828]"
               href={feed.channelUrl}
               rel="noreferrer"
               target="_blank"
