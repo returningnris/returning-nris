@@ -205,7 +205,7 @@ export default function CommunityJoinForm({ formId = 'join-community' }: Communi
           OK
         </div>
         <h3 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.3rem)', color: '#1a1208', marginBottom: '0.75rem' }}>
-          Request received
+          Thanks, you&apos;re on the list
         </h3>
         <p style={{ fontSize: '1rem', color: '#5c5346', lineHeight: 1.8, maxWidth: 560 }}>
           Thank you! We received your details. We will review and send the WhatsApp community invite link to your mobile number shortly.
@@ -230,10 +230,10 @@ export default function CommunityJoinForm({ formId = 'join-community' }: Communi
       <div style={{ marginBottom: '1.5rem' }}>
         <div className="section-label">Join Form</div>
         <h3 style={{ fontSize: 'clamp(1.9rem, 4vw, 2.5rem)', color: '#1a1208', marginBottom: '0.75rem' }}>
-          Request your WhatsApp community invite
+          Request WhatsApp Invite
         </h3>
         <p style={{ ...helperStyle, fontSize: '0.95rem' }}>
-          Share a few basic details so we can route you to the most relevant community group and upcoming sessions.
+          Share a few basic details so we can invite you to the most relevant WhatsApp group, online session, or future meetup.
         </p>
       </div>
 
@@ -243,6 +243,7 @@ export default function CommunityJoinForm({ formId = 'join-community' }: Communi
           <input
             id="community-full-name"
             type="text"
+            autoComplete="name"
             value={formState.fullName}
             onChange={(event) => updateField('fullName', event.target.value)}
             placeholder="Ananya Rao"
@@ -256,6 +257,7 @@ export default function CommunityJoinForm({ formId = 'join-community' }: Communi
           <input
             id="community-current-location"
             type="text"
+            autoComplete="address-level2"
             value={formState.currentLocation}
             onChange={(event) => updateField('currentLocation', event.target.value)}
             placeholder="Dallas, USA"
@@ -299,6 +301,8 @@ export default function CommunityJoinForm({ formId = 'join-community' }: Communi
           <input
             id="community-mobile-number"
             type="tel"
+            inputMode="tel"
+            autoComplete="tel"
             value={formState.mobileNumber}
             onChange={(event) => updateField('mobileNumber', event.target.value)}
             placeholder="Include country code, e.g. +1 214 XXX XXXX"
