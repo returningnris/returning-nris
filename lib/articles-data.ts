@@ -17,6 +17,14 @@ export type Article = {
 
 export const ARTICLES: Article[] = [
   {
+    href: '/resources/sell-your-us-home-before-moving-back-to-india',
+    label: 'Sell Your US Home Before Moving Back to India',
+    icon: 'US',
+    sub: 'A real-world FSBO + flat fee MLS playbook for NRI sellers',
+    category: 'Housing',
+    readMins: 9,
+  },
+  {
     href: '/resources/fire-for-returning-nris',
     label: 'FIRE for Returning NRIs',
     icon: '🔥',
