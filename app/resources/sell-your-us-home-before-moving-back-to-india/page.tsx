@@ -14,9 +14,17 @@ export const metadata: Metadata = {
       'A practical guide for NRIs selling a US home before returning to India, based on a real FSBO plus flat fee MLS experience.',
     url: 'https://www.returningnris.com/resources/sell-your-us-home-before-moving-back-to-india',
     type: 'article',
+    images: ['https://www.returningnris.com/og-image.png'],
   },
   alternates: {
     canonical: 'https://www.returningnris.com/resources/sell-your-us-home-before-moving-back-to-india',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'How to Sell Your US Home Before Moving Back to India (2026 Guide)',
+    description:
+      'A practical guide for NRIs selling a US home before returning to India, based on a real FSBO plus flat fee MLS experience.',
+    images: ['https://www.returningnris.com/og-image.png'],
   },
 }
 

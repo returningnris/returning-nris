@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react'
 import AuthButton from '../components/AuthButton'
 import { WhatsAppIcon } from '../lib/social-icons'
 
+const TOPMATE_URL = 'https://topmate.io/returningnris'
+
 const NAV_LINKS = [
   { href: '/', label: 'Start Here' },
   { href: '/planner', label: 'Planner' },
@@ -128,6 +130,26 @@ export default function NavBar() {
               <WhatsAppIcon size={16} />
               Join Community
             </Link>
+            <a
+              href={TOPMATE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 38,
+                padding: '0.65rem 1rem',
+                borderRadius: 999,
+                background: 'rgba(255,153,51,0.12)',
+                border: '1px solid rgba(255,153,51,0.25)',
+                color: '#FFD7A8',
+                fontSize: '13px',
+                fontWeight: 700,
+              }}
+            >
+              Book 1:1 Planning
+            </a>
             <AuthButton />
           </div>
 
@@ -206,6 +228,26 @@ export default function NavBar() {
                 >
                   Start Planner
                 </Link>
+                <a
+                  href={TOPMATE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 46,
+                    borderRadius: 16,
+                    background: 'rgba(255,153,51,0.12)',
+                    border: '1px solid rgba(255,153,51,0.24)',
+                    color: '#FFD7A8',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                  }}
+                >
+                  Book 1:1 Planning
+                </a>
               </div>
 
               {NAV_LINKS.map((link) => {

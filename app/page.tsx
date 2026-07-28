@@ -323,6 +323,27 @@ export default function Home() {
                   <WhatsAppIcon size={18} />
                   Join Community
                 </Link>
+                <a
+                  href={TOPMATE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 48,
+                    padding: '0.85rem 1.75rem',
+                    borderRadius: 100,
+                    background: '#fff7ec',
+                    color: '#8D5C22',
+                    border: '1px solid rgba(240,138,36,0.28)',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    boxShadow: '0 8px 20px rgba(240,138,36,0.08)',
+                  }}
+                >
+                  Book 1:1 Planning
+                </a>
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
                   <InstagramIcon size={18} />
                   Instagram Tips
@@ -503,8 +524,26 @@ export default function Home() {
                   1:1 Return to India Planning session. It is meant for families who want practical clarity, not a hard sell.
                 </p>
                 <div className="home-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <a href={TOPMATE_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                    Book 1:1 planning
+                  <a
+                    href={TOPMATE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: 48,
+                      padding: '0.85rem 1.75rem',
+                      borderRadius: 100,
+                      background: '#fff7ec',
+                      color: '#8D5C22',
+                      border: '1px solid rgba(240,138,36,0.28)',
+                      fontSize: '0.95rem',
+                      fontWeight: 600,
+                      boxShadow: '0 8px 20px rgba(240,138,36,0.08)',
+                    }}
+                  >
+                    Book 1:1 Planning
                   </a>
                   <Link href="/planner" className="btn-primary">
                     Start with the planner
@@ -703,7 +742,25 @@ export default function Home() {
                 <WhatsAppIcon size={18} />
                 Join Community
               </Link>
-              <a href={TOPMATE_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+              <a
+                href={TOPMATE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: 48,
+                  padding: '0.85rem 1.75rem',
+                  borderRadius: 100,
+                  background: 'rgba(255,153,51,0.18)',
+                  color: '#FFD7A8',
+                  border: '1px solid rgba(255,153,51,0.32)',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  boxShadow: '0 10px 24px rgba(0,0,0,0.12)',
+                }}
+              >
                 Book 1:1 Planning
               </a>
             </div>
