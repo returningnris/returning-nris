@@ -7,7 +7,7 @@ const ARTICLE_SLUG = 'sell-your-us-home-before-moving-back-to-india'
 export const metadata: Metadata = {
   title: 'How to Sell Your US Home Before Moving Back to India (2026 Guide)',
   description:
-    'A practical guide for NRIs selling a US home before returning to India. Learn when FSBO plus flat fee MLS works, how to price smartly, what seller costs to expect, and the exact closing flow.',
+    "A practical guide for NRIs selling a US home before returning to India in a buyer's market. Learn how FSBO plus flat fee MLS can help you price below competing homes, use buyer incentives, and close faster.",
   openGraph: {
     title: 'How to Sell Your US Home Before Moving Back to India (2026 Guide)',
     description:
@@ -46,26 +46,26 @@ const pStyle: React.CSSProperties = {
 
 const quickCards = [
   [
-    'Best when you want control',
-    'This route works well if you can stay responsive, keep the home presentation tight, and make decisions quickly.',
+    'Useful in a buyer market',
+    'When homes are sitting longer and buyers have more leverage, controlling pricing directly can help you create sharper value.',
   ],
   [
-    'Do not optimize for list price alone',
-    'The real metric is net proceeds after mortgage payoff, buyer-agent fee, closing costs, and concessions.',
+    'The goal is qualified buyer attention',
+    'The reason to price lower is not panic. It is to stand out versus competing listings and create urgency while you still protect net proceeds.',
   ],
   [
     'Flat fee MLS gives reach, not execution',
     'It gets your home onto the MLS and major portals, but you still run pricing, showings, and negotiation.',
   ],
   [
-    'Use professionals where leverage is high',
-    'Title, escrow, attorney review when needed, and strong photography usually matter more than a full listing commission.',
+    'Use saved commission intentionally',
+    'If a buyer has no realtor, you may have room to offer an extra 2% to 3% reduction or help with a rate buydown to make the deal easier to say yes to.',
   ],
 ]
 
 const processSteps = [
   ['01', 'Prepare the home', 'Deep clean, declutter, handle minor repairs, and get professional photos before the listing goes live.'],
-  ['02', 'Price for momentum', 'A slight discount versus comparable listings can create urgency without giving away your bottom line.'],
+  ['02', 'Price below competing listings', 'In a buyer market, a measured discount can help your home stand out quickly without losing sight of net proceeds.'],
   ['03', 'List through flat fee MLS', 'Get MLS exposure plus Zillow, Redfin, and Realtor.com distribution while keeping control of the sale.'],
   ['04', 'Respond fast to buyers', 'Prompt replies and flexible showing windows keep momentum high in the first days of listing.'],
   ['05', 'Compare offers on strength', 'Look beyond headline price to financing quality, contingencies, closing speed, and buyer-agent fee.'],
@@ -85,7 +85,7 @@ const workstreams = [
   {
     title: 'Listing and outreach',
     copy:
-      'The flat fee MLS provider is really your distribution layer. Your job is to ensure the listing copy, photos, and showing instructions are frictionless.',
+      'The flat fee MLS provider is your distribution layer on the major portals. Beyond that, make the listing easy to share in NRI WhatsApp groups, Facebook groups, alumni circles, temple communities, and local Indian networks for extra reach.',
   },
   {
     title: 'Showings',
@@ -95,7 +95,7 @@ const workstreams = [
   {
     title: 'Offer review',
     copy:
-      'The strongest offer is often not the highest one. Financing quality, repair posture, timeline, and buyer-agent compensation all affect your final outcome.',
+      'The strongest offer is often not the highest one. Financing quality, repair posture, timeline, and buyer-agent compensation all affect your final outcome. If the buyer has no realtor, you may be able to redirect some of that saved commission into a price cut or rate help instead.',
   },
 ]
 
@@ -123,6 +123,21 @@ const fitCards = [
   [
     'The sweet spot is thoughtful DIY',
     'The strongest middle path is often DIY control with selective expert help: photography, title, legal review where needed, and maybe staging if the market expects it.',
+  ],
+]
+
+const buyerPullLevers = [
+  [
+    'No-agent buyer discount',
+    'If the buyer is not represented by a realtor, you may be able to pass along an extra 2% to 3% reduction and still come out ahead versus a traditional agent-led sale.',
+  ],
+  [
+    'Interest rate buydown help',
+    'Instead of cutting only the headline price, consider offering seller help toward an interest rate buydown if that makes the monthly payment easier for the buyer.',
+  ],
+  [
+    'NRI community distribution',
+    'Share the listing in relevant NRI WhatsApp groups, Facebook groups, alumni circles, and local Indian community networks to widen reach beyond the portals and surface warm leads.',
   ],
 ]
 
@@ -237,8 +252,8 @@ export default function SellUsHomeGuide() {
               maxWidth: '700px',
             }}
           >
-            A practical guide built from a real FSBO plus flat fee MLS sale experience, adapted for NRI families who want
-            speed, control, and better net proceeds before the move home.
+            I wrote this for returning NRIs who are trying to sell in a slow market and feeling that quiet pressure of
+            wanting the house sold before the move home.
           </p>
         </div>
       </section>
@@ -280,14 +295,16 @@ export default function SellUsHomeGuide() {
       <article style={{ background: '#fff', padding: '2.5rem 2rem 0' }}>
         <div style={prose}>
           <p style={pStyle}>
-            If you are moving back to India, selling your US home can quietly become the most operationally messy part of
-            the move. It sits at the intersection of timing, liquidity, emotional bandwidth, and logistics. You are often
-            trying to coordinate school decisions, tax planning, housing in India, and travel dates at the same time.
+            Many returning NRIs are dealing with a home-sale market that feels much tougher than expected. In a buyer
+            market, listings sit longer, buyers negotiate harder, and the usual hope that the home will just sell in a
+            week or two starts to fade. That is not just a market problem. It becomes a personal one when your return to
+            India already has dates, deadlines, and family decisions attached to it.
           </p>
           <p style={pStyle}>
-            That is why many returning NRIs are not really looking for a glamorous selling strategy. They want a method
-            that is controlled, efficient, and financially sensible. The FSBO plus flat fee MLS route can be exactly that
-            when your market is healthy and you are willing to run the process with discipline.
+            That is exactly why I wanted to share this. I ran into the same issue when I sold my own home. I did not want
+            to sit around hoping the market would suddenly turn in my favor, and I also did not want to hand over a big
+            chunk of the sale in commission if I could help it. The FSBO plus flat fee MLS route gave me a way to price a
+            little more sharply than the competition, get attention faster, and still stay in control of the process.
           </p>
 
           <h2 style={h2Style}>The Core Idea: Full Control, Full Exposure</h2>
@@ -296,8 +313,8 @@ export default function SellUsHomeGuide() {
               <div className="feature-pill">FSBO side</div>
               <div className="feature-title">You own the decision-making</div>
               <p className="feature-copy">
-                You stay responsible for pricing, showing coordination, offer review, negotiation, and deciding which trade
-                offs you are willing to accept.
+                You stay responsible for pricing, showing coordination, offer review, negotiation, and deciding exactly
+                how aggressively you want to position the home against nearby competition.
               </p>
             </div>
             <div className="feature-card">
@@ -313,8 +330,8 @@ export default function SellUsHomeGuide() {
           <div className="callout-box">
             <div className="callout-label">The biggest lesson</div>
             <p className="callout-copy">
-              Flat fee MLS is a marketing layer, not a replacement for judgment. It gives you exposure. You still create
-              the outcome.
+              What helped most was not some clever trick. It was simply being able to price more competitively than nearby
+              homes while still getting the same broad MLS exposure buyers were already watching.
             </p>
           </div>
 
@@ -339,9 +356,10 @@ export default function SellUsHomeGuide() {
 
           <h2 style={h2Style}>Price for Net Proceeds, Not Ego</h2>
           <p style={pStyle}>
-            One of the smartest ideas from the source experience was pricing slightly below comparable listings while
-            planning explicitly for buyer-agent commission. That is how you protect speed without tricking yourself on the
-            economics.
+            This was probably the most important mindset shift for me. I priced relatively lower than competing homes, not
+            because I thought the house was worth less, but because I knew buyers had options and I wanted mine to feel
+            like the obvious one to look at first. That helped bring in more serious attention faster. Planning for
+            buyer-agent commission ahead of time is what made that decision feel calm and intentional instead of emotional.
           </p>
 
           <div className="formula-box">
@@ -353,6 +371,24 @@ export default function SellUsHomeGuide() {
             For NRIs, that formula matters even more because those proceeds often feed the India side of the move: rent
             buffers, down payment decisions, school deposits, and general relocation liquidity.
           </p>
+
+          <h2 style={h2Style}>Extra Ways to Attract Buyers</h2>
+          <p style={pStyle}>
+            In a slower market, pricing is not the only thing that helps. Sometimes buyers are interested but still uneasy,
+            and a small adjustment in structure can make the deal feel much easier for them to move forward on.
+          </p>
+          <p style={pStyle}>
+            You do not need to throw every incentive at the listing. The better approach is to choose the one that reduces
+            buyer hesitation the most while still protecting your net proceeds.
+          </p>
+          <div className="guide-grid">
+            {buyerPullLevers.map((item) => (
+              <div key={item[0]} className="feature-card">
+                <div className="feature-title">{item[0]}</div>
+                <p className="feature-copy">{item[1]}</p>
+              </div>
+            ))}
+          </div>
 
           <h2 style={h2Style}>What the Day-to-Day Work Actually Looks Like</h2>
           <div className="guide-grid">
@@ -397,8 +433,8 @@ export default function SellUsHomeGuide() {
           <p style={pStyle}>
             Once the purchase contract is signed, the title company or escrow company usually carries more of the process
             than sellers expect. They hold earnest money, coordinate payoff, work with the buyer lender and appraiser,
-            prepare settlement statements, and manage the recording flow. For a busy NRI household, this is the operational
-            backbone of the sale.
+            prepare settlement statements, and manage the recording flow. For me, this was the point where the whole thing
+            started to feel less chaotic and more like a transaction that was actually moving toward the finish line.
           </p>
 
           <h2 style={h2Style}>Is This the Right Route for Returning NRIs?</h2>
@@ -413,14 +449,21 @@ export default function SellUsHomeGuide() {
 
           <h2 style={h2Style}>Final Take</h2>
           <p style={pStyle}>
-            If your local market has solid buyer demand and you are comfortable running the process carefully, FSBO plus flat
-            fee MLS can be a very rational way to sell before moving back to India. You keep control, reduce commission
-            drag, and still get broad distribution.
+            If you are comfortable staying organized and handling the process carefully, FSBO plus flat fee MLS can be a
+            very sensible way to sell quickly before moving back to India. In a buyer market, it gives you more freedom to
+            price below competing homes, attract buyers faster, and use saved commission in smarter ways instead of just
+            watching the listing sit.
           </p>
           <p style={pStyle}>
-            If your bandwidth is already stretched thin, use the same principle selectively: keep your eyes on net proceeds,
-            but buy help where it materially reduces risk or complexity. The goal is not to do everything yourself. The goal
-            is to avoid paying for work that does not change the outcome.
+            If your bandwidth is already stretched thin, take the principle rather than the whole playbook: keep your eyes
+            on net proceeds, but buy help where it genuinely reduces stress, risk, or complexity. The goal is not to prove
+            that you can do everything yourself. The goal is to sell well and move on with one less thing hanging over your
+            family.
+          </p>
+          <p style={pStyle}>
+            And do not rely only on the portals. In this kind of market, community distribution can matter more than you
+            think. A listing shared thoughtfully through NRI and Indian community groups can sometimes create the kind of
+            warm buyer interest that a cold portal listing simply does not.
           </p>
           <p style={{ ...pStyle, fontSize: '0.94rem', color: '#6B5E50' }}>
             This guide is based on a real sale experience and adapted for returning NRI planning. Real estate forms,
