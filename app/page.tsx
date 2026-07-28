@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../lib/social-icons'
 import { INSTAGRAM_URL } from '../lib/social-links'
 
+const TOPMATE_URL = 'https://topmate.io/returningnris'
+
 export const metadata: Metadata = {
   title: 'ReturningNRIs | Planner, Community, Videos and Guides for Moving Back to India',
   description:
@@ -47,6 +49,12 @@ const quickStartCards = [
     href: '/videos',
     cta: 'Explore Videos',
   },
+]
+
+const planningSupportPoints = [
+  'A 1:1 thinking partner when your move has too many moving parts',
+  'Useful for families deciding timing, city, school, housing, and sequencing',
+  'Best when you want calm judgment, not another generic checklist',
 ]
 
 const focusAreas = [
@@ -471,6 +479,84 @@ export default function Home() {
         </div>
       </section>
 
+      <section style={{ background: '#fffdf9', padding: '0 0 3.5rem' }}>
+        <div className="home-shell">
+          <div
+            style={{
+              borderRadius: 30,
+              border: '1px solid rgba(29,22,15,0.1)',
+              background: 'linear-gradient(135deg, #ffffff 0%, #fff8f0 100%)',
+              padding: '1.35rem',
+              boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
+            }}
+          >
+            <div className="home-grid-2" style={{ alignItems: 'center' }}>
+              <div>
+                <div className="section-label" style={{ marginBottom: '0.55rem' }}>
+                  1:1 Planning
+                </div>
+                <h2 className="section-title" style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', marginBottom: '0.65rem' }}>
+                  Need a human thought partner for your return plan?
+                </h2>
+                <p style={{ fontSize: 15, color: '#665848', lineHeight: 1.75, maxWidth: 620, marginBottom: '1rem' }}>
+                  If you want to talk through your move with someone who understands the trade-offs, you can book a paid
+                  1:1 Return to India Planning session. It is meant for families who want practical clarity, not a hard sell.
+                </p>
+                <div className="home-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <a href={TOPMATE_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                    Book 1:1 planning
+                  </a>
+                  <Link href="/planner" className="btn-primary">
+                    Start with the planner
+                  </Link>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid rgba(29,22,15,0.08)',
+                  borderRadius: 24,
+                  padding: '1.1rem',
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#B08B67', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                  Best when
+                </div>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {planningSupportPoints.map((point) => (
+                    <div
+                      key={point}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 10,
+                        padding: '0.8rem 0.85rem',
+                        borderRadius: 18,
+                        background: '#fcfbf8',
+                        border: '1px solid rgba(29,22,15,0.06)',
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: '#FF9933',
+                          marginTop: 6,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <div style={{ fontSize: 13, color: '#4f4336', lineHeight: 1.65 }}>{point}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section style={{ background: '#f8f5f0', padding: '3.5rem 0' }}>
         <div className="home-shell">
           <div style={{ textAlign: 'center', maxWidth: 740, margin: '0 auto 1.8rem' }}>
@@ -617,6 +703,9 @@ export default function Home() {
                 <WhatsAppIcon size={18} />
                 Join Community
               </Link>
+              <a href={TOPMATE_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                Book 1:1 Planning
+              </a>
             </div>
           </div>
         </div>
