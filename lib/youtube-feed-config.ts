@@ -18,6 +18,26 @@ export const youtubeFeedConfig: YouTubeFeedConfig = {
   },
   videos: [
     {
+      title: 'ReturningNRIs video guide',
+      description: 'A practical video for families preparing their move back to India.',
+      url: 'https://youtu.be/5ACraFTDoxo?si=Mrr6MYDwC7sZpbbd',
+    },
+    {
+      title: 'ReturningNRIs video guide',
+      description: 'A practical video for families preparing their move back to India.',
+      url: 'https://youtu.be/X_5zWHpkPXU?si=SwNqIBJBwxlBUuGA',
+    },
+    {
+      title: 'ReturningNRIs video guide',
+      description: 'A practical video for families preparing their move back to India.',
+      url: 'https://youtu.be/gclP8VEqD8Y?si=3lRmYeifWU0orhg1',
+    },
+    {
+      title: 'ReturningNRIs video guide',
+      description: 'A practical video for families preparing their move back to India.',
+      url: 'https://youtu.be/I05Zg_gLuV8?si=-MJTUx-Y1tYcWGY0',
+    },
+    {
       title: "Returning NRIs: Don't Miss RNOR Status",
       description:
         'Why RNOR timing matters for returning NRIs.',
