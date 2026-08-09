@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import YouTubeEmbed from '../../components/youtube/YouTubeEmbed'
 import YouTubeVideoCard from '../../components/youtube/YouTubeVideoCard'
 import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../../lib/social-icons'
 import { INSTAGRAM_URL } from '../../lib/social-links'
@@ -62,9 +61,8 @@ const channelCards = [
 
 export default async function VideosPage() {
   const feed = await getYouTubeFeed(youtubeFeedConfig)
-  const featuredVideo = feed?.featuredVideo
   const deepDiveVideos: YouTubeFeedItem[] = feed
-    ? [featuredVideo, ...feed.videos].filter((video, index, array): video is YouTubeFeedItem => {
+    ? [feed.featuredVideo, ...feed.videos].filter((video, index, array): video is YouTubeFeedItem => {
         if (!video) {
           return false
         }
@@ -81,13 +79,9 @@ export default async function VideosPage() {
           margin: 0 auto;
           padding: 0 1rem;
         }
-        .videos-grid-2,
         .videos-grid-4 {
           display: grid;
           gap: 1rem;
-        }
-        .videos-grid-2 {
-          grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
         }
         .videos-grid-4 {
           grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -95,11 +89,6 @@ export default async function VideosPage() {
         @media (max-width: 1024px) {
           .videos-grid-4 {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-        }
-        @media (max-width: 900px) {
-          .videos-grid-2 {
-            grid-template-columns: 1fr;
           }
         }
         @media (max-width: 767px) {
@@ -119,210 +108,6 @@ export default async function VideosPage() {
           }
         }
       `}</style>
-
-      <section className="border-b border-[rgba(29,22,15,0.08)] bg-[linear-gradient(180deg,#fffaf4_0%,#fffdf9_100%)] py-12 lg:py-16">
-        <div className="videos-shell">
-          <div className="videos-grid-2">
-            <div
-              style={{
-                background: '#ffffff',
-                border: '1px solid rgba(29,22,15,0.08)',
-                borderRadius: 30,
-                padding: '1.4rem',
-                boxShadow: '0 22px 48px rgba(29,22,15,0.06)',
-              }}
-            >
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '0.45rem 0.8rem',
-                  borderRadius: 999,
-                  background: '#fff1de',
-                  color: '#8d5c22',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                  marginBottom: '0.95rem',
-                }}
-              >
-                Videos & Short Tips
-              </div>
-
-              <h1
-                style={{
-                  fontSize: 'clamp(2.25rem, 6vw, 4.3rem)',
-                  lineHeight: 0.98,
-                  color: '#1a1208',
-                  marginBottom: '0.85rem',
-                  maxWidth: 640,
-                }}
-              >
-                Watch, learn, and plan your move back to India.
-              </h1>
-
-              <p
-                style={{
-                  fontSize: 16,
-                  color: '#5c5346',
-                  lineHeight: 1.75,
-                  maxWidth: 620,
-                  marginBottom: '1rem',
-                }}
-              >
-                Deep-dive YouTube guides and short Instagram tips for NRIs preparing their return.
-              </p>
-
-              <div className="videos-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <a href="#youtube-guides" className="btn-primary">
-                  <YouTubeIcon size={18} />
-                  Watch YouTube Guides
-                </a>
-                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                  <InstagramIcon size={18} />
-                  Follow Instagram Reels
-                </a>
-                <Link href="/community#join-community" className="btn-secondary">
-                  <WhatsAppIcon size={18} />
-                  Join WhatsApp Community
-                </Link>
-              </div>
-            </div>
-
-            <div
-              style={{
-                background: 'linear-gradient(180deg, rgba(30,22,15,0.98) 0%, rgba(35,25,18,0.97) 58%, rgba(24,52,37,0.98) 100%)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 30,
-                padding: '1.25rem',
-                boxShadow: '0 26px 56px rgba(18,13,8,0.16)',
-                color: '#ffffff',
-              }}
-            >
-              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)', marginBottom: 8 }}>
-                Learn Faster
-              </div>
-              <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.1rem)', marginBottom: '0.9rem' }}>
-                Pick the format that fits your moment
-              </h2>
-
-              {channelCards.map((card, index) => (
-                <div
-                  key={card.title}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '0.85rem',
-                    padding: '0.9rem',
-                    borderRadius: 20,
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    marginBottom: index === channelCards.length - 1 ? 0 : '0.75rem',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: 14,
-                      background: card.title === 'WhatsApp' ? 'rgba(19,136,8,0.2)' : 'rgba(255,153,51,0.16)',
-                      color: card.title === 'WhatsApp' ? '#6ad182' : '#f3b163',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 13,
-                      fontWeight: 700,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {card.title === 'YouTube' ? (
-                      <YouTubeIcon size={22} />
-                    ) : card.title === 'Instagram' ? (
-                      <InstagramIcon size={22} />
-                    ) : card.title === 'WhatsApp' ? (
-                      <WhatsAppIcon size={22} />
-                    ) : (
-                      index + 1
-                    )}
-                  </span>
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>{card.title}</div>
-                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.55 }}>{card.body}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {featuredVideo ? (
-        <section className="py-12 lg:py-16">
-          <div className="videos-shell">
-            <div style={{ marginBottom: '1rem' }}>
-              <div className="section-label">Featured Guide</div>
-              <h2 className="section-title" style={{ marginBottom: '0.45rem' }}>
-                Start with one deep-dive guide
-              </h2>
-              <p className="section-sub">
-                If you only watch one long-form video first, make it this one.
-              </p>
-            </div>
-
-            <div
-              style={{
-                background: '#ffffff',
-                border: '1px solid rgba(29,22,15,0.08)',
-                borderRadius: 32,
-                padding: '1rem',
-                boxShadow: '0 24px 52px rgba(29,22,15,0.06)',
-              }}
-            >
-              <div className="overflow-hidden rounded-[26px] border border-[rgba(29,22,15,0.08)] bg-[#f3eee6]">
-                <YouTubeEmbed
-                  className="aspect-video w-full min-h-[220px] bg-[#f3eee6]"
-                  src={featuredVideo.embedUrl}
-                  title={featuredVideo.title}
-                />
-              </div>
-
-              <div
-                className="videos-action-row"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
-                  marginTop: '1rem',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <div style={{ maxWidth: 640 }}>
-                  <div style={{ fontSize: 24, fontWeight: 700, color: '#1a1208', marginBottom: 6 }}>{featuredVideo.title}</div>
-                  <p style={{ fontSize: 15, color: '#5c5346', lineHeight: 1.7 }}>
-                    {featuredVideo.description ?? 'A practical starting point for families planning the move back to India.'}
-                  </p>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.7rem', flexWrap: 'wrap' }}>
-                  <a href={featuredVideo.watchUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
-                    <YouTubeIcon size={18} />
-                    Watch on YouTube
-                  </a>
-                  {feed?.channelUrl ? (
-                    <a href={feed.channelUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                      <YouTubeIcon size={18} />
-                      Visit YouTube Channel
-                    </a>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : null}
 
       <section className="pb-12 lg:pb-16">
         <div className="videos-shell">
