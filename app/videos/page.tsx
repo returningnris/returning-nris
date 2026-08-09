@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import YouTubeVideoCard from '../../components/youtube/YouTubeVideoCard'
-import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../../lib/social-icons'
+import { InstagramIcon, YouTubeIcon } from '../../lib/social-icons'
 import { INSTAGRAM_URL } from '../../lib/social-links'
 import { getYouTubeFeed, type YouTubeFeedItem } from '../../lib/youtube-feed'
 import { youtubeFeedConfig } from '../../lib/youtube-feed-config'
@@ -40,23 +39,10 @@ const instagramTopics = [
   'First 90 Days',
 ]
 
-const channelCards = [
-  {
-    title: 'Website Planner',
-    body: 'Structured move-back plan',
-  },
-  {
-    title: 'YouTube',
-    body: 'Deep-dive explainers',
-  },
-  {
-    title: 'Instagram',
-    body: 'Quick reels and reminders',
-  },
-  {
-    title: 'WhatsApp',
-    body: 'Real community and discussions',
-  },
+const instagramReels = [
+  'https://www.instagram.com/reel/DbdVuxnJFvP/embed/',
+  'https://www.instagram.com/reel/DZr3Xz0hIor/embed/',
+  'https://www.instagram.com/reel/DY8z1ldJRku/embed/',
 ]
 
 export default async function VideosPage() {
@@ -79,15 +65,13 @@ export default async function VideosPage() {
           margin: 0 auto;
           padding: 0 1rem;
         }
-        .videos-grid-4 {
+        .instagram-reels {
           display: grid;
           gap: 1rem;
-        }
-        .videos-grid-4 {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
         }
         @media (max-width: 1024px) {
-          .videos-grid-4 {
+          .instagram-reels {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
@@ -95,7 +79,7 @@ export default async function VideosPage() {
           .videos-shell {
             padding: 0 0.95rem;
           }
-          .videos-grid-4 {
+          .instagram-reels {
             grid-template-columns: 1fr;
           }
           .videos-action-row {
@@ -182,6 +166,20 @@ export default async function VideosPage() {
                 Follow on Instagram
               </a>
             </div>
+
+            <div className="instagram-reels" style={{ marginTop: '1.25rem' }}>
+              {instagramReels.map((reelUrl, index) => (
+                <iframe
+                  key={reelUrl}
+                  src={reelUrl}
+                  title={`ReturningNRIs Instagram reel ${index + 1}`}
+                  className="w-full rounded-[22px] border border-[rgba(29,22,15,0.08)] bg-white"
+                  style={{ height: 540 }}
+                  loading="lazy"
+                  allowFullScreen
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -241,56 +239,6 @@ export default async function VideosPage() {
         </div>
       </section>
 
-      <section className="pb-16 lg:pb-20">
-        <div className="videos-shell">
-          <div
-            style={{
-              borderRadius: 32,
-              border: '1px solid rgba(19,136,8,0.14)',
-              background: 'linear-gradient(135deg, #f3fbf4 0%, #ffffff 70%)',
-              padding: '1.35rem',
-              boxShadow: '0 22px 46px rgba(19,136,8,0.06)',
-            }}
-          >
-            <div className="section-label" style={{ color: '#138808' }}>
-              Community
-            </div>
-            <h2 className="section-title" style={{ marginBottom: '0.5rem' }}>
-              Want to discuss your move with other returnees?
-            </h2>
-            <p style={{ maxWidth: 620, fontSize: 15, color: '#4f4336', lineHeight: 1.7, marginBottom: '1rem' }}>
-              Join our Returning NRI WhatsApp Community with 250+ active Hyderabad members.
-            </p>
-
-            <div className="videos-grid-4">
-              {channelCards.map((card) => (
-                <div
-                  key={card.title}
-                  style={{
-                    background: '#ffffff',
-                    border: '1px solid rgba(19,136,8,0.12)',
-                    borderRadius: 22,
-                    padding: '1rem',
-                  }}
-                >
-                  <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1208', marginBottom: 6 }}>{card.title}</div>
-                  <div style={{ fontSize: 14, color: '#5c5346', lineHeight: 1.6 }}>{card.body}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="videos-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap' }}>
-              <Link href="/community#join-community" className="btn-secondary">
-                <WhatsAppIcon size={18} />
-                Join WhatsApp Community
-              </Link>
-              <Link href="/planner" className="btn-ghost">
-                Start Planner
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   )
 }
