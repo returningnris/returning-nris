@@ -6,14 +6,21 @@ import { INSTAGRAM_URL } from '../lib/social-links'
 const TOPMATE_URL = 'https://topmate.io/returningnris'
 
 export const metadata: Metadata = {
-  title: 'ReturningNRIs | Planner, Community, Videos and Guides for Moving Back to India',
+  title: 'Return to India Planner for NRIs | Moving Back to India',
   description:
-    'Moving back to India? Start with a clear planner, join the Returning NRI community, watch practical videos, and use focused guides on RNOR, schools, housing, and money.',
+    'Return to India with a clear plan. Use a free planner, practical guides, and tools for RNOR tax, schools, housing, money, and your move back to India.',
+  keywords: [
+    'return to India',
+    'return to India NRI',
+    'returning NRI',
+    'moving back to India',
+    'return to India planner',
+  ],
   alternates: {
     canonical: 'https://www.returningnris.com',
   },
   openGraph: {
-    title: 'ReturningNRIs | Planner, Community, Videos and Guides for Moving Back to India',
+    title: 'Return to India Planner for NRIs | Moving Back to India',
     description:
       'Start with a clear planner, join a real Returning NRI community, and learn through practical videos and guides.',
     url: 'https://www.returningnris.com',
@@ -23,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ReturningNRIs | Planner, Community, Videos and Guides for Moving Back to India',
+    title: 'Return to India Planner for NRIs | Moving Back to India',
     description:
       'Start with a clear planner, join a real Returning NRI community, and learn through practical videos and guides.',
     images: ['https://www.returningnris.com/og-image.png'],
@@ -279,7 +286,7 @@ export default function Home() {
                   maxWidth: 660,
                 }}
               >
-                Moving back to India? Start with clarity, not chaos.
+                Return to India with clarity, not chaos.
               </h1>
 
               <p
@@ -291,7 +298,7 @@ export default function Home() {
                   marginBottom: '1rem',
                 }}
               >
-                Use one simple planner, a real community, practical videos, and focused guides to make your move feel more manageable.
+                Planning to return to India? Use one simple planner, practical videos, and focused guides to make your move feel more manageable.
               </p>
 
               <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
