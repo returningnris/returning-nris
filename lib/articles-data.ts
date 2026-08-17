@@ -17,6 +17,14 @@ export type Article = {
 
 export const ARTICLES: Article[] = [
   {
+    href: '/resources/can-nris-buy-agricultural-land-in-india',
+    label: 'Can NRIs Buy Agricultural Land in India?',
+    icon: '🌾',
+    sub: 'What FEMA allows, where farm-plot purchases go wrong, and what to check first',
+    category: 'Housing',
+    readMins: 7,
+  },
+  {
     href: '/resources/sell-your-us-home-before-moving-back-to-india',
     label: 'Sell Your US Home Before Moving Back to India',
     icon: 'US',

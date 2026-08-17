@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://www.returningnris.com/community', lastModified: new Date() },
     { url: 'https://www.returningnris.com/videos', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources', lastModified: new Date() },
+    { url: 'https://www.returningnris.com/resources/can-nris-buy-agricultural-land-in-india', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources/sell-your-us-home-before-moving-back-to-india', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources/fire-for-returning-nris', lastModified: new Date() },
     { url: 'https://www.returningnris.com/resources/bangalore-neighbourhood-guide-for-returning-nri-families', lastModified: new Date() },
