@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 
 const pageUrl = 'https://www.returningnris.com/resources/can-nris-buy-agricultural-land-in-india'
@@ -65,6 +66,14 @@ export default function AgriculturalLandGuide() {
           <div className="meta"><span className="pill">Housing</span><span>7 min read</span><span>Updated August 2026</span></div>
           <h1>Can NRIs Buy<br />Agricultural Land in India?</h1>
           <p className="lead">A beautiful weekend farm can be tempting. But for NRIs and OCI cardholders, the land classification matters more than the brochure.</p>
+          <Image
+            className="hero-image"
+            src="/agricultural-land-guide-hero.webp"
+            alt="Green agricultural fields and a farmhouse near a growing Indian city"
+            width={1200}
+            height={675}
+            sizes="(max-width: 800px) calc(100vw - 2.5rem), 760px"
+          />
         </div>
       </section>
 
@@ -125,7 +134,7 @@ export default function AgriculturalLandGuide() {
         .hero { padding:4.25rem 2rem 3.25rem; background:#fff; background-image:radial-gradient(ellipse 70% 55% at 50% 8%,rgba(255,153,51,.12),transparent 65%),radial-gradient(ellipse 45% 45% at 15% 80%,rgba(19,136,8,.07),transparent 60%); }
         .crumbs,.meta { display:flex; gap:7px; flex-wrap:wrap; align-items:center; font-size:12px; color:#B5A898; }
         .crumbs { margin-bottom:1.4rem; }.crumbs a { color:#B5A898; text-decoration:none; }.meta { margin-bottom:1.25rem; }.pill { color:#138808; background:#E8F5E8; border-radius:999px; padding:3px 10px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
-        h1,h2,h3,p { margin-top:0; }h1,h2 { font-family:'DM Serif Display',serif; color:#1A1208; letter-spacing:-.02em; }h1 { font-size:clamp(2rem,5vw,3rem); line-height:1.1; margin-bottom:1.1rem; }.lead { max-width:650px; font-size:1.08rem; line-height:1.75; color:#6B5E50; margin-bottom:0; }
+        h1,h2,h3,p { margin-top:0; }h1,h2 { font-family:'DM Serif Display',serif; color:#1A1208; letter-spacing:-.02em; }h1 { font-size:clamp(2rem,5vw,3rem); line-height:1.1; margin-bottom:1.1rem; }.lead { max-width:650px; font-size:1.08rem; line-height:1.75; color:#6B5E50; margin-bottom:1.5rem; }.hero-image { display:block; width:100%; height:auto; border-radius:18px; border:1px solid rgba(26,18,8,.08); box-shadow:0 12px 32px rgba(26,18,8,.12); }
         .article { padding:2.75rem 2rem 3.25rem; color:#3D3229; font-family:'DM Sans',sans-serif; line-height:1.82; }.article > p { margin-bottom:1.05rem; font-size:1rem; }.article h2 { font-size:clamp(1.45rem,3vw,1.85rem); line-height:1.2; margin:2.5rem 0 .8rem; }.article h3 { color:#1A1208; font-size:14px; line-height:1.4; margin-bottom:.35rem; }
         .answer,.warning { border-radius:16px; padding:1.45rem 1.55rem; margin-bottom:2rem; }.answer { background:#FFF3E6; border:1px solid rgba(255,153,51,.35); }.answer h2 { margin:.25rem 0 .6rem; }.answer p,.warning p { margin:0; }.eyebrow { color:#CC7A00; font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; margin-bottom:.65rem; }
         .scenario-list { display:grid; gap:.75rem; }.scenario { border:1px solid #E5E1DA; border-radius:14px; padding:1rem 1.1rem; }.scenario p { color:#6B5E50; font-size:14px; line-height:1.65; margin-bottom:0; }
