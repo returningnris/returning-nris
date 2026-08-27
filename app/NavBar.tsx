@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import AuthButton from '../components/AuthButton'
@@ -69,19 +70,16 @@ export default function NavBar() {
           <Link
             href="/"
             className="nav-logo"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none', flexShrink: 0 }}
+            style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}
           >
-            <svg width="26" height="30" viewBox="0 0 52 56" fill="none" aria-hidden="true">
-              <rect x="0" y="0" width="52" height="18" rx="5" fill="#FF9933" />
-              <rect x="0" y="18" width="52" height="20" fill="#F4F0E8" />
-              <rect x="0" y="38" width="52" height="18" rx="5" fill="#138808" />
-              <circle cx="26" cy="28" r="8" fill="none" stroke="#000080" strokeWidth="1.5" />
-              <circle cx="26" cy="28" r="2" fill="#000080" />
-            </svg>
-            <span className="nav-logo-text" style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.08rem', color: '#fff' }}>
-              <span style={{ color: '#FF9933' }}>Returning</span>
-              <span style={{ color: '#138808' }}>NRIs</span>
-            </span>
+            <Image
+              src="/logo-returning-nris.png"
+              alt="Returning NRIs Logo"
+              width={1312}
+              height={936}
+              priority
+              className="nav-logo-image"
+            />
           </Link>
 
           <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', flex: 1 }}>
@@ -318,16 +316,23 @@ export default function NavBar() {
             border-radius: 12px;
           }
         }
+        .nav-logo-image {
+          display: block;
+          width: clamp(44px, 7vw, 58px);
+          height: auto;
+          max-height: 48px;
+          object-fit: contain;
+        }
         @media (max-width: 767px) {
+          .nav-logo-image {
+            width: 44px;
+            max-height: 42px;
+          }
           .nav-inner {
             padding: 0 1rem !important;
           }
           .nav-logo {
             min-width: 0;
-          }
-          .nav-logo-text {
-            font-size: 1rem !important;
-            white-space: nowrap;
           }
         }
       `}</style>
