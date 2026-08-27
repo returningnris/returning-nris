@@ -58,7 +58,7 @@ export default function NavBar() {
         <div
           className="nav-inner"
           style={{
-            maxWidth: '1200px',
+            maxWidth: '1400px',
             margin: '0 auto',
             padding: '0 1.25rem',
             display: 'flex',
@@ -70,6 +70,7 @@ export default function NavBar() {
           <Link
             href="/"
             className="nav-logo"
+            aria-label="Returning NRIs home"
             style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}
           >
             <Image
@@ -79,6 +80,14 @@ export default function NavBar() {
               height={936}
               priority
               className="nav-logo-image"
+            />
+            <Image
+              src="/returning-nris-wordmark.png"
+              alt=""
+              width={1057}
+              height={271}
+              priority
+              className="nav-logo-wordmark"
             />
           </Link>
 
@@ -296,7 +305,7 @@ export default function NavBar() {
           max-height: calc(100vh - 64px);
           overflow-y: auto;
         }
-        @media (min-width: 960px) {
+        @media (min-width: 1100px) {
           .nav-hamburger {
             display: none !important;
           }
@@ -304,7 +313,7 @@ export default function NavBar() {
             display: none;
           }
         }
-        @media (max-width: 959px) {
+        @media (max-width: 1099px) {
           .desktop-nav,
           .desktop-cta {
             display: none !important;
@@ -320,15 +329,28 @@ export default function NavBar() {
         }
         .nav-logo-image {
           display: block;
-          width: clamp(44px, 7vw, 58px);
+          width: clamp(46px, 6vw, 64px);
           height: auto;
-          max-height: 48px;
+          max-height: 46px;
+          object-fit: contain;
+        }
+        .nav-logo-wordmark {
+          display: block;
+          width: clamp(124px, 15vw, 188px);
+          height: auto;
+          max-height: 46px;
+          margin-left: 0.45rem;
           object-fit: contain;
         }
         @media (max-width: 767px) {
           .nav-logo-image {
-            width: 44px;
-            max-height: 42px;
+            width: 42px;
+            max-height: 30px;
+          }
+          .nav-logo-wordmark {
+            width: 124px;
+            max-height: 32px;
+            margin-left: 0.35rem;
           }
           .nav-inner {
             padding: 0 1rem !important;
