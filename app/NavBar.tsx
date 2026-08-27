@@ -305,7 +305,7 @@ export default function NavBar() {
           max-height: calc(100vh - 80px);
           overflow-y: auto;
         }
-        @media (min-width: 1100px) {
+        @media (min-width: 1200px) {
           .nav-hamburger {
             display: none !important;
           }
@@ -313,7 +313,7 @@ export default function NavBar() {
             display: none;
           }
         }
-        @media (max-width: 1099px) {
+        @media (max-width: 1199px) {
           .desktop-nav,
           .desktop-cta {
             display: none !important;
@@ -336,10 +336,10 @@ export default function NavBar() {
         }
         .nav-logo-wordmark {
           display: block;
-          width: clamp(124px, 15vw, 188px);
+          width: clamp(150px, 18vw, 235px);
           height: auto;
-          max-height: 46px;
-          margin-left: -28px;
+          max-height: 60px;
+          margin-left: -11px;
           object-fit: contain;
         }
         @media (max-width: 767px) {
@@ -348,9 +348,9 @@ export default function NavBar() {
             max-height: 45px;
           }
           .nav-logo-wordmark {
-            width: 124px;
-            max-height: 32px;
-            margin-left: -19px;
+            width: 148px;
+            max-height: 40px;
+            margin-left: -7px;
           }
           .nav-inner {
             padding: 0 1rem !important;
