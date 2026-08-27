@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import './globals.css'
 import NavBar from './NavBar'
@@ -68,15 +69,20 @@ function Footer() {
           <div>
             <Link
               href="/"
+              aria-label="Returning NRIs home"
               style={{
-                fontFamily: "'DM Serif Display', serif",
-                fontSize: '1.05rem',
-                color: 'var(--ink)',
+                display: 'inline-flex',
+                alignItems: 'center',
                 textDecoration: 'none',
               }}
             >
-              <span style={{ color: 'var(--saffron)' }}>Returning</span>
-              <span style={{ color: 'var(--green)' }}>NRIs</span>
+              <Image
+                src="/returning-nris-wordmark.png"
+                alt="Returning NRIs"
+                width={1057}
+                height={271}
+                style={{ display: 'block', width: 'min(195px, 62vw)', height: 'auto', mixBlendMode: 'multiply' }}
+              />
             </Link>
             <p
               style={{
