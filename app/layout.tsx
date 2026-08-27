@@ -79,8 +79,8 @@ function Footer() {
               <Image
                 src="/returning-nris-wordmark.png"
                 alt="Returning NRIs"
-                width={1057}
-                height={271}
+                width={902}
+                height={193}
                 style={{ display: 'block', width: 'min(195px, 62vw)', height: 'auto', mixBlendMode: 'multiply' }}
               />
             </Link>

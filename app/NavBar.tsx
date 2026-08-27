@@ -84,8 +84,8 @@ export default function NavBar() {
             <Image
               src="/returning-nris-wordmark.png"
               alt=""
-              width={1057}
-              height={271}
+              width={902}
+              height={193}
               priority
               className="nav-logo-wordmark"
             />
