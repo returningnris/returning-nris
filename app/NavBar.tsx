@@ -64,7 +64,7 @@ export default function NavBar() {
             display: 'flex',
             alignItems: 'center',
             gap: '1rem',
-            minHeight: '64px',
+            minHeight: '80px',
           }}
         >
           <Link
@@ -297,12 +297,12 @@ export default function NavBar() {
         }
         .mobile-nav-backdrop {
           position: fixed;
-          inset: 64px 0 0 0;
+          inset: 80px 0 0 0;
           background: rgba(26, 18, 8, 0.22);
           backdrop-filter: blur(6px);
         }
         .mobile-nav-panel {
-          max-height: calc(100vh - 64px);
+          max-height: calc(100vh - 80px);
           overflow-y: auto;
         }
         @media (min-width: 1100px) {
@@ -329,9 +329,9 @@ export default function NavBar() {
         }
         .nav-logo-image {
           display: block;
-          width: clamp(46px, 6vw, 64px);
+          width: clamp(69px, 9vw, 96px);
           height: auto;
-          max-height: 46px;
+          max-height: 69px;
           object-fit: contain;
         }
         .nav-logo-wordmark {
@@ -339,24 +339,31 @@ export default function NavBar() {
           width: clamp(124px, 15vw, 188px);
           height: auto;
           max-height: 46px;
-          margin-left: 0.45rem;
+          margin-left: -28px;
           object-fit: contain;
         }
         @media (max-width: 767px) {
           .nav-logo-image {
-            width: 42px;
-            max-height: 30px;
+            width: 63px;
+            max-height: 45px;
           }
           .nav-logo-wordmark {
             width: 124px;
             max-height: 32px;
-            margin-left: 0.35rem;
+            margin-left: -19px;
           }
           .nav-inner {
             padding: 0 1rem !important;
+            min-height: 72px !important;
           }
           .nav-logo {
             min-width: 0;
+          }
+          .mobile-nav-backdrop {
+            inset: 72px 0 0 0;
+          }
+          .mobile-nav-panel {
+            max-height: calc(100vh - 72px);
           }
         }
       `}</style>
