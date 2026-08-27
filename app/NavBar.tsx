@@ -49,9 +49,9 @@ export default function NavBar() {
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          background: 'rgba(26,18,8,0.95)',
+          background: 'rgba(255,255,255,0.96)',
           backdropFilter: 'blur(12px)',
-          borderBottom: '0.5px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid #e8e2d9',
           fontFamily: 'DM Sans, sans-serif',
         }}
       >
@@ -90,14 +90,15 @@ export default function NavBar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  aria-current={active ? 'page' : undefined}
                   style={{
                     fontSize: '13px',
                     fontWeight: 500,
-                    color: active ? '#fff' : 'rgba(255,255,255,0.6)',
+                    color: active ? '#1A1208' : '#625b51',
                     textDecoration: 'none',
                     padding: '8px 12px',
                     borderRadius: '10px',
-                    background: active ? 'rgba(255,255,255,0.06)' : 'transparent',
+                    background: active ? '#f5f1eb' : 'transparent',
                     transition: 'all 0.15s',
                   }}
                 >
@@ -139,9 +140,9 @@ export default function NavBar() {
                 minHeight: 38,
                 padding: '0.65rem 1rem',
                 borderRadius: 999,
-                background: 'rgba(255,153,51,0.12)',
-                border: '1px solid rgba(255,153,51,0.25)',
-                color: '#FFD7A8',
+                background: '#fff7ed',
+                border: '1px solid #fed7aa',
+                color: '#9a4d06',
                 fontSize: '13px',
                 fontWeight: 700,
               }}
@@ -160,7 +161,7 @@ export default function NavBar() {
             style={{
               background: 'none',
               border: 'none',
-              color: '#fff',
+              color: '#1A1208',
               cursor: 'pointer',
               padding: '10px',
               display: 'flex',
@@ -169,9 +170,9 @@ export default function NavBar() {
               marginLeft: 'auto',
             }}
           >
-            <div style={{ width: '20px', height: '1.5px', background: '#fff', borderRadius: '2px', transition: 'all 0.2s', transform: mobileOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }} />
-            <div style={{ width: '20px', height: '1.5px', background: '#fff', borderRadius: '2px', transition: 'all 0.2s', opacity: mobileOpen ? 0 : 1 }} />
-            <div style={{ width: '20px', height: '1.5px', background: '#fff', borderRadius: '2px', transition: 'all 0.2s', transform: mobileOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }} />
+            <div style={{ width: '20px', height: '1.5px', background: '#1A1208', borderRadius: '2px', transition: 'all 0.2s', transform: mobileOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }} />
+            <div style={{ width: '20px', height: '1.5px', background: '#1A1208', borderRadius: '2px', transition: 'all 0.2s', opacity: mobileOpen ? 0 : 1 }} />
+            <div style={{ width: '20px', height: '1.5px', background: '#1A1208', borderRadius: '2px', transition: 'all 0.2s', transform: mobileOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }} />
           </button>
         </div>
 
@@ -183,10 +184,10 @@ export default function NavBar() {
               className="mobile-nav-panel"
               style={{
                 position: 'relative',
-                background: '#1A1208',
-                borderTop: '0.5px solid rgba(255,255,255,0.06)',
+                background: '#ffffff',
+                borderTop: '1px solid #e8e2d9',
                 padding: '1rem',
-                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.32)',
+                boxShadow: '0 20px 50px rgba(26, 18, 8, 0.16)',
               }}
             >
               <div style={{ display: 'grid', gap: '0.7rem', marginBottom: '0.9rem' }}>
@@ -218,8 +219,8 @@ export default function NavBar() {
                     justifyContent: 'center',
                     minHeight: 46,
                     borderRadius: 16,
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    color: '#fff',
+                    border: '1px solid #d8d0c5',
+                    color: '#1A1208',
                     fontSize: '14px',
                     fontWeight: 600,
                   }}
@@ -237,9 +238,9 @@ export default function NavBar() {
                     justifyContent: 'center',
                     minHeight: 46,
                     borderRadius: 16,
-                    background: 'rgba(255,153,51,0.12)',
-                    border: '1px solid rgba(255,153,51,0.24)',
-                    color: '#FFD7A8',
+                    background: '#fff7ed',
+                    border: '1px solid #fed7aa',
+                    color: '#9a4d06',
                     fontSize: '14px',
                     fontWeight: 700,
                   }}
@@ -256,14 +257,15 @@ export default function NavBar() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
+                    aria-current={active ? 'page' : undefined}
                     style={{
                       display: 'block',
                       fontSize: '14px',
                       fontWeight: 500,
-                      color: active ? '#FF9933' : 'rgba(255,255,255,0.78)',
+                      color: active ? '#138808' : '#625b51',
                       textDecoration: 'none',
                       padding: '11px 0',
-                      borderBottom: '0.5px solid rgba(255,255,255,0.06)',
+                      borderBottom: '1px solid #eee9e2',
                     }}
                   >
                     {link.label}
@@ -287,7 +289,7 @@ export default function NavBar() {
         .mobile-nav-backdrop {
           position: fixed;
           inset: 64px 0 0 0;
-          background: rgba(10, 7, 3, 0.45);
+          background: rgba(26, 18, 8, 0.22);
           backdrop-filter: blur(6px);
         }
         .mobile-nav-panel {

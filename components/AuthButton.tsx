@@ -12,7 +12,7 @@ export default function AuthButton({ onNavigate }: { onNavigate?: () => void }) 
     return (
       <div style={{ 
         padding: '6px 16px', 
-        color: 'rgba(255,255,255,0.3)', 
+        color: 'rgba(26,18,8,0.45)',
         fontSize: '13px',
         fontFamily: 'DM Sans, sans-serif' 
       }}>
@@ -51,7 +51,7 @@ export default function AuthButton({ onNavigate }: { onNavigate?: () => void }) 
           <span style={{ 
             fontSize: '13px', 
             fontWeight: 500, 
-            color: '#fff',
+            color: '#1A1208',
             fontFamily: 'DM Sans, sans-serif' 
           }}>
             {user.firstName}
@@ -66,10 +66,10 @@ export default function AuthButton({ onNavigate }: { onNavigate?: () => void }) 
           }}
           style={{
             padding: '6px 14px',
-            background: 'rgba(255,255,255,0.05)',
-            border: '0.5px solid rgba(255,255,255,0.1)',
+            background: '#ffffff',
+            border: '1px solid #d8d0c5',
             borderRadius: '8px',
-            color: 'rgba(255,255,255,0.6)',
+            color: '#625b51',
             fontSize: '13px',
             fontWeight: 500,
             cursor: 'pointer',
@@ -77,12 +77,12 @@ export default function AuthButton({ onNavigate }: { onNavigate?: () => void }) 
             transition: 'all .15s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-            e.currentTarget.style.color = '#fff'
+            e.currentTarget.style.background = '#f5f1eb'
+            e.currentTarget.style.color = '#1A1208'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-            e.currentTarget.style.color = 'rgba(255,255,255,0.6)'
+            e.currentTarget.style.background = '#ffffff'
+            e.currentTarget.style.color = '#625b51'
           }}
         >
           Sign Out
