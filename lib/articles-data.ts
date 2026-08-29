@@ -17,6 +17,14 @@ export type Article = {
 
 export const ARTICLES: Article[] = [
   {
+    href: '/resources/us-estate-tax-returning-nris',
+    label: 'US Estate Tax for Returning NRIs',
+    icon: '🇺🇸',
+    sub: 'The $60,000 rule, US-situs assets, and planning after your return',
+    category: 'Tax Planning',
+    readMins: 8,
+  },
+  {
     href: '/resources/can-nris-buy-agricultural-land-in-india',
     label: 'Can NRIs Buy Agricultural Land in India?',
     icon: '🌾',
