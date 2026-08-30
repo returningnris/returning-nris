@@ -21,6 +21,18 @@ export type Article = {
 
 export const ARTICLES: Article[] = [
   {
+    href: '/resources/things-nris-should-bring-from-usa-to-india',
+    label: 'What NRIs Should Bring From the USA',
+    icon: '🧳',
+    sub: 'What is genuinely worth packing before your move to India',
+    category: 'Planning',
+    readMins: 9,
+    thumbnail: {
+      src: '/resources/things-nris-should-bring-from-usa-to-india.webp',
+      alt: 'Things NRIs may bring from the USA before relocating to India',
+    },
+  },
+  {
     href: '/resources/us-estate-tax-returning-nris',
     label: 'US Estate Tax for Returning NRIs',
     icon: '🇺🇸',
