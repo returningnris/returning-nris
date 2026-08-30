@@ -7,6 +7,7 @@ import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../lib/social-icons'
 import { INSTAGRAM_URL } from '../lib/social-links'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.returningnris.com'),
   title: 'ReturningNRIs | Planner, Community, Guides and Videos for Moving Back to India',
   description:
     'Moving back to India? Use the Returning NRI Planner, join the community, and learn through practical guides and videos built by returned NRIs.',
@@ -22,10 +23,10 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://www.returningnris.com/og-image.png',
+        url: 'https://www.returningnris.com/og-returningnris-logo-2026.png',
         width: 1200,
         height: 630,
-        alt: 'ReturningNRIs planner, community, guides and videos',
+        alt: 'ReturningNRIs - your journey home, planned clearly',
       },
     ],
   },
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     title: 'ReturningNRIs | Planner, Community, Guides and Videos for Moving Back to India',
     description:
       'Use a simple move-back planner, join a real Returning NRI community, and learn through practical guides and videos.',
-    images: ['https://www.returningnris.com/og-image.png'],
+    images: ['https://www.returningnris.com/og-returningnris-logo-2026.png'],
   },
 }
 
