@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ARTICLES as GUIDES } from '../../lib/articles-data'
+import ResourceGuideDirectory from '../../components/ResourceGuideDirectory'
 
 export const metadata: Metadata = {
   title: 'Returning to India Guides for NRIs | RNOR, Checklist, Cities, Schools',
@@ -23,8 +24,6 @@ export const metadata: Metadata = {
     images: ['https://www.returningnris.com/og-image.png'],
   },
 }
-
-const CATEGORIES = ['All', ...Array.from(new Set(GUIDES.map((guide) => guide.category)))]
 
 export default function ResourceGuideIndex() {
   return (
@@ -136,140 +135,7 @@ export default function ResourceGuideIndex() {
       </section>
 
       <section style={{ background: '#FFFFFF', padding: '3rem 2rem 5rem' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '2rem',
-              flexWrap: 'wrap',
-              gap: '1rem',
-            }}
-          >
-            <div style={{ fontSize: '13px', color: '#6B5E50' }}>
-              <strong style={{ color: '#1A1208' }}>{GUIDES.length} guide{GUIDES.length !== 1 ? 's' : ''}</strong> for
-              returning NRIs
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {CATEGORIES.map((category) => (
-                <span
-                  key={category}
-                  style={{
-                    fontSize: '12px',
-                    padding: '4px 12px',
-                    borderRadius: '100px',
-                    background: category === 'All' ? '#1A1208' : '#fff',
-                    color: category === 'All' ? '#fff' : '#6B5E50',
-                    border: '1px solid #E5E1DA',
-                    fontWeight: category === 'All' ? 600 : 400,
-                  }}
-                >
-                  {category}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
-            {GUIDES.map((guide) => (
-              <Link
-                key={guide.href}
-                href={guide.href}
-                style={{
-                  textDecoration: 'none',
-                  display: 'block',
-                  background: '#fff',
-                  border: '1px solid #E5E1DA',
-                  borderRadius: '18px',
-                  padding: '1.5rem',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                }}
-                className="guide-card"
-              >
-                <div
-                  style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '12px',
-                    background: '#FFF3E6',
-                    border: '1px solid rgba(255,153,51,0.2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.4rem',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  {guide.icon}
-                </div>
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 600,
-                      padding: '2px 8px',
-                      borderRadius: '100px',
-                      background: '#FFF3E6',
-                      color: '#CC7A00',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.06em',
-                    }}
-                  >
-                    {guide.category}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: '#B5A898',
-                      padding: '2px 8px',
-                      background: '#F8F5F0',
-                      borderRadius: '100px',
-                    }}
-                  >
-                    {guide.readMins} min read
-                  </span>
-                </div>
-                <h2
-                  style={{
-                    fontFamily: "'DM Serif Display', serif",
-                    fontSize: '1.1rem',
-                    color: '#1A1208',
-                    lineHeight: 1.35,
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {guide.label}
-                </h2>
-                <p style={{ fontSize: '13px', color: '#6B5E50', lineHeight: 1.6, marginBottom: '1rem' }}>{guide.sub}</p>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: '#FF9933' }}>Read guide</div>
-              </Link>
-            ))}
-
-            <div
-              style={{
-                background: 'rgba(255,153,51,0.04)',
-                border: '1.5px dashed rgba(255,153,51,0.3)',
-                borderRadius: '18px',
-                padding: '1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                minHeight: '220px',
-              }}
-            >
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem', opacity: 0.5 }}>More soon</div>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: '#6B5E50', marginBottom: '4px' }}>
-                More guides coming
-              </div>
-              <div style={{ fontSize: '12px', color: '#B5A898', lineHeight: 1.5 }}>
-                More on RNOR, city comparisons, school transitions, housing, and financial planning
-              </div>
-            </div>
-          </div>
-        </div>
+        <ResourceGuideDirectory guides={GUIDES} />
       </section>
 
       <section style={{ background: '#1A1208', padding: '4rem 2rem' }}>
@@ -307,15 +173,6 @@ export default function ResourceGuideIndex() {
         </div>
       </section>
 
-      <style>{`
-        .guide-card {
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .guide-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-        }
-      `}</style>
     </>
   )
 }

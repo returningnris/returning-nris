@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -119,6 +120,9 @@ export default function UsEstateTaxForReturningNrisPage() {
           <p style={pStyle}>
             US estate tax for returning NRIs is easy to overlook. You may have moved back to India, but US stocks, US-domiciled ETFs, real estate and some retirement interests can still create US estate-tax exposure. For a non-US citizen who is not US-domiciled at death, the commonly discussed filing threshold is only $60,000 of US-situated assets.
           </p>
+          <div style={{ position: 'relative', aspectRatio: '16 / 9', overflow: 'hidden', borderRadius: '16px', background: '#F8F5F0', margin: '1.5rem 0 2rem' }}>
+            <Image src="/resources/us-estate-tax-returning-nris.webp" alt="US estate tax illustration for returning NRIs" fill sizes="(max-width: 760px) 100vw, 720px" quality={72} loading="lazy" decoding="async" style={{ objectFit: 'cover' }} />
+          </div>
 
           <h2 style={h2Style}>US estate tax for returning NRIs: who is affected?</h2>
           <p style={pStyle}>The key concept is domicile, not simply visa status or income-tax residency. For US estate and gift tax, the IRS looks at whether the United States was your permanent home and whether you intended to remain there.</p>
