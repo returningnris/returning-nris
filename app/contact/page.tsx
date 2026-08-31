@@ -65,7 +65,7 @@ export default function ContactPage() {
             <p style={{ fontSize: '0.76rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--saffron-dark)', marginBottom: '0.6rem' }}>Prefer to talk it through?</p>
             <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.55rem, 3vw, 2rem)', color: 'var(--ink)', marginBottom: '0.65rem' }}>Book a 1:1 planning call</h2>
             <p style={{ color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: '620px' }}>
-              Choose a time for a free introductory conversation. Bring the question that is keeping you stuck, and we will help you see the practical next step more clearly.
+              Choose a time for a 1:1 planning conversation. Bring the question that is keeping you stuck, and we will help you see the practical next step more clearly.
             </p>
           </div>
           <a
