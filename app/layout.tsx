@@ -151,7 +151,10 @@ function Footer() {
           }}
         >
           <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>Built for families moving back to India with more clarity.</p>
-          <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>© 2026 ReturningNRIs</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+            <Link href="/privacy-policy" style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>Privacy Policy</Link>
+            <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>© 2026 ReturningNRIs</p>
+          </div>
         </div>
       </div>
 
