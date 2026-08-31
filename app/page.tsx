@@ -32,12 +32,12 @@ export default function Home() {
     <main>
       <style>{`
         .home-shell { max-width: 1240px; margin: 0 auto; padding: 0 1.25rem; }
-        .home-hero { display: grid; gap: clamp(2rem, 4vw, 3rem); justify-items: center; padding: clamp(3.25rem, 7vw, 6.5rem) 0; }
-        .home-hero-copy { max-width: 790px; text-align: center; }
-        .home-hero-image { position: relative; width: min(100%, 1040px); overflow: hidden; border-radius: 28px; aspect-ratio: 16 / 9; background: #e9eef5; box-shadow: 0 28px 72px rgba(12, 43, 79, .18); }
+        .home-hero { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); gap: clamp(2rem, 5vw, 5.5rem); align-items: center; min-height: min(720px, calc(100vh - 80px)); padding: clamp(3.25rem, 7vw, 6.5rem) 0; }
+        .home-hero-copy { max-width: 590px; }
+        .home-hero-image { position: relative; overflow: hidden; border-radius: 28px; aspect-ratio: 16 / 9; background: #e9eef5; box-shadow: 0 28px 72px rgba(12, 43, 79, .18); }
         .home-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
         .home-actions > a { min-height: 48px; justify-content: center; }
-        .home-social-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem; margin-top: 1.15rem; }
+        .home-social-links { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.15rem; }
         .home-proof { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid rgba(12, 43, 79, .12); border-bottom: 1px solid rgba(12, 43, 79, .12); }
         .home-proof-item { padding: 1.35rem 1.5rem; border-right: 1px solid rgba(12, 43, 79, .12); }
         .home-proof-item:last-child { border-right: 0; }
@@ -51,7 +51,7 @@ export default function Home() {
         .home-journey a { min-height: 185px; }
         .home-cta { border-radius: 30px; background: #062c59; color: #fff; padding: clamp(2rem, 6vw, 4.75rem); text-align: center; }
         @media (max-width: 900px) {
-          .home-hero { gap: 2rem; padding: 3.5rem 0 4rem; }
+          .home-hero { grid-template-columns: 1fr; min-height: 0; gap: 2rem; padding: 3.5rem 0 4rem; }
           .home-hero-copy { max-width: 680px; }
           .home-founder { grid-template-columns: 1fr; }
           .home-founder-image { aspect-ratio: 16 / 8; min-height: auto; }
@@ -83,20 +83,20 @@ export default function Home() {
               <p style={{ color: '#e87817', fontSize: '.75rem', fontWeight: 800, letterSpacing: '.13em', textTransform: 'uppercase', marginBottom: '1rem' }}>
                 Telugu Returning NRI Community
               </p>
-              <h1 style={{ fontSize: 'clamp(2.45rem, 4.6vw, 4.4rem)', lineHeight: 1.02, color: '#062c59', margin: '0 auto 1.25rem', maxWidth: '780px' }}>
-                Returning back to India? Come Join your Biggest Returning NRI Telugu community.
+              <h1 style={{ fontSize: 'clamp(2.45rem, 3.9vw, 3.9rem)', lineHeight: 1.02, color: '#062c59', marginBottom: '1.25rem', maxWidth: '600px' }}>
+                Returning to India? Join the Biggest Telugu Returning NRI Community.
               </h1>
-              <p style={{ fontSize: 'clamp(1rem, 1.5vw, 1.12rem)', lineHeight: 1.75, color: '#526476', maxWidth: '640px', margin: '0 auto .75rem' }}>
+              <p style={{ fontSize: 'clamp(1rem, 1.5vw, 1.12rem)', lineHeight: 1.75, color: '#526476', maxWidth: '560px', marginBottom: '.75rem' }}>
                 Built by Telugu NRIs who made the move back—sharing practical guidance and real experiences for families coming home.
               </p>
               <p style={{ color: '#062c59', fontSize: '.92rem', fontWeight: 700, marginBottom: '1.65rem' }}>Based in Hyderabad. Here for Telugu NRIs everywhere.</p>
-              <div className="home-actions" style={{ justifyContent: 'center' }}>
+              <div className="home-actions">
                 <Link href="/community#join-community" className="btn-secondary"><WhatsAppIcon size={18} />Join our WhatsApp community</Link>
                 <Link href="/planner" className="btn-ghost" style={{ borderColor: 'rgba(6, 44, 89, .25)', color: '#062c59' }}>Plan my return</Link>
               </div>
               <div className="home-social-links">
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', color: '#062c59', fontSize: '.88rem', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: '4px' }}><InstagramIcon size={18} />Follow Instagram for Practical Tips</a>
-                <Link href="/videos" style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', color: '#062c59', fontSize: '.88rem', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: '4px' }}><YouTubeIcon size={18} />Returned NRIs Stories</Link>
+                <a href="https://www.youtube.com/@ReturningNRIs" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', color: '#062c59', fontSize: '.88rem', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: '4px' }}><YouTubeIcon size={18} />Returned NRIs Stories</a>
               </div>
             </div>
 
@@ -107,7 +107,7 @@ export default function Home() {
                 fill
                 preload
                 quality={72}
-                sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 1100px) calc(100vw - 2.5rem), 1040px"
+                sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 900px) calc(100vw - 2.5rem), 58vw"
                 style={{ objectFit: 'cover', objectPosition: 'center' }}
               />
             </div>
