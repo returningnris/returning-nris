@@ -1,31 +1,30 @@
 import { MetadataRoute } from 'next'
+import { ARTICLES } from '../lib/articles-data'
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const lastModified = new Date()
+  const guides = ARTICLES.map((article) => ({
+    url: `https://www.returningnris.com${article.href}`,
+    lastModified,
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
+
   return [
-    { url: 'https://www.returningnris.com', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/planner', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/journey', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/community', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/videos', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/can-nris-buy-agricultural-land-in-india', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/sell-your-us-home-before-moving-back-to-india', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/fire-for-returning-nris', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/bangalore-neighbourhood-guide-for-returning-nri-families', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/hyderabad-neighbourhood-guide-for-returning-nri-families', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/pune-neighbourhood-guide-for-returning-nri-families', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/should-i-return-to-india-from-usa', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/nri-returning-to-india-checklist', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/rnor-status-nri-returning-to-india', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/ib-cambridge-cbse-icse-guide-for-returning-nris', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/resources/gated-community-flat-vs-suburb-villa-for-returning-nris', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/rnor', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/city', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/schools', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/housing', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/healthcare', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/citylife', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/jobs', lastModified: new Date() },
-    { url: 'https://www.returningnris.com/our-story', lastModified: new Date() },
+    { url: 'https://www.returningnris.com', lastModified },
+    { url: 'https://www.returningnris.com/planner', lastModified },
+    { url: 'https://www.returningnris.com/journey', lastModified },
+    { url: 'https://www.returningnris.com/community', lastModified },
+    { url: 'https://www.returningnris.com/videos', lastModified },
+    { url: 'https://www.returningnris.com/resources', lastModified },
+    ...guides,
+    { url: 'https://www.returningnris.com/rnor', lastModified },
+    { url: 'https://www.returningnris.com/city', lastModified },
+    { url: 'https://www.returningnris.com/schools', lastModified },
+    { url: 'https://www.returningnris.com/housing', lastModified },
+    { url: 'https://www.returningnris.com/healthcare', lastModified },
+    { url: 'https://www.returningnris.com/citylife', lastModified },
+    { url: 'https://www.returningnris.com/jobs', lastModified },
+    { url: 'https://www.returningnris.com/our-story', lastModified },
   ]
 }
