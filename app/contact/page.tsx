@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 
 const emailAddress = 'hello@returningnris.com'
 const emailHref = `mailto:${emailAddress}?subject=Question%20for%20ReturningNRIs`
+const topmateUrl = 'https://topmate.io/returningnris'
 
 export default function ContactPage() {
   return (
@@ -59,6 +60,27 @@ export default function ContactPage() {
       </section>
 
       <section style={{ padding: '0 1.25rem 5rem' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto', background: 'linear-gradient(135deg, #fff3e6 0%, #fffaf5 100%)', border: '1px solid rgba(240, 138, 36, 0.2)', borderRadius: '24px', padding: 'clamp(1.5rem, 4vw, 2.5rem)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(240px, 0.45fr)', gap: '1.5rem', alignItems: 'center' }} className="contact-booking">
+          <div>
+            <p style={{ fontSize: '0.76rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--saffron-dark)', marginBottom: '0.6rem' }}>Prefer to talk it through?</p>
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.55rem, 3vw, 2rem)', color: 'var(--ink)', marginBottom: '0.65rem' }}>Book a 1:1 planning call</h2>
+            <p style={{ color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: '620px' }}>
+              Choose a time for a free introductory conversation. Bring the question that is keeping you stuck, and we will help you see the practical next step more clearly.
+            </p>
+          </div>
+          <a
+            href={topmateUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '48px', padding: '0.75rem 1.15rem', textAlign: 'center' }}
+          >
+            Book a 1:1 call
+          </a>
+        </div>
+      </section>
+
+      <section style={{ padding: '0 1.25rem 5rem' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto' }}>
           <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(1.55rem, 3vw, 2rem)', color: 'var(--ink)', textAlign: 'center', marginBottom: '1.5rem' }}>What people usually write to us about</h2>
           <div className="contact-topics" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem' }}>
@@ -79,7 +101,8 @@ export default function ContactPage() {
       <style>{`
         @media (max-width: 760px) {
           .contact-grid,
-          .contact-topics {
+          .contact-topics,
+          .contact-booking {
             grid-template-columns: 1fr !important;
           }
         }
