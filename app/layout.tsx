@@ -142,8 +142,8 @@ function Footer() {
             <div style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-soft)' }}>
               Contact
             </div>
-            <a href="mailto:hello@returningnris.com" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
-              hello@returningnris.com
+            <a href="mailto:returningnris@gmail.com" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
+              returningnris@gmail.com
             </a>
             <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.9rem', color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
               <InstagramIcon size={16} />

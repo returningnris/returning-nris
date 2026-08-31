@@ -94,7 +94,7 @@ export default function PrivacyPolicyPage() {
 
           <div style={{ marginTop: '2.5rem', background: '#F8F5F0', border: '1px solid #E5E1DA', borderRadius: '16px', padding: '1.35rem 1.5rem' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, color: '#6B5E50', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.65rem' }}>Contact us</div>
-            <p style={{ ...paragraph, marginBottom: 0 }}>For privacy questions or requests, email <a href="mailto:hello@returningnris.com" style={{ color: '#CC7A00', fontWeight: 600 }}>hello@returningnris.com</a>.</p>
+            <p style={{ ...paragraph, marginBottom: 0 }}>For privacy questions or requests, email <a href="mailto:returningnris@gmail.com" style={{ color: '#CC7A00', fontWeight: 600 }}>returningnris@gmail.com</a>.</p>
           </div>
         </div>
       </article>

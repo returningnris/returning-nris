@@ -193,7 +193,7 @@ export default function OurStory() {
             </p>
           </div>
           <a
-            href="mailto:hello@returningnris.com?subject=Feedback for ReturningNRIs"
+            href="mailto:returningnris@gmail.com?subject=Feedback for ReturningNRIs"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -210,7 +210,7 @@ export default function OurStory() {
               boxShadow: '0 1px 8px rgba(255,153,51,0.1)',
             }}
           >
-            ✉ hello@returningnris.com
+            ✉ returningnris@gmail.com
           </a>
         </div>
       </section>

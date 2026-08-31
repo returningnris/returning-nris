@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
 }
 
-const emailAddress = 'hello@returningnris.com'
+const emailAddress = 'returningnris@gmail.com'
 const emailHref = `mailto:${emailAddress}?subject=Question%20for%20ReturningNRIs`
 const topmateUrl = 'https://topmate.io/returningnris'
 
