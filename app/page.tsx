@@ -1,806 +1,205 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
-import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../lib/social-icons'
+import { InstagramIcon, WhatsAppIcon } from '../lib/social-icons'
 import { INSTAGRAM_URL } from '../lib/social-links'
-
-const TOPMATE_URL = 'https://topmate.io/returningnris'
+import { COMMUNITY_METRICS, JOURNEY_STEPS, WHY_RETURNING_NRIS } from '../lib/homepage-content'
 
 export const metadata: Metadata = {
-  title: 'Return to India Planner for NRIs | Moving Back to India',
+  title: 'ReturningNRIs | Telugu Returning NRI Community',
   description:
-    'Return to India with a clear plan. Use a free planner, practical guides, and tools for RNOR tax, schools, housing, money, and your move back to India.',
-  keywords: [
-    'return to India',
-    'return to India NRI',
-    'returning NRI',
-    'moving back to India',
-    'return to India planner',
-  ],
-  alternates: {
-    canonical: 'https://www.returningnris.com',
-  },
+    'ReturningNRIs is a Telugu NRI community built by returned NRIs, helping Telugu families plan, move and settle back in India with practical guidance and real community support.',
+  keywords: ['Telugu Returning NRIs', 'Telugu NRI community', 'Telugu NRI returning to India', 'Returning NRI Hyderabad', 'Telugu families moving back to India'],
+  alternates: { canonical: 'https://www.returningnris.com' },
   openGraph: {
-    title: 'Return to India Planner for NRIs | Moving Back to India',
-    description:
-      'Start with a clear planner, join a real Returning NRI community, and learn through practical videos and guides.',
+    title: 'ReturningNRIs | Telugu Returning NRI Community',
+    description: 'Built by Telugu NRIs who returned home. Practical guidance and a community for Telugu families coming home.',
     url: 'https://www.returningnris.com',
     siteName: 'ReturningNRIs',
     type: 'website',
-    images: ['https://www.returningnris.com/og-image.png'],
+    images: ['https://www.returningnris.com/og-returningnris-logo-2026.png'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Return to India Planner for NRIs | Moving Back to India',
-    description:
-      'Start with a clear planner, join a real Returning NRI community, and learn through practical videos and guides.',
-    images: ['https://www.returningnris.com/og-image.png'],
+    title: 'ReturningNRIs | Telugu Returning NRI Community',
+    description: 'Practical guidance and a real community for Telugu families coming home.',
+    images: ['https://www.returningnris.com/og-returningnris-logo-2026.png'],
   },
-}
-
-const quickStartCards = [
-  {
-    title: 'Start with the planner',
-    body: 'See where you stand, follow the move timeline, and track the essentials without a long quiz.',
-    href: '/planner',
-    cta: 'Open Planner',
-  },
-  {
-    title: 'Join the community',
-    body: 'Connect with 250+ active Hyderabad members, online sessions, and families already doing this.',
-    href: '/community#join-community',
-    cta: 'Join Community',
-  },
-  {
-    title: 'Learn in the format you want',
-    body: 'Use YouTube for deep dives and Instagram for short practical reminders as your move gets closer.',
-    href: '/videos',
-    cta: 'Explore Videos',
-  },
-]
-
-const planningSupportPoints = [
-  'A 1:1 thinking partner when your move has too many moving parts',
-  'Useful for families deciding timing, city, school, housing, and sequencing',
-  'Best when you want calm judgment, not another generic checklist',
-]
-
-const focusAreas = [
-  {
-    title: 'RNOR & Tax',
-    body: 'Avoid timing mistakes before your move date hardens.',
-    href: '/resources/rnor-status-nri-returning-to-india',
-  },
-  {
-    title: 'Schools',
-    body: 'Plan board choice, shortlist schools, and stay ahead of admissions pressure.',
-    href: '/schools',
-  },
-  {
-    title: 'Housing',
-    body: 'Decide whether to rent first, where to look, and what not to rush.',
-    href: '/housing',
-  },
-  {
-    title: 'Money',
-    body: 'Think through US accounts, banking, cash buffer, and post-move decisions.',
-    href: '/resources',
-  },
-]
-
-const trustSignals = [
-  'Built from real return experience',
-  'Planner, community, videos, and guides in one place',
-  'Mobile-first and easy to scan',
-]
-
-const channelLinks = [
-  {
-    title: 'WhatsApp Community',
-    label: 'Ask, discuss, connect',
-    href: '/community#join-community',
-    external: false,
-  },
-  {
-    title: 'YouTube Guides',
-    label: 'Deep-dive videos',
-    href: '/videos',
-    external: false,
-  },
-  {
-    title: 'Instagram Tips',
-    label: 'Short practical reels',
-    href: INSTAGRAM_URL,
-    external: true,
-  },
-]
-
-const guideLinks = [
-  {
-    href: '/resources/nri-returning-to-india-checklist',
-    title: 'Move-back checklist',
-    body: 'A practical checklist for planning, landing, and the first year.',
-  },
-  {
-    href: '/resources/should-i-return-to-india-from-usa',
-    title: 'Should I return from the USA?',
-    body: 'Think through family, finances, timing, and lifestyle tradeoffs.',
-  },
-  {
-    href: '/resources/ib-cambridge-cbse-icse-guide-for-returning-nris',
-    title: 'School board guide',
-    body: 'Compare IB, Cambridge, CBSE, and ICSE in plain English.',
-  },
-  {
-    href: '/resources/hyderabad-neighbourhood-guide-for-returning-nri-families',
-    title: 'Hyderabad neighborhood guide',
-    body: 'Explore commute, school, and family-fit tradeoffs before choosing an area.',
-  },
-]
-
-const faqs = [
-  {
-    question: 'What should I plan first when moving back to India?',
-    answer:
-      'Start with the move window. It affects RNOR timing, school calendars, payroll, housing decisions, and when major financial changes need to happen.',
-  },
-  {
-    question: 'Should I rent first or buy right away?',
-    answer:
-      'Many returning NRIs rent first so they can learn the commute, neighborhood fit, school routine, and daily-life tradeoffs before committing to a purchase.',
-  },
-  {
-    question: 'How can I learn from people already doing this?',
-    answer:
-      'Use the Returning NRI community for practical peer support, regular online sessions, and city-specific conversations that are hard to get from generic content alone.',
-  },
-  {
-    question: 'Where should I go for short tips versus detailed explanations?',
-    answer:
-      'Use Instagram for quick reminders and short reels. Use YouTube when you want longer deep-dive explainers on move-back decisions.',
-  },
-]
-
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map((item) => ({
-    '@type': 'Question',
-    name: item.question,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: item.answer,
-    },
-  })),
-}
-
-function ArrowIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
 }
 
 export default function Home() {
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c'),
-        }}
-      />
-
+    <main>
       <style>{`
-        .home-shell {
-          max-width: 1180px;
-          margin: 0 auto;
-          padding: 0 1rem;
-        }
-        .home-grid-2,
-        .home-grid-3,
-        .home-grid-4 {
-          display: grid;
-          gap: 1rem;
-        }
-        .home-grid-2 {
-          grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-        }
-        .home-grid-3 {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-        .home-grid-4 {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
-        @media (max-width: 1024px) {
-          .home-grid-4 {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-        }
+        .home-shell { max-width: 1240px; margin: 0 auto; padding: 0 1.25rem; }
+        .home-hero { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); gap: clamp(2rem, 5vw, 5.5rem); align-items: center; min-height: min(720px, calc(100vh - 80px)); padding: clamp(3.25rem, 7vw, 6.5rem) 0; }
+        .home-hero-copy { max-width: 590px; }
+        .home-hero-image { position: relative; overflow: hidden; border-radius: 28px; aspect-ratio: 16 / 9; background: #e9eef5; box-shadow: 0 28px 72px rgba(12, 43, 79, .18); }
+        .home-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+        .home-actions > a { min-height: 48px; justify-content: center; }
+        .home-proof { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid rgba(12, 43, 79, .12); border-bottom: 1px solid rgba(12, 43, 79, .12); }
+        .home-proof-item { padding: 1.35rem 1.5rem; border-right: 1px solid rgba(12, 43, 79, .12); }
+        .home-proof-item:last-child { border-right: 0; }
+        .home-section { padding: clamp(4.5rem, 9vw, 7.5rem) 0; }
+        .home-intro { max-width: 620px; margin: 0 auto clamp(1.75rem, 4vw, 2.8rem); text-align: center; }
+        .home-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+        .home-card { background: #fff; border: 1px solid rgba(12, 43, 79, .11); border-radius: 22px; padding: 1.45rem; box-shadow: 0 14px 38px rgba(12, 43, 79, .05); }
+        .home-founder { display: grid; grid-template-columns: minmax(220px, .75fr) minmax(0, 1.25fr); align-items: center; gap: clamp(1.5rem, 5vw, 4.5rem); background: #f4f7fb; border-radius: 30px; overflow: hidden; }
+        .home-founder-image { position: relative; min-height: 100%; align-self: stretch; }
+        .home-journey { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .8rem; }
+        .home-journey a { min-height: 185px; }
+        .home-cta { border-radius: 30px; background: #062c59; color: #fff; padding: clamp(2rem, 6vw, 4.75rem); text-align: center; }
         @media (max-width: 900px) {
-          .home-grid-2,
-          .home-grid-3 {
-            grid-template-columns: 1fr;
-          }
+          .home-hero { grid-template-columns: 1fr; min-height: 0; gap: 2rem; padding: 3.5rem 0 4rem; }
+          .home-hero-copy { max-width: 680px; }
+          .home-founder { grid-template-columns: 1fr; }
+          .home-founder-image { aspect-ratio: 16 / 8; min-height: auto; }
+          .home-card-grid { grid-template-columns: 1fr; }
+          .home-journey { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
-        @media (max-width: 767px) {
-          .home-shell {
-            padding: 0 0.95rem;
-          }
-          .home-grid-4 {
-            grid-template-columns: 1fr;
-          }
-          .home-action-row {
-            flex-direction: column;
-            align-items: stretch !important;
-          }
-          .home-action-row a {
-            width: 100%;
-            justify-content: center;
-          }
+        @media (max-width: 640px) {
+          .home-shell { padding: 0 1rem; }
+          .home-hero { padding: 2.6rem 0 3rem; gap: 1.5rem; }
+          .home-hero-image { border-radius: 20px; }
+          .home-actions { display: grid; grid-template-columns: 1fr; }
+          .home-actions > a { width: 100%; }
+          .home-proof { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .home-proof-item { padding: 1rem; }
+          .home-proof-item:nth-child(2) { border-right: 0; }
+          .home-proof-item:nth-child(-n+2) { border-bottom: 1px solid rgba(12, 43, 79, .12); }
+          .home-section { padding: 4rem 0; }
+          .home-founder { border-radius: 22px; }
+          .home-journey { grid-template-columns: 1fr; }
+          .home-journey a { min-height: auto; }
         }
       `}</style>
 
-      <section
-        style={{
-          background:
-            'radial-gradient(circle at top left, rgba(240,138,36,0.12), transparent 34%), radial-gradient(circle at 82% 18%, rgba(23,117,58,0.1), transparent 26%), linear-gradient(180deg, #ffffff 0%, #fffdf9 100%)',
-          padding: '1.4rem 0 2.2rem',
-        }}
-      >
+      <section style={{ background: 'linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)' }}>
         <div className="home-shell">
-          <div className="home-grid-2">
-            <div
-              style={{
-                background: '#ffffff',
-                border: '1px solid rgba(29,22,15,0.1)',
-                borderRadius: 30,
-                boxShadow: '0 22px 48px rgba(29,22,15,0.06)',
-                padding: '1.4rem',
-              }}
-            >
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '0.45rem 0.8rem',
-                  borderRadius: 999,
-                  background: '#fff1de',
-                  color: '#8d5c22',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                  marginBottom: '0.95rem',
-                }}
-              >
-                Start Here
-              </div>
-
-              <h1
-                style={{
-                  fontSize: 'clamp(2.4rem, 6vw, 4.75rem)',
-                  lineHeight: 0.97,
-                  color: '#1d160f',
-                  marginBottom: '0.85rem',
-                  maxWidth: 660,
-                }}
-              >
-                Return to India with clarity, not chaos.
-              </h1>
-
-              <p
-                style={{
-                  fontSize: 16,
-                  color: '#665848',
-                  lineHeight: 1.75,
-                  maxWidth: 640,
-                  marginBottom: '1rem',
-                }}
-              >
-                Planning to return to India? Use one simple planner, practical videos, and focused guides to make your move feel more manageable.
+          <div className="home-hero">
+            <div className="home-hero-copy">
+              <p style={{ color: '#e87817', fontSize: '.75rem', fontWeight: 800, letterSpacing: '.13em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+                Telugu Returning NRI Community
               </p>
-
-              <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-                {trustSignals.map((signal) => (
-                  <span
-                    key={signal}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      padding: '0.45rem 0.75rem',
-                      borderRadius: 999,
-                      background: '#fcfbf8',
-                      border: '1px solid rgba(29,22,15,0.08)',
-                      color: '#4f4336',
-                      fontSize: '0.82rem',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {signal}
-                  </span>
-                ))}
-              </div>
-
-              <div className="home-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <Link href="/planner" className="btn-primary">
-                  Start Planner
-                </Link>
-                <Link href="/community#join-community" className="btn-secondary">
-                  <WhatsAppIcon size={18} />
-                  Join Community
-                </Link>
-                <a
-                  href={TOPMATE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: 48,
-                    padding: '0.85rem 1.75rem',
-                    borderRadius: 100,
-                    background: '#fff7ec',
-                    color: '#8D5C22',
-                    border: '1px solid rgba(240,138,36,0.28)',
-                    fontSize: '0.95rem',
-                    fontWeight: 600,
-                    boxShadow: '0 8px 20px rgba(240,138,36,0.08)',
-                  }}
-                >
-                  Book 1:1 Planning
-                </a>
-                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                  <InstagramIcon size={18} />
-                  Instagram Tips
-                </a>
+              <h1 style={{ fontSize: 'clamp(2.45rem, 3.9vw, 3.9rem)', lineHeight: 1.02, color: '#062c59', marginBottom: '1.25rem', maxWidth: '600px' }}>
+                Coming back to India? Come home with your Telugu community.
+              </h1>
+              <p style={{ fontSize: 'clamp(1rem, 1.5vw, 1.12rem)', lineHeight: 1.75, color: '#526476', maxWidth: '560px', marginBottom: '.75rem' }}>
+                Built by Telugu NRIs who made the move back—sharing practical guidance and real experiences for families coming home.
+              </p>
+              <p style={{ color: '#062c59', fontSize: '.92rem', fontWeight: 700, marginBottom: '1.65rem' }}>Based in Hyderabad. Here for Telugu NRIs everywhere.</p>
+              <div className="home-actions">
+                <Link href="/community#join-community" className="btn-secondary"><WhatsAppIcon size={18} />Join the community</Link>
+                <Link href="/planner" className="btn-ghost" style={{ borderColor: 'rgba(6, 44, 89, .25)', color: '#062c59' }}>Plan my return</Link>
               </div>
             </div>
 
-            <div
-              style={{
-                background: 'linear-gradient(180deg, rgba(30,22,15,0.98) 0%, rgba(35,25,18,0.97) 58%, rgba(24,52,37,0.98) 100%)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 30,
-                padding: '1.25rem',
-                boxShadow: '0 26px 56px rgba(18,13,8,0.16)',
-                color: '#ffffff',
-              }}
-            >
-              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)', marginBottom: 8 }}>
-                Follow Our Channels
-              </div>
-              <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.15rem)', marginBottom: '0.9rem' }}>
-                Learn the way you actually use the site
-              </h2>
+            <div className="home-hero-image">
+              <Image
+                src="/home-hero-1400.webp"
+                alt="Journey from the United States to Hyderabad, India for returning NRIs"
+                fill
+                preload
+                quality={72}
+                sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 900px) calc(100vw - 2.5rem), 58vw"
+                style={{ objectFit: 'cover', objectPosition: 'center' }}
+              />
+            </div>
+          </div>
 
-              {channelLinks.map((channel) =>
-                channel.external ? (
-                  <a
-                    key={channel.title}
-                    href={channel.href}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '0.85rem',
-                      padding: '0.95rem',
-                      borderRadius: 22,
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      marginBottom: '0.8rem',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>{channel.title}</div>
-                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.68)', lineHeight: 1.55 }}>{channel.label}</div>
-                    </div>
-                    <div
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 14,
-                      background: 'rgba(255,153,51,0.18)',
-                      color: '#f3b163',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                      <InstagramIcon size={22} />
-                    </div>
-                  </a>
-                ) : (
-                  <Link
-                    key={channel.title}
-                    href={channel.href}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '0.85rem',
-                      padding: '0.95rem',
-                      borderRadius: 22,
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      marginBottom: '0.8rem',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>{channel.title}</div>
-                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.68)', lineHeight: 1.55 }}>{channel.label}</div>
-                    </div>
-                    <div
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 14,
-                        background: channel.title === 'WhatsApp Community' ? 'rgba(19,136,8,0.2)' : 'rgba(255,153,51,0.16)',
-                        color: channel.title === 'WhatsApp Community' ? '#6ad182' : '#f3b163',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      {channel.title === 'WhatsApp Community' ? <WhatsAppIcon size={22} /> : <YouTubeIcon size={22} />}
-                    </div>
-                  </Link>
-                )
-              )}
-
-              <div
-                style={{
-                  marginTop: '0.3rem',
-                  padding: '0.8rem 0.9rem',
-                  borderRadius: 18,
-                  background: 'rgba(255,255,255,0.04)',
-                  color: 'rgba(255,255,255,0.64)',
-                  fontSize: 13,
-                  lineHeight: 1.55,
-                }}
-              >
-                Start with the planner. Then use community, videos, and guides only where you need more detail.
+          <div className="home-proof" aria-label="Community highlights">
+            {COMMUNITY_METRICS.map((metric) => (
+              <div className="home-proof-item" key={metric.label}>
+                <div style={{ color: '#062c59', fontFamily: "'DM Serif Display', serif", fontSize: '1.6rem', lineHeight: 1.1, marginBottom: '.25rem' }}>{metric.value}</div>
+                <div style={{ color: '#637386', fontSize: '.8rem', fontWeight: 700 }}>{metric.label}</div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section">
+        <div className="home-shell">
+          <div className="home-intro">
+            <p className="section-label">Why ReturningNRIs</p>
+            <h2 className="section-title" style={{ color: '#062c59' }}>Built by people who made the move.</h2>
+          </div>
+          <div className="home-card-grid">
+            {WHY_RETURNING_NRIS.map((card) => (
+              <article className="home-card" key={card.title}>
+                <div style={{ width: 34, height: 4, borderRadius: 999, background: '#f18b2b', marginBottom: '1.3rem' }} />
+                <h3 style={{ color: '#062c59', fontSize: '1.18rem', marginBottom: '.55rem' }}>{card.title}</h3>
+                <p style={{ color: '#637386', lineHeight: 1.65, fontSize: '.94rem' }}>{card.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section" style={{ paddingTop: 0 }}>
+        <div className="home-shell">
+          <div className="home-founder">
+            <div className="home-founder-image">
+              <Image src="/founders.jpg" alt="The founders of ReturningNRIs" fill sizes="(max-width: 900px) 100vw, 34vw" style={{ objectFit: 'cover' }} />
+            </div>
+            <div style={{ padding: 'clamp(1.6rem, 5vw, 4rem)' }}>
+              <p className="section-label">Our story</p>
+              <h2 className="section-title" style={{ color: '#062c59', maxWidth: '590px' }}>From abroad to Hyderabad—we made the move too.</h2>
+              <p style={{ color: '#526476', lineHeight: 1.75, maxWidth: '620px', marginBottom: '1rem' }}>
+                We spent years abroad, faced the same questions around kids, careers, finances, and settling back, and eventually returned to Hyderabad. ReturningNRIs was created to make that journey easier for other Telugu families.
+              </p>
+              <p style={{ color: '#062c59', fontWeight: 700, fontSize: '.9rem', marginBottom: '1.4rem' }}>Our experience started it. The community makes it stronger.</p>
+              <Link href="/our-story" style={{ color: '#062c59', fontWeight: 800, textDecoration: 'underline', textUnderlineOffset: '4px' }}>Read our story</Link>
             </div>
           </div>
         </div>
       </section>
 
-      <section style={{ background: '#fffdf9', padding: '0 0 3.5rem' }}>
+      <section className="home-section" style={{ background: '#f7f9fc' }}>
         <div className="home-shell">
-          <div style={{ textAlign: 'center', maxWidth: 740, margin: '0 auto 1.8rem' }}>
-            <div className="section-label">Quick Start</div>
-            <h2 className="section-title">Choose the next step that matches your situation</h2>
-            <p className="section-sub" style={{ margin: '0 auto' }}>
-              Keep it simple. You do not need to read everything before you begin.
-            </p>
+          <div className="home-intro">
+            <p className="section-label">Hyderabad is home</p>
+            <h2 className="section-title" style={{ color: '#062c59' }}>Local experience. A wider welcome.</h2>
+            <p className="section-sub" style={{ margin: '.75rem auto 0', maxWidth: '600px' }}>Our founders live here, and this is where our community knowledge is strongest.</p>
           </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', justifyContent: 'center', marginBottom: '1.5rem' }}>
+            {['Schools', 'Neighborhoods', 'Careers', 'Life after return'].map((topic) => <span key={topic} style={{ padding: '.65rem .95rem', borderRadius: 999, background: '#fff', border: '1px solid rgba(6, 44, 89, .12)', color: '#062c59', fontSize: '.88rem', fontWeight: 700 }}>{topic}</span>)}
+          </div>
+          <div style={{ textAlign: 'center' }}><Link href="/resources/hyderabad-neighbourhood-guide-for-returning-nri-families" className="btn-ghost" style={{ color: '#062c59', borderColor: 'rgba(6, 44, 89, .25)' }}>Explore Hyderabad resources</Link></div>
+        </div>
+      </section>
 
-          <div className="home-grid-3">
-            {quickStartCards.map((card) => (
-              <Link
-                key={card.title}
-                href={card.href}
-                style={{
-                  display: 'block',
-                  background: '#ffffff',
-                  border: '1px solid rgba(29,22,15,0.1)',
-                  borderRadius: 26,
-                  padding: '1.2rem',
-                  boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
-                }}
-              >
-                <h3 style={{ fontSize: 24, color: '#1d160f', marginBottom: 8 }}>{card.title}</h3>
-                <p style={{ fontSize: 15, color: '#665848', lineHeight: 1.75, marginBottom: 14 }}>{card.body}</p>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 700, color: '#1d160f' }}>
-                  {card.cta}
-                  <ArrowIcon />
-                </div>
+      <section className="home-section">
+        <div className="home-shell">
+          <div className="home-intro">
+            <p className="section-label">Your return journey</p>
+            <h2 className="section-title" style={{ color: '#062c59' }}>Where are you in your journey?</h2>
+          </div>
+          <div className="home-journey">
+            {JOURNEY_STEPS.map((step, index) => (
+              <Link key={step.title} href={step.href} style={{ display: 'block', borderRadius: 20, padding: '1.25rem', background: index % 2 === 0 ? '#062c59' : '#f5f7fa', border: index % 2 === 0 ? '1px solid #062c59' : '1px solid rgba(6, 44, 89, .12)' }}>
+                <div style={{ color: index % 2 === 0 ? '#f4b268' : '#e87817', fontSize: '.75rem', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: '1.25rem' }}>0{index + 1}</div>
+                <h3 style={{ color: index % 2 === 0 ? '#fff' : '#062c59', fontSize: '1.08rem', marginBottom: '.5rem' }}>{step.title}</h3>
+                <p style={{ color: index % 2 === 0 ? 'rgba(255,255,255,.72)' : '#637386', fontSize: '.88rem', lineHeight: 1.55 }}>{step.body}</p>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <section style={{ background: '#fffdf9', padding: '0 0 3.5rem' }}>
+      <section className="home-section" style={{ paddingTop: 0 }}>
         <div className="home-shell">
-          <div
-            style={{
-              borderRadius: 30,
-              border: '1px solid rgba(29,22,15,0.1)',
-              background: 'linear-gradient(135deg, #ffffff 0%, #fff8f0 100%)',
-              padding: '1.35rem',
-              boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
-            }}
-          >
-            <div className="home-grid-2" style={{ alignItems: 'center' }}>
-              <div>
-                <div className="section-label" style={{ marginBottom: '0.55rem' }}>
-                  1:1 Planning
-                </div>
-                <h2 className="section-title" style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', marginBottom: '0.65rem' }}>
-                  Need a human thought partner for your return plan?
-                </h2>
-                <p style={{ fontSize: 15, color: '#665848', lineHeight: 1.75, maxWidth: 620, marginBottom: '1rem' }}>
-                  If you want to talk through your move with someone who understands the trade-offs, you can book a paid
-                  1:1 Return to India Planning session. It is meant for families who want practical clarity, not a hard sell.
-                </p>
-                <div className="home-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <a
-                    href={TOPMATE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      minHeight: 48,
-                      padding: '0.85rem 1.75rem',
-                      borderRadius: 100,
-                      background: '#fff7ec',
-                      color: '#8D5C22',
-                      border: '1px solid rgba(240,138,36,0.28)',
-                      fontSize: '0.95rem',
-                      fontWeight: 600,
-                      boxShadow: '0 8px 20px rgba(240,138,36,0.08)',
-                    }}
-                  >
-                    Book 1:1 Planning
-                  </a>
-                  <Link href="/planner" className="btn-primary">
-                    Start with the planner
-                  </Link>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid rgba(29,22,15,0.08)',
-                  borderRadius: 24,
-                  padding: '1.1rem',
-                }}
-              >
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#B08B67', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                  Best when
-                </div>
-                <div style={{ display: 'grid', gap: 10 }}>
-                  {planningSupportPoints.map((point) => (
-                    <div
-                      key={point}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: 10,
-                        padding: '0.8rem 0.85rem',
-                        borderRadius: 18,
-                        background: '#fcfbf8',
-                        border: '1px solid rgba(29,22,15,0.06)',
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          background: '#FF9933',
-                          marginTop: 6,
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div style={{ fontSize: 13, color: '#4f4336', lineHeight: 1.65 }}>{point}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          <div className="home-cta">
+            <p style={{ color: '#f4b268', fontSize: '.75rem', fontWeight: 800, letterSpacing: '.13em', textTransform: 'uppercase', marginBottom: '.9rem' }}>For every Telugu NRI coming home</p>
+            <h2 style={{ color: '#fff', fontSize: 'clamp(2rem, 4vw, 3.25rem)', marginBottom: '.85rem' }}>Coming home is easier with your people.</h2>
+            <p style={{ color: 'rgba(255,255,255,.75)', lineHeight: 1.7, maxWidth: '620px', margin: '0 auto 1.6rem' }}>Join Telugu families who are planning, moving, and settling back in India.</p>
+            <div className="home-actions" style={{ justifyContent: 'center' }}>
+              <Link href="/community#join-community" className="btn-secondary"><WhatsAppIcon size={18} />Join the WhatsApp community</Link>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,.35)' }}><InstagramIcon size={18} />Follow on Instagram</a>
             </div>
           </div>
         </div>
       </section>
-
-      <section style={{ background: '#f8f5f0', padding: '3.5rem 0' }}>
-        <div className="home-shell">
-          <div style={{ textAlign: 'center', maxWidth: 740, margin: '0 auto 1.8rem' }}>
-            <div className="section-label">Plan Better</div>
-            <h2 className="section-title">Go deeper only where you need clarity</h2>
-            <p className="section-sub" style={{ margin: '0 auto' }}>
-              Most returning NRI decisions cluster around timing, money, schools, housing, and first-year adjustment.
-            </p>
-          </div>
-
-          <div className="home-grid-4">
-            {focusAreas.map((area) => (
-              <Link
-                key={area.title}
-                href={area.href}
-                style={{
-                  display: 'block',
-                  background: '#ffffff',
-                  border: '1px solid rgba(29,22,15,0.1)',
-                  borderRadius: 24,
-                  padding: '1.1rem',
-                  boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
-                }}
-              >
-                <h3 style={{ fontSize: 22, color: '#1d160f', marginBottom: 8 }}>{area.title}</h3>
-                <p style={{ fontSize: 14, color: '#665848', lineHeight: 1.75, marginBottom: 12 }}>{area.body}</p>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: '#1d160f' }}>
-                  Open
-                  <ArrowIcon />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section style={{ background: '#fffdf9', padding: '3.5rem 0' }}>
-        <div className="home-shell">
-          <div
-            style={{
-              borderRadius: 30,
-              border: '1px solid rgba(19,136,8,0.14)',
-              background: 'linear-gradient(135deg, #f3fbf4 0%, #ffffff 70%)',
-              padding: '1.35rem',
-              boxShadow: '0 22px 46px rgba(19,136,8,0.06)',
-            }}
-          >
-            <div className="section-label" style={{ color: '#138808' }}>
-              Community
-            </div>
-            <h2 className="section-title" style={{ marginBottom: '0.5rem' }}>
-              Need help from people actually doing this?
-            </h2>
-            <p style={{ maxWidth: 660, fontSize: 15, color: '#4f4336', lineHeight: 1.7, marginBottom: '1rem' }}>
-              Join the Returning NRI community with 250+ active Hyderabad members, regular online sessions, and short practical content for families planning their move.
-            </p>
-            <div className="home-action-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <Link href="/community#join-community" className="btn-secondary">
-                <WhatsAppIcon size={18} />
-                Join Community
-              </Link>
-              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                <InstagramIcon size={18} />
-                Follow Instagram Tips
-              </a>
-              <Link href="/videos" className="btn-ghost">
-                <YouTubeIcon size={18} />
-                Watch Videos
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section style={{ background: '#fffdf9', padding: '0 0 3.5rem' }}>
-        <div className="home-shell">
-          <div style={{ textAlign: 'center', maxWidth: 740, margin: '0 auto 1.8rem' }}>
-            <div className="section-label">Guides</div>
-            <h2 className="section-title">Popular guides before moving back to India</h2>
-            <p className="section-sub" style={{ margin: '0 auto' }}>
-              Start with the articles people usually need first when they are narrowing timing, city, school, and family-fit decisions.
-            </p>
-          </div>
-
-          <div className="home-grid-4">
-            {guideLinks.map((guide) => (
-              <Link
-                key={guide.href}
-                href={guide.href}
-                style={{
-                  display: 'block',
-                  background: '#ffffff',
-                  border: '1px solid rgba(29,22,15,0.1)',
-                  borderRadius: 24,
-                  padding: '1.1rem',
-                  boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
-                }}
-              >
-                <h3 style={{ fontSize: 21, color: '#1d160f', marginBottom: 8 }}>{guide.title}</h3>
-                <p style={{ fontSize: 14, color: '#665848', lineHeight: 1.75, marginBottom: 12 }}>{guide.body}</p>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: '#1d160f' }}>
-                  Read guide
-                  <ArrowIcon />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section style={{ background: '#1f1610', padding: '3.5rem 0' }}>
-        <div className="home-shell">
-          <div style={{ maxWidth: 940, margin: '0 auto', textAlign: 'center' }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '0.45rem 0.85rem',
-                borderRadius: 999,
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                color: 'rgba(255,255,255,0.76)',
-                fontSize: 12,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                marginBottom: '1rem',
-              }}
-            >
-              Start smart
-            </div>
-            <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3.35rem)', lineHeight: 1.02, color: '#fff', marginBottom: '1rem' }}>
-              Start with your plan, then go deeper only where you need it.
-            </h2>
-            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.68)', lineHeight: 1.8, maxWidth: 720, margin: '0 auto 1.75rem' }}>
-              Planner for structure. Community for real-world context. Videos for faster learning. Guides for the details that still matter.
-            </p>
-            <div className="home-action-row" style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
-              <Link href="/planner" className="btn-primary">
-                Start Planner
-              </Link>
-              <Link href="/community#join-community" className="btn-secondary">
-                <WhatsAppIcon size={18} />
-                Join Community
-              </Link>
-              <a
-                href={TOPMATE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: 48,
-                  padding: '0.85rem 1.75rem',
-                  borderRadius: 100,
-                  background: 'rgba(255,153,51,0.18)',
-                  color: '#FFD7A8',
-                  border: '1px solid rgba(255,153,51,0.32)',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  boxShadow: '0 10px 24px rgba(0,0,0,0.12)',
-                }}
-              >
-                Book 1:1 Planning
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section style={{ background: '#fffdf9', padding: '0 0 3.5rem' }}>
-        <div className="home-shell">
-          <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto 1.8rem' }}>
-            <div className="section-label">FAQ</div>
-            <h2 className="section-title">Common questions people usually ask first</h2>
-          </div>
-
-          <div className="home-grid-4">
-            {faqs.map((item) => (
-              <div
-                key={item.question}
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid rgba(29,22,15,0.1)',
-                  borderRadius: 24,
-                  padding: '1.15rem',
-                  boxShadow: '0 18px 38px rgba(29,22,15,0.05)',
-                }}
-              >
-                <h3 style={{ fontSize: 20, color: '#1d160f', marginBottom: 8 }}>{item.question}</h3>
-                <p style={{ fontSize: 14, color: '#665848', lineHeight: 1.75 }}>{item.answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    </>
+    </main>
   )
 }
