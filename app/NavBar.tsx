@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { href: '/resources', label: 'Guides' },
   { href: '/videos', label: 'Videos' },
   { href: '/our-story', label: 'Our Story' },
+  { href: '/contact', label: 'Contact Us' },
 ]
 
 function isActivePath(pathname: string, href: string) {

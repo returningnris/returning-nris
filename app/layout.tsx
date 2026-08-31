@@ -1,10 +1,30 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import localFont from 'next/font/local'
 import './globals.css'
 import NavBar from './NavBar'
 import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../lib/social-icons'
 import { INSTAGRAM_URL } from '../lib/social-links'
+
+const dmSans = localFont({
+  src: [
+    { path: './fonts/dm-sans-300.ttf', weight: '300', style: 'normal' },
+    { path: './fonts/dm-sans-400.ttf', weight: '400', style: 'normal' },
+    { path: './fonts/dm-sans-500.ttf', weight: '500', style: 'normal' },
+    { path: './fonts/dm-sans-600.ttf', weight: '600', style: 'normal' },
+    { path: './fonts/dm-sans-700.ttf', weight: '700', style: 'normal' },
+  ],
+  variable: '--font-dm-sans',
+})
+
+const dmSerifDisplay = localFont({
+  src: [
+    { path: './fonts/dm-serif-display-400.ttf', weight: '400', style: 'normal' },
+    { path: './fonts/dm-serif-display-400-italic.ttf', weight: '400', style: 'italic' },
+  ],
+  variable: '--font-dm-serif-display',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.returningnris.com'),
@@ -136,6 +156,9 @@ function Footer() {
             <Link href="/our-story" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
               Our Story
             </Link>
+            <Link href="/privacy-policy" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
+              Privacy Policy
+            </Link>
           </div>
         </div>
 
@@ -151,10 +174,7 @@ function Footer() {
           }}
         >
           <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>Built for families moving back to India with more clarity.</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
-            <Link href="/privacy-policy" style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>Privacy Policy</Link>
-            <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>© 2026 ReturningNRIs</p>
-          </div>
+          <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>© 2026 ReturningNRIs</p>
         </div>
       </div>
 
@@ -171,13 +191,7 @@ function Footer() {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable}`}>
       <body suppressHydrationWarning style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <NavBar />
         <main style={{ flex: 1 }}>{children}</main>

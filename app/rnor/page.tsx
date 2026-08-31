@@ -521,11 +521,6 @@ function computeRNOR(I: Inputs): TaxResult {
     const overlapEnd = endDate < fyEnd ? endDate : fyEnd
     const monthsInRNOR = overlapEnd > overlapStart ? monthDiff(overlapStart, overlapEnd) : 0
     const status = monthsInRNOR === 12 ? 'RNOR' : monthsInRNOR > 0 ? `Partial RNOR (${monthsInRNOR} mo)` : 'Resident'
-    const recurringSavingForFY = (yearlySalarySaving * monthsInRNOR) / 12
-    const rsuSavingForFY = fy === startFY ? rsuSaving : 0
-    const totalSavingForFY = recurringSavingForFY + rsuSavingForFY
-    const residentMonths = 12 - monthsInRNOR
-    const residentTaxForFY = (yearlySalarySaving * residentMonths) / 12
     yearByYear.push({
       year: `FY ${fy}-${(fy + 1).toString().slice(2)}`,
       status,
