@@ -21,6 +21,18 @@ export type Article = {
 
 export const ARTICLES: Article[] = [
   {
+    href: '/resources/west-hyderabad-schools-practical-guide',
+    label: 'West Hyderabad Schools: A Practical Guide',
+    icon: '🏫',
+    sub: '13 schools, curriculum pathways, fee ranges, and the commute trade-offs that matter',
+    category: 'Schools',
+    readMins: 12,
+    thumbnail: {
+      src: '/resources/west-hyderabad-schools-practical-guide.webp',
+      alt: 'West Hyderabad school campus guide for returning NRI families',
+    },
+  },
+  {
     href: '/resources/things-nris-should-bring-from-usa-to-india',
     label: 'What NRIs Should Bring From the USA',
     icon: '🧳',
