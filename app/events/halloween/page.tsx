@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import HalloweenRegistration from '@/components/HalloweenRegistration'
+import HalloweenArtwork from '@/components/HalloweenArtwork'
 import { BookingSteps, EventDetails, EventLinks } from '@/components/HalloweenShared'
 import { publicHalloweenEvent } from '@/lib/halloween-server'
 import { HALLOWEEN_PATH } from '@/lib/halloween'
@@ -17,12 +18,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HalloweenPage() {
   const { event, available } = await publicHalloweenEvent()
   return <>
-    <header className="event-hero"><div className="event-shell">
+    <header className="event-hero halloween-themed-hero"><div className="event-shell">
       <Link href="/events" className="event-link event-muted">← All events</Link>
-      <div className="section-label" style={{ marginTop: '1.4rem', color: 'var(--saffron-dark)' }}>A family community event</div>
+      <div className="halloween-hero-grid"><div>
+      <div className="section-label halloween-eyebrow" style={{ marginTop: '1.4rem' }}>A family community event</div>
       <h1>{event.name}</h1>
       <p className="event-lead">A chance to meet other Returning NRI families and spend an evening together. Book your family in a few easy steps.</p>
       <EventDetails event={event} />
+      </div><HalloweenArtwork className="halloween-hero-art" /></div>
     </div></header>
     <div className="event-shell"><BookingSteps step={1} /><div className="event-grid">
       <HalloweenRegistration event={event} available={available} />

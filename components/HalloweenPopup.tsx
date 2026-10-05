@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { HALLOWEEN_PATH, HALLOWEEN_TIMINGS, HALLOWEEN_VENUE } from '@/lib/halloween'
 import styles from './HalloweenPopup.module.css'
+import HalloweenArtwork from './HalloweenArtwork'
 
 const dismissalKey = 'halloween-2026-popup-dismissed'
 
@@ -30,6 +31,7 @@ export default function HalloweenPopup() {
     onKeyDown={event => { if (event.key === 'Escape') dismiss() }}>
     <button type="button" className={styles.close} aria-label="Close Halloween invitation" onClick={dismiss}>×</button>
     <Link href={HALLOWEEN_PATH} className={styles.invitation} onClick={dismiss}>
+      <HalloweenArtwork className={styles.artwork} />
       <span className={styles.label}>A family community event</span>
       <h2>Halloween Party</h2>
       <p className={styles.date}>31 October 2026 · {HALLOWEEN_TIMINGS} IST</p>

@@ -43,7 +43,17 @@
 .event-camera { width: 100%; max-height: 360px; border-radius: 16px; background: #1a1208; }
 .event-tab { background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: .65rem 1.1rem; font: inherit; }
 .event-tab[aria-pressed="true"] { background: var(--green-light); border-color: var(--green); }
+.halloween-themed-hero { background: radial-gradient(ellipse at 80% 20%, #51316c, transparent 65%), #21132e; color: #fff7e9; border-bottom: 4px solid #f57921; }
+.halloween-themed-hero h1 { color: #ffae45; text-shadow: 0 3px 0 #120b1c; }
+.halloween-themed-hero .event-link { color: #ead7ff; }
+.halloween-themed-hero .event-lead { color: #eadff3; }
+.halloween-themed-hero .halloween-eyebrow { color: #ffd878; }
+.halloween-themed-hero .event-details span { background: #382345; color: #fff7e9; border-color: #705284; border-radius: 14px; }
+.halloween-hero-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: center; gap: 1.5rem; }
+.halloween-hero-art { width: 100%; height: auto; }
 @media(max-width: 720px) {
+  .halloween-hero-grid { grid-template-columns: 1fr; gap: .25rem; }
+  .halloween-hero-art { max-width: 380px; margin: 0 auto; }
   .event-grid { grid-template-columns: 1fr; }
   .event-shell { padding: 2rem 1rem 3rem; }
   .event-hero .event-shell { padding-top: 2.5rem; padding-bottom: 2rem; }
