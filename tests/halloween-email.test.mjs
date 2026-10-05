@@ -43,18 +43,12 @@ test('confirmed HTML includes counts, verified amount and a private ticket butto
   assert.ok(!html.includes('Save your private link'))
 })
 
-test('pending and confirmed emails include every shared term and the liability limitations', () => {
+test('pending and confirmed emails link to terms without displaying the full terms', () => {
   for (const link of [undefined, 'https://example.com/events/halloween/booking#' + 'a'.repeat(64)]) {
     const html = halloweenEmailHtml(booking, event, 'https://example.com', link)
-    for (const term of termsMod.exports.HALLOWEEN_TERMS) {
-      assert.ok(html.includes(term.title))
-      assert.ok(html.includes(term.text))
-    }
-    assert.match(html, /The Quantium School/)
-    assert.match(html, /release them from related claims and liability/)
-    assert.match(html, /does not exclude liability for negligence/)
     assert.ok(html.includes('href="https://example.com/events/halloween/terms"'))
+    assert.match(html, /Terms &amp; Conditions/)
+    for (const term of termsMod.exports.HALLOWEEN_TERMS) assert.ok(!html.includes(term.text))
+    assert.ok(!html.includes('release them from related claims and liability'))
   }
-  const text = termsMod.exports.halloweenTermsText()
-  for (const term of termsMod.exports.HALLOWEEN_TERMS) assert.ok(text.includes(term.text))
 })

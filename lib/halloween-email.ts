@@ -1,5 +1,5 @@
 import type { HalloweenBooking, HalloweenEvent } from './halloween'
-import { HALLOWEEN_TERMS, HALLOWEEN_TERMS_PATH } from './halloween-terms'
+import { HALLOWEEN_TERMS_PATH } from './halloween-terms'
 
 function escapeHtml(value: string | number) {
   return String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]!))
@@ -30,9 +30,7 @@ export function halloweenEmailHtml(booking: Pick<HalloweenBooking, 'booking_refe
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${detail('Booking reference', booking.booking_reference)}${detail(confirmed ? 'Payment verified' : 'Amount to verify', `₹${booking.amount_inr.toLocaleString('en-IN')}`)}${detail('Your family', `${booking.adult_count} adult(s) · ${booking.child_count} child(ren)`)}${detail('When', `31 October 2026 · ${event.timings || 'Timings to be announced'} IST`)}${detail('Where', event.venue || 'Venue to be announced')}</table>
 ${confirmed ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px"><tr><td bgcolor="#ffae45" style="border-radius:10px;background-color:#ffae45"><a href="${escapeHtml(privateLink!)}" style="display:inline-block;padding:16px 22px;color:#21132e;text-decoration:none;font-size:16px;font-weight:bold">View your family ticket →</a></td></tr></table><p style="font-size:14px;line-height:1.7;color:#66536f;margin:18px 0 0">One QR covers your entire registered family. Please arrive together and show your QR at the entrance. Keep your ticket link private.</p><p style="font-size:13px;line-height:1.6;color:#66536f">Button not working? <a href="${escapeHtml(privateLink!)}" style="color:#744394;text-decoration:underline">Open your family ticket here</a>.</p>` : '<p style="margin:22px 0 0;padding:16px;background-color:#fff3df;border-radius:10px;color:#704600;font-size:14px;line-height:1.7">Please do not pay again. This email acknowledges your reference submission; it does not confirm payment received in the bank.</p>'}
 <p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#66536f">Music to keep the evening lively · Trick or treat · Exciting games for kids<br>Food available for purchase.</p>
-<h2 style="margin:28px 0 12px;font-size:20px;color:#21132e">Terms &amp; Conditions</h2>
-<ol style="margin:0;padding-left:22px;font-size:14px;line-height:1.7;color:#66536f">${HALLOWEEN_TERMS.map(term => `<li style="margin-bottom:14px"><strong style="color:#21132e">${escapeHtml(term.title)}</strong><br>${escapeHtml(term.text)}</li>`).join('')}</ol>
-<p style="font-size:14px;line-height:1.7"><a href="${escapeHtml(origin)}${HALLOWEEN_TERMS_PATH}" style="color:#744394">Read the Halloween Party terms online</a>.</p>
+<p style="margin:22px 0 0;font-size:14px;line-height:1.7"><a href="${escapeHtml(origin)}${HALLOWEEN_TERMS_PATH}" style="color:#744394">Terms &amp; Conditions</a></p>
 </td></tr><tr><td align="center" style="padding:20px 24px;border-top:1px solid #e8dfed;font-size:12px;line-height:1.7;color:#66536f">Returning NRIs<br>Questions? <a href="${escapeHtml(origin)}/contact" style="color:#744394">Contact the organiser</a> with your booking reference.</td></tr>
 </table></td></tr></table></body></html>`
 }

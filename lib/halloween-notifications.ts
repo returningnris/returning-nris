@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from './supabase-admin'
 import { canonicalHalloweenOrigin, getHalloweenEvent } from './halloween-server'
 import { HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText, paymentPendingText } from './halloween'
 import { halloweenEmailHtml } from './halloween-email'
-import { halloweenTermsText } from './halloween-terms'
+import { HALLOWEEN_TERMS_PATH } from './halloween-terms'
 
 type EmailPayload = { from: string; to: string; subject: string; text: string; html?: string }
 type Notification = { id: string; booking_id: string; lease_token: string; first_attempt_at: string;
@@ -50,7 +50,7 @@ export async function processHalloweenNotifications() {
         catch { await finish('manual_required', null, 'site_url_not_configured'); counts.manual++; continue }
         payload = { from: `Returning NRIs <${process.env.RESEND_FROM_EMAIL}>`, to: booking.email,
           subject: `${pending ? 'Payment pending verification' : 'Payment confirmed'}: ${event.name} · ${booking.booking_reference}`,
-          text: `${pending ? paymentPendingText(booking, event) : confirmationText(booking, event, `${origin}${HALLOWEEN_PATH}/booking#${booking.private_access_token}`)}\n\n${halloweenTermsText()}`,
+          text: `${pending ? paymentPendingText(booking, event) : confirmationText(booking, event, `${origin}${HALLOWEEN_PATH}/booking#${booking.private_access_token}`)}\n\nTerms & Conditions: ${origin}${HALLOWEEN_TERMS_PATH}`,
           html: halloweenEmailHtml(booking, event, origin, pending ? undefined : `${origin}${HALLOWEEN_PATH}/booking#${booking.private_access_token}`) }
         const { data: saved, error: saveError } = await db.from('halloween_notification_outbox')
           .update({ delivery_payload: payload }).eq('id', row.id).eq('lease_token', row.lease_token)
