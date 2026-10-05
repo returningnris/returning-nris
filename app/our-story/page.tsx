@@ -1,5 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Our Story | Returning NRIs',
+  description: 'Meet Bharath and Swathi, founders of ReturningNRIs. After 17 years in the USA, we moved back to India in May 2026 and now share practical guidance from our own experience.',
+  alternates: { canonical: '/our-story' },
+}
 
 export default function OurStory() {
   return (
@@ -10,7 +17,7 @@ export default function OurStory() {
           <div className="section-label">About Us</div>
           <h1 className="section-title">We&apos;re not building this<br />from a whiteboard.</h1>
           <p className="section-sub" style={{ margin: '0 auto' }}>
-            We&apos;re living every problem this platform solves — right now, in real time.
+            After 17 years in the USA, we moved back in May 2026. We&apos;re now living in India and sharing what we learned along the way.
           </p>
         </div>
       </section>
@@ -35,8 +42,8 @@ export default function OurStory() {
                 <div style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink)', marginBottom: '3px' }}>Bharath Mandava &amp; Swathi Bandla</div>
                 <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginBottom: '1rem' }}>Co-founders · ReturningNRIs</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 500, padding: '3px 10px', borderRadius: '100px', background: '#FFF3E6', color: '#854F0B' }}>16 yrs in USA</span>
-                  <span style={{ fontSize: '11px', fontWeight: 500, padding: '3px 10px', borderRadius: '100px', background: '#E8F5E8', color: '#27500A' }}>Moving Apr 2026</span>
+                  <span style={{ fontSize: '11px', fontWeight: 500, padding: '3px 10px', borderRadius: '100px', background: '#FFF3E6', color: '#854F0B' }}>17 yrs in USA</span>
+                  <span style={{ fontSize: '11px', fontWeight: 500, padding: '3px 10px', borderRadius: '100px', background: '#E8F5E8', color: '#27500A' }}>In India since May 2026</span>
                   <span style={{ fontSize: '11px', fontWeight: 500, padding: '3px 10px', borderRadius: '100px', background: '#E8E8FF', color: '#0C447C' }}>2 kids</span>
                 </div>
               </div>
@@ -48,10 +55,10 @@ export default function OurStory() {
               {/* QUICK FACTS */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 {[
-                  { label: 'In the US since', val: '2008 — 16 years', color: '#FF9933' },
-                  { label: 'Moving back', val: 'April 2026', color: '#138808' },
+                  { label: 'Time in the USA', val: '17 years', color: '#FF9933' },
+                  { label: 'Moved back to India', val: 'May 2026 — now living in India', color: '#138808' },
                   { label: 'Family', val: 'Bharath, Swathi + 2 kids', sub: 'Girl 9 · Boy 5', color: 'var(--ink)' },
-                  { label: 'Background', val: 'Developer → Data Analyst → Product Owner', color: 'var(--ink)' },
+                  { label: 'Background', val: 'Developer/Data Analyst → Product Owner → Project Manager', color: 'var(--ink)' },
                 ].map(fact => (
                   <div key={fact.label} style={{ background: 'var(--india-white)', borderRadius: '12px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>{fact.label}</div>
@@ -70,7 +77,7 @@ export default function OurStory() {
                 <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Our story</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: 1.75, fontFamily: "'DM Serif Display', serif" }}>
-                    In 2008, we moved to the US for work. One opportunity led to another, two kids arrived, and 16 years passed faster than we expected.
+                    In 2008, we moved to the US for work. One opportunity led to another, two kids arrived, and 17 years passed faster than we expected. We moved back to India in May 2026 and now live here with our family.
                   </p>
                   <p style={{ fontSize: '14px', color: 'var(--ink-muted)', lineHeight: 1.75 }}>
                     In 2023, we decided to move back permanently. We thought it would take a few months to plan. It took over a year — and we nearly made several expensive mistakes along the way.
@@ -94,7 +101,7 @@ export default function OurStory() {
                     { icon: '⏱️', title: 'Spent 9 months researching', desc: 'what should take a weekend — tax, cities, schools, banking, scattered across 12 tabs and 4 consultants' },
                     { icon: '⚠️', title: 'Nearly missed the RNOR window', desc: 'No single resource explained how to preserve it while winding down US income' },
                     { icon: '🏫', title: 'School decision almost stopped us', desc: 'Two US-raised kids, no idea how CBSE vs IB would work for their grade levels in India' },
-                    { icon: '✅', title: 'Tested it for real', desc: 'Lived in India Jun 2024–2025 with the whole family before committing. Now back in USA, wrapping up, moving for good.' },
+                    { icon: '✅', title: 'Tested it for real', desc: 'Lived in India Jun 2024–2025 with the whole family before committing. We moved back permanently in May 2026 and are now living in India.' },
                   ].map(item => (
                     <div key={item.title} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#FFF3E6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '14px' }}>
