@@ -57,20 +57,6 @@
 .halloween-confirmation-hero .section-title { color: #ffae45; font-size: clamp(1.8rem, 4vw, 2.5rem); }
 .halloween-confirmation-hero .event-muted { color: #eadff3; }
 .halloween-confirmation-art { display: block; width: 100%; height: auto; pointer-events: none; }
-/* A short, transform-only welcome: no timers, image downloads or continuous work.
-   All motion stops within 4.8 seconds; the ticket and QR remain completely still. */
-.halloween-confirmation-art .halloween-moving-spider { animation: halloween-spider-sway 1.6s ease-in-out 3; transform-origin: 492px 40px; }
-.halloween-confirmation-art .halloween-floating-ghost { animation: halloween-ghost-float 2.4s ease-in-out 2; }
-.halloween-confirmation-art .halloween-small-ghost { animation-direction: reverse; }
-.halloween-confirmation-art .halloween-bobbing-pumpkin { animation: halloween-pumpkin-bob 1.6s ease-in-out 3; transform-origin: 226px 250px; }
-@keyframes halloween-spider-sway { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(5deg); } }
-@keyframes halloween-ghost-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-@keyframes halloween-pumpkin-bob { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-4px) rotate(-3deg); } }
-@media (prefers-reduced-motion: reduce) {
-  .halloween-confirmation-art .halloween-moving-spider,
-  .halloween-confirmation-art .halloween-floating-ghost,
-  .halloween-confirmation-art .halloween-bobbing-pumpkin { animation: none; }
-}
 @media(max-width: 720px) {
   .halloween-confirmation-hero { grid-template-columns: 1fr; gap: .25rem; padding: 1.2rem; }
   .halloween-confirmation-art { max-width: 360px; margin: 0 auto; }

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import HalloweenPopup from '../components/HalloweenPopup'
 import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../lib/social-icons'
 import { INSTAGRAM_URL } from '../lib/social-links'
 import { COMMUNITY_METRICS, JOURNEY_STEPS, WHY_RETURNING_NRIS } from '../lib/homepage-content'
@@ -31,7 +30,6 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main>
-      <HalloweenPopup />
       <style>{`
         .home-shell { max-width: 1240px; margin: 0 auto; padding: 0 1.25rem; }
         .home-hero { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); gap: clamp(2rem, 5vw, 5.5rem); align-items: center; min-height: min(720px, calc(100vh - 80px)); padding: clamp(3.25rem, 7vw, 6.5rem) 0; }

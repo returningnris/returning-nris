@@ -25,7 +25,7 @@ export default async function HalloweenPage() {
       <h1>{event.name}</h1>
       <p className="event-lead">A chance to meet other Returning NRI families and spend an evening together. Book your family in a few easy steps.</p>
       <EventDetails event={event} />
-      </div><HalloweenArtwork className="halloween-hero-art" /></div>
+      </div><HalloweenArtwork animated className="halloween-hero-art" /></div>
     </div></header>
     <div className="event-shell"><BookingSteps step={1} /><div className="event-grid">
       <HalloweenRegistration event={event} available={available} />

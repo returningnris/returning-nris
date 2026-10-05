@@ -1,6 +1,8 @@
+import styles from './HalloweenArtwork.module.css'
+
 // Decorative vector artwork stays sharp at every screen size and needs no image requests.
 export default function HalloweenArtwork({ className, animated = false }: { className?: string; animated?: boolean }) {
-  return <svg className={className} viewBox="0 0 560 280" fill="none" aria-hidden="true" focusable="false">
+  return <svg className={[className, animated ? styles.animated : ''].filter(Boolean).join(' ')} viewBox="0 0 560 280" fill="none" aria-hidden="true" focusable="false">
     <circle cx="356" cy="112" r="81" fill="#ffd878" />
     <circle cx="330" cy="94" r="12" fill="#f5c85f" /><circle cx="391" cy="128" r="19" fill="#f5c85f" />
     <g stroke="#b7a4d5" strokeWidth="1.5" opacity=".7">

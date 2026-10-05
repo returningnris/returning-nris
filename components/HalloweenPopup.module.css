@@ -29,6 +29,10 @@
   cursor: pointer;
 }
 .close:hover { background: #624479; }
+.collapsed { width: auto; border-radius: 999px; }
+.reopen { display: flex; align-items: center; gap: .65rem; min-height: 48px; padding: .75rem 1rem; border: 0; background: transparent; color: #ffd878; font: inherit; font-weight: 700; cursor: pointer; }
+.reopen:hover { background: #382345; }
+.reopen:focus-visible { outline: 3px solid #e87817; outline-offset: -3px; border-radius: 999px; }
 .artwork { display: block; width: 100%; height: auto; margin: -.25rem 0 .5rem; }
 .invitation { display: block; padding: 1.6rem; color: inherit; text-decoration: none; }
 .label { display: block; padding-right: 2rem; color: #ffd878; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
