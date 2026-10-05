@@ -25,6 +25,8 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   for (const file of ['202610050001_halloween_event.sql', '202610050002_halloween_delivery_payload.sql', '202610050003_halloween_family_tickets.sql']) {
     await pg.exec(readFileSync(join(root, 'supabase/migrations', file), 'utf8'))
   }
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610050005_halloween_payment_pending_email.sql'), 'utf8'))
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610050005_halloween_payment_pending_email.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/tests/halloween-event.sql'), 'utf8'))
   await pg.exec(`update public.halloween_events set venue='Isolated Test Venue',timings='Test only',upi_id='test@example',
     payment_recipient_name='Test only',payment_qr_image_url='/test-qr.png',registration_open=true;
@@ -176,6 +178,17 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     assert.equal(data.booking.payment_verified, false); assert.ok(data.booking.payment_submitted_at)
     assert.equal((await api.POST(request({ ...body, reference: 'OTHER123456' }))).status, 409)
   })
+  await t.test('payment submission queues one pending email without a ticket link; repeat submission does not resend', async () => {
+    assert.equal((await pg.query("select count(*)::integer as n from public.halloween_notification_outbox where kind='payment_pending'")).rows[0].n, 1)
+    assert.equal((await (await worker.GET(workerRequest())).json()).accepted, 1)
+    assert.match(provider.calls[0].payload, /Payment pending verification/)
+    assert.match(provider.calls[0].payload, /Once your payment is confirmed/)
+    assert.ok(!provider.calls[0].payload.includes(privateToken))
+    await api.POST(request({action:'payment',token:privateToken,reference:'TEST123456789'}))
+    await worker.GET(workerRequest())
+    assert.equal(provider.calls.length,1)
+    provider.calls=[]
+  })
   await t.test('direct SQL Boolean edit creates ONE family ticket and queues only one notification', async () => {
     await pg.query('update public.halloween_bookings set payment_verified=true where id=$1', [bookingId])
     await pg.query('update public.halloween_bookings set payment_verified=true where id=$1', [bookingId])
@@ -184,7 +197,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     assert.equal(data.tickets[0].category, 'family')
     assert.equal(data.booking.adult_count, 3); assert.equal(data.booking.child_count, 2)
     ticket = data.tickets[0].ticket_identifier
-    assert.equal((await pg.query('select count(*)::integer as n from public.halloween_notification_outbox')).rows[0].n, 1)
+    assert.equal((await pg.query('select count(*)::integer as n from public.halloween_notification_outbox where kind=$$booking_confirmation$$')).rows[0].n, 1)
   })
   await t.test('unauthenticated lookup denied; explicit admission cannot be repeated', async () => {
     assert.equal((await api.POST(request({ action: 'checkin', ticket, admit: false }))).status, 401)
@@ -203,18 +216,20 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     assert.equal((await worker.GET(workerRequest('wrong'))).status, 401)
     provider.fail = true
     assert.equal((await (await worker.GET(workerRequest())).json()).failed, 1)
-    let row = (await pg.query('select * from public.halloween_notification_outbox')).rows[0]
+    let row = (await pg.query('select * from public.halloween_notification_outbox where kind=$$booking_confirmation$$')).rows[0]
     assert.equal(row.status, 'failed'); assert.equal(row.sent_at, null)
     assert.match(row.delivery_payload.text, /₹1,500/)
     await pg.exec("update public.halloween_events set name='Changed after first attempt'")
-    await pg.exec('update public.halloween_notification_outbox set next_attempt_at=now()')
+    await pg.exec('update public.halloween_notification_outbox set next_attempt_at=now() where kind=$$booking_confirmation$$')
     provider.fail = false
     assert.equal((await (await worker.GET(workerRequest())).json()).accepted, 1)
     assert.equal(createHash('sha256').update(provider.calls[0].payload).digest('hex'),
       createHash('sha256').update(provider.calls[1].payload).digest('hex'))
     assert.equal(provider.calls[0].key, provider.calls[1].key)
-    row = (await pg.query('select * from public.halloween_notification_outbox')).rows[0]
+    row = (await pg.query('select * from public.halloween_notification_outbox where kind=$$booking_confirmation$$')).rows[0]
     assert.equal(row.status, 'sent'); assert.ok(row.provider_message_id); assert.ok(row.sent_at)
+    assert.match(row.delivery_payload.subject, /Payment confirmed/)
+    assert.ok(row.delivery_payload.text.includes(`/booking#${privateToken}`))
     await worker.GET(workerRequest())
     assert.equal(provider.calls.length, 2)
   })
@@ -234,13 +249,13 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   })
   await t.test('missing email preserves confirmed tickets and produces manual-required status', async () => {
     delete fakeEnv.RESEND_API_KEY
-    await pg.exec("update public.halloween_notification_outbox set status='pending',next_attempt_at=now()")
+    await pg.exec("update public.halloween_notification_outbox set status='pending',next_attempt_at=now() where kind='booking_confirmation'")
     assert.equal((await (await worker.GET(workerRequest())).json()).manual, 1)
-    assert.equal((await pg.query('select status from public.halloween_notification_outbox')).rows[0].status, 'manual_required')
+    assert.equal((await pg.query('select status from public.halloween_notification_outbox where kind=$$booking_confirmation$$')).rows[0].status, 'manual_required')
     assert.equal((await pg.query('select payment_verified from public.halloween_bookings')).rows[0].payment_verified, true)
     assert.equal((await pg.query('select count(*)::integer as n from public.halloween_tickets')).rows[0].n, 1)
     fakeEnv.RESEND_API_KEY = 'fake-key-no-real-send'
-    await pg.exec("update public.halloween_notification_outbox set status='pending',next_attempt_at=now(),first_attempt_at=now()-interval '25 hours'")
+    await pg.exec("update public.halloween_notification_outbox set status='pending',next_attempt_at=now(),first_attempt_at=now()-interval '25 hours' where kind='booking_confirmation'")
     const callCount = provider.calls.length
     assert.equal((await (await worker.GET(workerRequest())).json()).manual, 1)
     assert.equal(provider.calls.length, callCount)
@@ -251,6 +266,22 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     await assert.rejects(() => server.halloweenRateLimit(req, 'isolated-limit', 1, 60), /Too many requests/)
     const response = await api.POST(request({ action: 'booking', padding: 'x'.repeat(9000) }))
     assert.equal(response.status, 413)
+  })
+  await t.test('approval cancels a failed pending notice and sends only the current confirmation', async () => {
+    const { data: second } = await db.rpc('halloween_register', {
+      p_idempotency_key: '8957a4cc-26ac-4ec9-872b-6081600cb45b', p_contact_name: 'Test Family',
+      p_email: 'second@example.invalid', p_whatsapp_number: '+919876543210', p_adult_count: 2, p_child_count: 1,
+    })
+    assert.ok(second)
+    await db.rpc('halloween_submit_payment', {p_private_token: second.private_access_token, p_reference: 'TEST987654321'})
+    provider.fail = true
+    assert.equal((await (await worker.GET(workerRequest())).json()).failed, 1)
+    provider.fail = false
+    await pg.query('update public.halloween_bookings set payment_verified=true where private_access_token=$1', [second.private_access_token])
+    const notices = (await pg.query('select kind,status from public.halloween_notification_outbox where booking_id=(select id from public.halloween_bookings where private_access_token=$1)', [second.private_access_token])).rows
+    assert.equal(notices.find(row=>row.kind==='payment_pending').status,'cancelled')
+    assert.equal((await (await worker.GET(workerRequest())).json()).accepted, 1)
+    assert.match(provider.calls.at(-1).payload, /Payment confirmed/)
   })
   await pg.close()
 })

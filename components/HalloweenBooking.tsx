@@ -5,6 +5,7 @@ import QRCode from 'qrcode'
 import { HALLOWEEN_PATH, HALLOWEEN_PAYMENT_CONTACT, isPrivateToken, paymentImageUrl, type HalloweenTicket, type PrivateBooking } from '@/lib/halloween'
 import { copyEventText, halloweenRequest } from '@/lib/halloween-client'
 import { BookingSteps, EventDetails, EventLinks, PriceBreakdown } from './HalloweenShared'
+import HalloweenArtwork from './HalloweenArtwork'
 
 function FamilyTicket({ ticket, bookingReference, event, adults, childCount }: {
   ticket: HalloweenTicket; bookingReference: string; event: PrivateBooking['event']; adults: number; childCount: number
@@ -45,7 +46,7 @@ export default function HalloweenBooking() {
     const currentToken = window.location.hash.slice(1)
     async function load(silent = false) {
       try {
-        if (!isPrivateToken(currentToken)) throw new Error('Open the private booking link you saved after registering.')
+        if (!isPrivateToken(currentToken)) throw new Error('Open your booking from the registration page or the ticket link in your confirmation email.')
         const result = await halloweenRequest<PrivateBooking>({ action: 'booking', token: currentToken })
         if (!active) return
         setToken(currentToken); setData(result); setError('')
@@ -76,7 +77,7 @@ export default function HalloweenBooking() {
     setBusy(true); setError(''); setNotice('')
     try {
       setData(await halloweenRequest<PrivateBooking>({ action: 'payment', token, reference }))
-      setNotice('Reference saved. Payment is pending verification by the organiser.')
+      setNotice('Payment reference received. We’ll email you a pending-verification update, followed by your private ticket link once payment is confirmed.')
     } catch (err) { setError(err instanceof Error ? err.message : 'Please try again.') }
     finally { setBusy(false) }
   }
@@ -88,14 +89,14 @@ export default function HalloweenBooking() {
   const qrImage = paymentImageUrl(event.payment_qr_image_url)
   const upiPhone = event.upi_id === HALLOWEEN_PAYMENT_CONTACT.upiId ? HALLOWEEN_PAYMENT_CONTACT.phone : null
   return <div className="event-shell event-stack">
-    <header><div className="section-label">Your private family booking</div><h1 className="section-title">{booking.payment_verified ? 'Your family ticket is ready' : booking.transaction_reference ? 'Your payment is pending verification' : 'You’re booked. Next, pay by UPI.'}</h1>
-      <p className="event-muted">{event.name} · Booking <strong>{booking.booking_reference}</strong></p><EventDetails event={event} /></header>
+    <header className={booking.payment_verified ? 'halloween-confirmation-hero halloween-themed-hero' : undefined}><div><div className="section-label">Your private family booking</div><h1 className="section-title">{booking.payment_verified ? 'Your family ticket is ready' : booking.transaction_reference ? 'Your payment is pending verification' : 'You’re booked. Next, pay by UPI.'}</h1>
+      <p className="event-muted">{event.name} · Booking <strong>{booking.booking_reference}</strong></p><EventDetails event={event} /></div>
+      {booking.payment_verified && <HalloweenArtwork animated className="halloween-confirmation-art" />}</header>
     <BookingSteps step={booking.payment_verified ? 3 : 2} />
     {error && <p role="alert" className="event-notice event-error">{error}</p>}
     {notice && <p role="status" className="event-notice">{notice}</p>}
     <div className="event-card event-actions event-private-actions">
-      <div><strong>Save your private link</strong><p className="event-muted">Use this link to return to payment or your ticket. Share it only with your family.</p></div>
-      <button type="button" className="btn-ghost" onClick={() => void copy(`${window.location.origin}${HALLOWEEN_PATH}/booking#${token}`, 'Private booking link copied.')}>Copy booking link</button>
+      <div><strong>Booking updates by email</strong><p className="event-muted">After payment submission, we’ll email your verification status. Once confirmed, we’ll email your private family ticket link.</p></div>
       <button type="button" className="btn-ghost" disabled={busy} onClick={() => void refresh()}>Refresh status</button>
     </div>
     {booking.payment_verified ? <>
@@ -107,7 +108,7 @@ export default function HalloweenBooking() {
       <section className="event-card event-stack"><h2>{booking.transaction_reference ? 'Pending verification' : 'Pay directly by UPI'}</h2>
         {booking.transaction_reference ? <>
           <p className="event-notice"><strong>Reference received: {booking.transaction_reference}</strong><br />Submitting a reference does not confirm payment. The organiser will check the bank receipt before confirming your booking.</p>
-          <p className="event-muted">Please do not pay again. Your family ticket will appear here after approval. Keep this page saved and refresh the status later.</p>
+          <p className="event-muted">Please do not pay again. Check your inbox or spam folder for your pending-verification email. Once payment is confirmed, we’ll email a private link to access your family QR ticket.</p>
         </> : <>
           <p className="event-muted">Pay <strong>₹{booking.amount_inr.toLocaleString('en-IN')}</strong> to the recipient below using your UPI app.</p>
           <div className="event-price event-private"><p>Recipient: <strong>{event.payment_recipient_name || 'Not configured — contact the organiser'}</strong></p><p>UPI ID: <strong>{event.upi_id || 'Not configured'}</strong></p>{upiPhone && <p>UPI phone number: <strong>{upiPhone}</strong></p>}</div>

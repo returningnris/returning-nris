@@ -80,7 +80,7 @@ begin
   assert (select count(distinct validation_token) from public.halloween_tickets where booking_id=b.id) = 1;
   select array_agg(validation_token order by validation_token) into original_tokens
     from public.halloween_tickets where booking_id=b.id;
-  assert (select count(*) from public.halloween_notification_outbox where booking_id=b.id) = 1;
+  assert (select count(*) from public.halloween_notification_outbox where kind='booking_confirmation' and booking_id=b.id) = 1;
   update public.halloween_bookings set payment_verified=true where id=b.id;
   assert (select count(*) from public.halloween_tickets where booking_id=b.id) = 1, 'Duplicate family tickets';
 
@@ -119,7 +119,7 @@ begin
   assert (select array_agg(validation_token order by validation_token) from public.halloween_tickets where booking_id=b.id)
     = original_tokens, 'Reconfirmation regenerated tokens';
   assert (select confirmed_at from public.halloween_bookings where id=b.id) = original_confirmed;
-  assert (select count(*) from public.halloween_notification_outbox where booking_id=b.id) = 1;
+  assert (select count(*) from public.halloween_notification_outbox where kind='booking_confirmation' and booking_id=b.id) = 1;
 
   assert not has_table_privilege('anon','public.halloween_bookings','SELECT');
   assert not has_table_privilege('authenticated','public.halloween_tickets','UPDATE');

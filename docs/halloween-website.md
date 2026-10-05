@@ -20,6 +20,7 @@ You already ran the initial creation script. In Supabase SQL Editor, run these w
 1. `supabase/migrations/202610050002_halloween_delivery_payload.sql` — freezes notification retry content.
 2. `supabase/migrations/202610050003_halloween_family_tickets.sql` — switches to one QR per registration, backfills previously confirmed bookings and prevents old individual codes admitting anyone.
 3. `supabase/migrations/202610050004_halloween_event_details.sql` — saves The Quantium School, Mokila, Hyderabad and 5 PM–9 PM. Skip this if already executed.
+4. `supabase/migrations/202610050005_halloween_payment_pending_email.sql` — queues a payment-pending email on first reference submission and supports separate pending and confirmation notifications. Apply before deploying the updated email worker. Does not send retrospective pending emails for existing submissions.
 
 For a fresh database, apply migration 001 first. Do not rerun the rollback test on a live database with bookings; it requires empty tables before launch.
 
@@ -70,6 +71,10 @@ A reference submission never marks payment verified. Revoking approval blocks ad
 ## Automatic confirmation worker
 
 The implemented worker is `GET /api/halloween/notifications` with `Authorization: Bearer YOUR_CRON_SECRET`. It claims three notifications per call, uses worker leases and stable Resend idempotency keys, retries transient failures with backoff and caps claims at 12. Only provider acceptance with a message ID records `sent`; that means accepted, not proven inbox delivery. Missing email/public-origin configuration records `manual_required` while leaving approval and the family ticket intact.
+
+After payment reference submission, a separate `payment_pending` email explains that bank verification is pending. It contains the booking reference and amount, but no ticket token. After approval, a `booking_confirmation` email contains the private family ticket link. Both run through the existing five-minute schedule and retry independently; repeated form submissions do not queue another notice. If approval precedes delivery of a pending notice, that stale notice is cancelled and only the confirmation is sent. Guests are no longer asked to copy or save a private link.
+
+Both messages include Halloween HTML styling, PNG artwork and an explicit plain-text fallback. Confirmation includes a ticket button and a fallback text link; important information remains available if images are blocked. Frozen payloads preserve both HTML and text during retries, including older text-only messages. Deploy `public/events/halloween/email-artwork.png` alongside the worker. Browser preview is not proof of rendering in every email client; test an actual inbox before launch.
 
 Configure a scheduler to call it every five minutes **after deployment**. `supabase/halloween-worker-schedule.sql` contains a Supabase Cron + Vault option without plaintext repository secrets. Store your real website origin and matching worker secret in Vault, then uncomment its schedule statement. Enable pg_cron/pg_net first. Alternatively configure Vercel Pro Cron or another scheduler that supplies the same header. No schedule is active merely because this code is committed. A five-minute schedule is not assumed available on a Vercel Hobby plan.
 

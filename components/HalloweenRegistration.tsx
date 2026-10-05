@@ -77,7 +77,7 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
     {attempt && <p className="event-notice">Your booking attempt is saved. Retry with these details to avoid creating a duplicate booking. Contact the organiser if the details need changing.</p>}
     <form className="event-form" onSubmit={submit}>
       <label>Primary contact name<input required minLength={2} maxLength={100} autoComplete="name" value={contactName} disabled={!!attempt} onChange={e => setName(e.target.value)} /></label>
-      <label>Email<input required type="email" maxLength={254} autoComplete="email" value={email} disabled={!!attempt} onChange={e => setEmail(e.target.value)} /><span className="event-muted">For your confirmation and private ticket link.</span></label>
+      <label>Email<input required type="email" maxLength={254} autoComplete="email" value={email} disabled={!!attempt} onChange={e => setEmail(e.target.value)} /><span className="event-muted">For your payment-status emails and private ticket link after confirmation.</span></label>
       <label>WhatsApp number<input required type="tel" maxLength={24} autoComplete="tel" placeholder="+91 98765 43210" value={whatsapp} disabled={!!attempt} onChange={e => setWhatsapp(e.target.value)} /><span className="event-muted">Include the country code.</span></label>
       <div className="event-counts"><label>Adults<input required type="number" min={1} max={50} step={1} value={adults} disabled={!!attempt} onChange={e => setAdults(Number(e.target.value))} /></label>
         <label>Children<input required type="number" min={1} max={50} step={1} value={children} disabled={!!attempt} onChange={e => setChildren(Number(e.target.value))} /></label></div>

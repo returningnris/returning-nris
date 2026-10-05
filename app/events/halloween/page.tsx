@@ -45,10 +45,9 @@ export default async function HalloweenPage() {
         </section>
         <section className="event-card event-stack"><h2>How it works</h2>
           <p><strong>1. Register your family.</strong><br /><span className="event-muted">Share your contact details and adult/child counts.</span></p>
-          <p><strong>2. Pay the exact amount by UPI.</strong><br /><span className="event-muted">Submit the transaction reference from your UPI app. No screenshot needed.</span></p>
-          <p><strong>3. Get one QR for your whole family.</strong><br /><span className="event-muted">After bank verification, your private page shows one ticket covering every adult and child in your booking.</span></p>
+          <p><strong>2. Pay the exact amount by UPI.</strong><br /><span className="event-muted">Submit your transaction reference. We’ll email you that payment is pending verification. No screenshot needed.</span></p>
+          <p><strong>3. Get one QR for your whole family.</strong><br /><span className="event-muted">After bank verification, we’ll email a private link to access one ticket covering every adult and child in your booking.</span></p>
         </section>
-        <p className="event-muted">Keep your private booking link saved. You can return to it to submit payment or view your family ticket.</p>
       </aside>
     </div><EventLinks /></div>
   </>

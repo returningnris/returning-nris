@@ -16,7 +16,7 @@ const userId = 'c6e187c0-dbf1-416c-8c3c-00ed3f5683b5'
 await pg.exec(`create role anon; create role authenticated; create role service_role bypassrls;
   create schema auth; create table auth.users(id uuid primary key, created_at timestamptz default now());
   insert into auth.users(id) values('${userId}');`)
-for (const file of ['202610050001_halloween_event.sql', '202610050002_halloween_delivery_payload.sql', '202610050003_halloween_family_tickets.sql']) {
+for (const file of ['202610050001_halloween_event.sql', '202610050002_halloween_delivery_payload.sql', '202610050003_halloween_family_tickets.sql', '202610050005_halloween_payment_pending_email.sql']) {
   await pg.exec(readFileSync(join(root, 'supabase/migrations', file), 'utf8'))
 }
 await pg.exec(`update public.halloween_events set venue='Local UI test venue',timings='Local UI test timings',

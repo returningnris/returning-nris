@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       if (error) throw new HalloweenError('Booking lookup is temporarily unavailable.', 503)
       if (!booking) throw new HalloweenError('Booking not found.', 404)
       const { data: notification, error: notificationError } = await db.from('halloween_notification_outbox')
-        .select('status,attempts,last_error').eq('booking_id', booking.id).maybeSingle()
+        .select('status,attempts,last_error').eq('booking_id', booking.id).eq('kind', 'booking_confirmation').maybeSingle()
       if (notificationError) throw new HalloweenError('Notification status is temporarily unavailable.', 503)
       let reused = false
       if (booking.transaction_reference) {

@@ -2,11 +2,12 @@ import 'server-only'
 import { Resend } from 'resend'
 import { getSupabaseAdmin } from './supabase-admin'
 import { canonicalHalloweenOrigin, getHalloweenEvent } from './halloween-server'
-import { HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText } from './halloween'
+import { HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText, paymentPendingText } from './halloween'
+import { halloweenEmailHtml } from './halloween-email'
 
-type EmailPayload = { from: string; to: string; subject: string; text: string }
+type EmailPayload = { from: string; to: string; subject: string; text: string; html?: string }
 type Notification = { id: string; booking_id: string; lease_token: string; first_attempt_at: string;
-  attempts: number; delivery_payload: EmailPayload | null }
+  attempts: number; kind: 'booking_confirmation' | 'payment_pending'; delivery_payload: EmailPayload | null }
 
 export async function processHalloweenNotifications() {
   const db = getSupabaseAdmin()
@@ -35,10 +36,11 @@ export async function processHalloweenNotifications() {
         await finish('manual_required', null, 'provider_reconciliation_required'); counts.manual++; continue
       }
       const { data: booking, error: bookingError } = await db.from('halloween_bookings')
-        .select('booking_reference,contact_name,email,adult_count,child_count,amount_inr,payment_verified,private_access_token')
+        .select('booking_reference,contact_name,email,adult_count,child_count,amount_inr,payment_verified,private_access_token,transaction_reference')
         .eq('event_id', HALLOWEEN_EVENT_ID).eq('id', row.booking_id).maybeSingle()
       if (bookingError) throw new Error('booking_unavailable')
-      if (!booking?.payment_verified) { counts.skipped++; continue }
+      const pending = row.kind === 'payment_pending'
+      if (!booking || (pending ? booking.payment_verified || !booking.transaction_reference : !booking.payment_verified)) { counts.skipped++; continue }
       let payload = row.delivery_payload
       if (!payload) {
         const event = await getHalloweenEvent()
@@ -46,8 +48,9 @@ export async function processHalloweenNotifications() {
         try { origin = canonicalHalloweenOrigin() }
         catch { await finish('manual_required', null, 'site_url_not_configured'); counts.manual++; continue }
         payload = { from: `Returning NRIs <${process.env.RESEND_FROM_EMAIL}>`, to: booking.email,
-          subject: `Booking confirmed: ${event.name} · ${booking.booking_reference}`,
-          text: confirmationText(booking, event, `${origin}${HALLOWEEN_PATH}/booking#${booking.private_access_token}`) }
+          subject: `${pending ? 'Payment pending verification' : 'Payment confirmed'}: ${event.name} · ${booking.booking_reference}`,
+          text: pending ? paymentPendingText(booking, event) : confirmationText(booking, event, `${origin}${HALLOWEEN_PATH}/booking#${booking.private_access_token}`),
+          html: halloweenEmailHtml(booking, event, origin, pending ? undefined : `${origin}${HALLOWEEN_PATH}/booking#${booking.private_access_token}`) }
         const { data: saved, error: saveError } = await db.from('halloween_notification_outbox')
           .update({ delivery_payload: payload }).eq('id', row.id).eq('lease_token', row.lease_token)
           .eq('status', 'processing').gt('locked_until', new Date().toISOString())
@@ -57,15 +60,16 @@ export async function processHalloweenNotifications() {
       }
       // Recheck current approval and lease immediately before the external send.
       const { data: stillApproved, error: approvalError } = await db.from('halloween_bookings')
-        .select('id').eq('id', row.booking_id).eq('payment_verified', true).maybeSingle()
+        .select('id,transaction_reference').eq('id', row.booking_id).eq('payment_verified', !pending).maybeSingle()
       const { data: leased, error: leaseError } = await db.from('halloween_notification_outbox')
         .select('id').eq('id', row.id).eq('lease_token', row.lease_token).eq('status', 'processing')
         .gt('locked_until', new Date().toISOString()).maybeSingle()
       if (approvalError || leaseError) throw new Error('approval_unavailable')
-      if (!stillApproved || !leased) { counts.skipped++; continue }
+      if (!stillApproved || (pending && !stillApproved.transaction_reference) || !leased) { counts.skipped++; continue }
       const resend = new Resend(process.env.RESEND_API_KEY)
       // JSONB can reorder object keys. Rebuild the same field order on every attempt.
-      const providerPayload = { from: payload.from, to: payload.to, subject: payload.subject, text: payload.text }
+      const providerPayload = { from: payload.from, to: payload.to, subject: payload.subject, text: payload.text,
+        ...(payload.html ? { html: payload.html } : {}) }
       const { data: accepted, error: sendError } = await resend.emails.send(providerPayload, { idempotencyKey: `halloween-confirmation-${row.id}` })
       if (sendError || !accepted?.id) throw new Error('provider_not_accepted')
       await finish('sent', accepted.id, null)
