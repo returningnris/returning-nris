@@ -11,9 +11,6 @@ import { EventLinks } from './HalloweenShared'
 type Checkin = { status: string; category?: string; label?: string; booking_reference?: string; adult_count?: number; child_count?: number; checked_in_at?: string; ticket_identifier?: string }
 type Confirmation = { booking: Pick<HalloweenBooking, 'booking_reference' | 'contact_name' | 'adult_count' | 'child_count' | 'amount_inr' | 'payment_verified'>;
   notification: { status: string; attempts: number; last_error: string | null } | null; reference_reused: boolean; whatsapp_url: string | null }
-type Detector = { detect(source: HTMLVideoElement): Promise<{ rawValue: string }[]> }
-type DetectorConstructor = new (options: { formats: string[] }) => Detector
-
 async function organiserRequest<T>(body: Record<string, unknown>) {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) throw new Error('Sign in with your organiser account.')
@@ -32,6 +29,15 @@ export default function HalloweenOrganiser({ ticketPage = false }: { ticketPage?
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [scanning, setScanning] = useState(false)
+  const [startingCamera, setStartingCamera] = useState(false)
+  const [scanPaused, setScanPaused] = useState(false)
+  const [quickAdmission, setQuickAdmission] = useState(true)
+  const quickAdmissionRef = useRef(true)
+  const requestActive = useRef(false)
+  const cameraGeneration = useRef(0)
+  const scanLoop = useRef<(() => Promise<void>) | null>(null)
+  const previousScan = useRef('')
+  const scanAwaitingResult = useRef(false)
   const video = useRef<HTMLVideoElement | null>(null)
   const stream = useRef<MediaStream | null>(null)
   const running = useRef(false)
@@ -65,23 +71,33 @@ export default function HalloweenOrganiser({ ticketPage = false }: { ticketPage?
   useEffect(() => {
     function cleanup() {
       running.current = false
+      cameraGeneration.current++
       if (scanTimer.current) clearTimeout(scanTimer.current)
       stream.current?.getTracks().forEach(track => track.stop())
+      stream.current = null
+      scanAwaitingResult.current = false
+      setScanning(false); setStartingCamera(false); setScanPaused(false)
     }
     function visibility() { if (document.hidden) cleanup() }
     document.addEventListener('visibilitychange', visibility)
     return () => { cleanup(); document.removeEventListener('visibilitychange', visibility) }
-  }, [isAuthenticated])
+  }, [allowed, user?.id])
 
   function stopCamera() {
     running.current = false
+    cameraGeneration.current++
     if (scanTimer.current) clearTimeout(scanTimer.current)
     stream.current?.getTracks().forEach(track => track.stop())
     stream.current = null
     setScanning(false)
+    setStartingCamera(false); setScanPaused(false)
+    scanAwaitingResult.current = false
+    scanLoop.current = null
   }
 
   async function lookup(raw: string, admit = false) {
+    if (requestActive.current) return
+    requestActive.current = true
     setBusy(true); setError('')
     try {
       const parsed = parseHalloweenTicket(raw, window.location.origin)
@@ -89,35 +105,65 @@ export default function HalloweenOrganiser({ ticketPage = false }: { ticketPage?
       const data = await organiserRequest<Checkin>({ action: 'checkin', ticket: parsed, admit })
       setResult(data)
     } catch (err) { setResult(null); setError(err instanceof Error ? err.message : 'Could not check this ticket.') }
-    finally { setBusy(false) }
+    finally { requestActive.current = false; setBusy(false) }
   }
 
   async function startCamera() {
+    if (startingCamera || scanning || busy || !allowed) return
     setError(''); setResult(null)
-    const API = (window as unknown as { BarcodeDetector?: DetectorConstructor }).BarcodeDetector
-    if (!API || !navigator.mediaDevices?.getUserMedia) {
-      setError('Camera scanning is unavailable in this browser. Enter the ticket identifier below, or use your phone camera to open the QR link.')
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError('Camera access is unavailable. Open this page in Safari or Chrome over HTTPS, or enter the ticket identifier below.')
       return
     }
+    const generation = ++cameraGeneration.current
+    setStartingCamera(true)
     try {
-      const detector = new API({ formats: ['qr_code'] })
-      const media = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })
+      const { createHalloweenQrReader } = await import('@/lib/halloween-scanner')
+      if (generation !== cameraGeneration.current) return
+      const readQr = createHalloweenQrReader()
+      const media = await navigator.mediaDevices.getUserMedia({ video: {
+        facingMode: { ideal: 'environment' }, width: { ideal: 720 }, height: { ideal: 540 },
+      }, audio: false })
+      if (generation !== cameraGeneration.current || !video.current) { media.getTracks().forEach(track => track.stop()); return }
       stream.current = media
-      if (!video.current) { media.getTracks().forEach(track => track.stop()); return }
       video.current.srcObject = media
-      running.current = true; setScanning(true)
+      running.current = true; setScanning(true); setScanPaused(false); previousScan.current = ''; scanAwaitingResult.current = false
       await video.current.play()
+      if (generation !== cameraGeneration.current) return
+      setStartingCamera(false)
+      let readingFrame = false
       async function scan() {
-        if (!running.current || !video.current) return
+        if (!running.current || !video.current || generation !== cameraGeneration.current || scanAwaitingResult.current || readingFrame) return
+        readingFrame = true
         try {
-          const codes = await detector.detect(video.current)
-          if (!running.current) return
-          if (codes[0]) { stopCamera(); await lookup(codes[0].rawValue); return }
-          scanTimer.current = setTimeout(() => void scan(), 500)
+          if (requestActive.current) { scanTimer.current = setTimeout(() => void scan(), 350); return }
+          const raw = await readQr(video.current)
+          if (!running.current || generation !== cameraGeneration.current || scanAwaitingResult.current) return
+          if (!raw) previousScan.current = ''
+          if (raw && raw !== previousScan.current) {
+            previousScan.current = raw
+            scanAwaitingResult.current = true
+            setScanPaused(true)
+            await lookup(raw, quickAdmissionRef.current)
+            return
+          }
+          scanTimer.current = setTimeout(() => void scan(), 350)
         } catch { stopCamera(); setError('Camera scan failed. Enter the ticket identifier below.') }
+        finally { readingFrame = false }
       }
+      scanLoop.current = scan
       void scan()
-    } catch { stopCamera(); setError('Camera permission was unavailable. Enter the ticket identifier below.') }
+    } catch {
+      if (generation !== cameraGeneration.current) return
+      stopCamera(); setError('Camera permission was unavailable. Allow camera access in browser settings, or enter the ticket identifier below.')
+    }
+  }
+
+  function nextFamily() {
+    if (busy) return
+    setTicket(''); setResult(null); setError(''); setScanPaused(false)
+    scanAwaitingResult.current = false
+    if (running.current) void scanLoop.current?.()
   }
 
   async function findConfirmation(e: FormEvent<HTMLFormElement>) {
@@ -142,19 +188,27 @@ export default function HalloweenOrganiser({ ticketPage = false }: { ticketPage?
 
   return <div className="event-shell event-stack">
     <header><div className="section-label">Organiser only · Halloween 2026</div><h1 className="section-title">Welcome families at the door</h1>
-      <p className="event-muted">Look up the family ticket first. One “Admit family” action checks in the whole registered group.</p></header>
+      <p className="event-muted">Stay on this page for the queue. Quick admission scans and records the whole family in one step.</p></header>
     <div className="event-actions"><button className="event-tab" aria-pressed={tab === 'checkin'} onClick={() => { setTab('checkin'); setError('') }}>Check in</button>
       <button className="event-tab" aria-pressed={tab === 'confirmation'} onClick={() => { stopCamera(); setTab('confirmation'); setError('') }}>Send confirmation</button></div>
     {error && <p role="alert" className="event-notice event-error">{error}</p>}
     {tab === 'checkin' ? <div className="event-grid">
       <section className="event-card event-stack"><h2>Scan or enter a ticket</h2>
-        <div className="event-actions"><button className="btn-secondary" disabled={busy || scanning} onClick={() => void startCamera()}>Scan QR with camera</button>
+        <label className="event-actions"><input type="checkbox" checked={quickAdmission} disabled={busy} onChange={e => { setQuickAdmission(e.target.checked); quickAdmissionRef.current = e.target.checked }} /> Quick admission — scan and admit automatically</label>
+        <p className="event-muted">{quickAdmission ? 'Scanning a valid, paid ticket immediately records family attendance. Duplicate or unpaid tickets are blocked.' : 'Scan to review the family counts, then tap Admit family.'}</p>
+        <div className="event-actions"><button className="btn-secondary" disabled={busy || scanning || startingCamera} onClick={() => void startCamera()}>{startingCamera ? 'Starting camera…' : 'Start camera'}</button>
           {scanning && <button className="btn-ghost" onClick={stopCamera}>Stop camera</button>}</div>
+        {scanning && <p role="status" className="event-muted">{scanPaused ? 'Scan paused. Review the result, then tap Next family.' : 'Point the camera at the family ticket QR.'}</p>}
         <video ref={video} hidden={!scanning} playsInline muted className="event-camera" aria-label="QR camera preview" />
-        <form className="event-form" onSubmit={e => { e.preventDefault(); void lookup(ticket) }}>
+        {scanning && scanPaused && !result && <button className="btn-secondary" disabled={busy} onClick={nextFamily}>Next family</button>}
+        <form className="event-form" onSubmit={e => {
+          e.preventDefault()
+          if (running.current) { scanAwaitingResult.current = true; setScanPaused(true); if (scanTimer.current) clearTimeout(scanTimer.current) }
+          void lookup(ticket)
+        }}>
           <label>Ticket identifier or QR link<input required maxLength={500} autoComplete="off" placeholder="HW26-T-00000001" value={ticket} onChange={e => { setTicket(e.target.value); setResult(null) }} /></label>
           <button className="btn-ghost" type="submit" disabled={busy}>{busy ? 'Checking…' : 'Look up ticket'}</button>
-        </form><p className="event-muted">No camera? Enter the identifier printed under the QR. You can also scan with your phone camera and open the ticket link while signed in.</p>
+        </form><p className="event-muted">No camera? Enter the identifier printed under the QR. Manual lookup lets you review before admitting.</p>
       </section>
       <section className="event-card event-stack" aria-live="polite"><h2>{result?.status || 'Ready for the next guest'}</h2>
         {result ? <>
@@ -167,7 +221,7 @@ export default function HalloweenOrganiser({ ticketPage = false }: { ticketPage?
           {result.status === 'Payment not verified' && <p className="event-notice">Do not admit. Reconcile the bank payment in Supabase before approving the booking.</p>}
           {result.status === 'Already checked in' && <p className="event-notice">This family booking has already been admitted.</p>}
           {result.status === 'Checked in' && <p className="event-notice event-success">Family admission recorded.</p>}
-          <button className="btn-ghost" onClick={() => { setTicket(''); setResult(null); setError('') }}>Next family</button>
+          <button className="btn-secondary" disabled={busy} onClick={nextFamily}>Next family</button>
         </> : <p className="event-muted">A lookup never admits anyone. Payment and prior check-in are checked again when you admit.</p>}
       </section>
     </div> : <section className="event-card event-stack" style={{ maxWidth: 700 }}>
