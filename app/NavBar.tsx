@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { href: '/planner', label: 'Planner' },
   { href: '/resources', label: 'Guides' },
   { href: '/videos', label: 'Videos' },
+  { href: '/events', label: 'Events' },
   { href: '/our-story', label: 'Our Story' },
   { href: '/contact', label: 'Contact Us' },
 ]
@@ -106,7 +107,8 @@ export default function NavBar() {
                     fontWeight: 500,
                     color: active ? '#1A1208' : '#625b51',
                     textDecoration: 'none',
-                    padding: '8px 12px',
+                    padding: '8px 8px',
+                    whiteSpace: 'nowrap',
                     borderRadius: '10px',
                     background: active ? '#f5f1eb' : 'transparent',
                     transition: 'all 0.15s',
@@ -306,7 +308,7 @@ export default function NavBar() {
           max-height: calc(100vh - 80px);
           overflow-y: auto;
         }
-        @media (min-width: 1200px) {
+        @media (min-width: 1400px) {
           .nav-hamburger {
             display: none !important;
           }
@@ -314,7 +316,7 @@ export default function NavBar() {
             display: none;
           }
         }
-        @media (max-width: 1199px) {
+        @media (max-width: 1399px) {
           .desktop-nav,
           .desktop-cta {
             display: none !important;
@@ -337,7 +339,7 @@ export default function NavBar() {
         }
         .nav-logo-wordmark {
           display: block;
-          width: clamp(150px, 18vw, 235px);
+          width: clamp(150px, 18vw, 215px);
           height: auto;
           max-height: 60px;
           margin-left: -11px;

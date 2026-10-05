@@ -15,6 +15,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://www.returningnris.com/planner', lastModified },
     { url: 'https://www.returningnris.com/journey', lastModified },
     { url: 'https://www.returningnris.com/community', lastModified },
+    { url: 'https://www.returningnris.com/events/halloween', lastModified },
+    { url: 'https://www.returningnris.com/events', lastModified },
     { url: 'https://www.returningnris.com/videos', lastModified },
     { url: 'https://www.returningnris.com/resources', lastModified },
     ...guides,

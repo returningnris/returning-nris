@@ -209,6 +209,7 @@ export default function CommunityPage() {
             </p>
 
             <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+              <Link href="/events/halloween" className="btn-ghost">Halloween family event · 31 October</Link>
               {communityModes.map((item) => (
                 <span
                   key={item}
