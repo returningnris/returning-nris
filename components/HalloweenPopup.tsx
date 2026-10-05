@@ -36,7 +36,7 @@ export default function HalloweenPopup() {
       <h2>Halloween Party</h2>
       <p className={styles.date}>31 October 2026 · {HALLOWEEN_TIMINGS} IST</p>
       <p>{HALLOWEEN_VENUE}</p>
-      <p className={styles.activities}>Live DJ · Trick or treat · Exciting games for kids</p>
+      <p className={styles.activities}>Music to keep the evening lively · Trick or treat · Exciting games for kids</p>
       <p className={styles.food}>Food available for purchase</p>
       <span className={styles.cta}>View party details <span aria-hidden="true">→</span></span>
     </Link>

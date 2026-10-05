@@ -2,6 +2,7 @@ export const HALLOWEEN_EVENT_ID = 'halloween-2026'
 export const HALLOWEEN_PATH = '/events/halloween'
 export const HALLOWEEN_VENUE = 'The Quantium School, Mokila, Hyderabad'
 export const HALLOWEEN_TIMINGS = '5 PM – 9 PM'
+export const HALLOWEEN_PAYMENT_CONTACT = { upiId: '7578827578@ybl', phone: '7578827578' } as const
 
 export type HalloweenEvent = {
   id: string

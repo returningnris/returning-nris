@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import QRCode from 'qrcode'
-import { HALLOWEEN_PATH, isPrivateToken, paymentImageUrl, type HalloweenTicket, type PrivateBooking } from '@/lib/halloween'
+import { HALLOWEEN_PATH, HALLOWEEN_PAYMENT_CONTACT, isPrivateToken, paymentImageUrl, type HalloweenTicket, type PrivateBooking } from '@/lib/halloween'
 import { copyEventText, halloweenRequest } from '@/lib/halloween-client'
 import { BookingSteps, EventDetails, EventLinks, PriceBreakdown } from './HalloweenShared'
 
@@ -86,6 +86,7 @@ export default function HalloweenBooking() {
 
   const { booking, event, tickets } = data
   const qrImage = paymentImageUrl(event.payment_qr_image_url)
+  const upiPhone = event.upi_id === HALLOWEEN_PAYMENT_CONTACT.upiId ? HALLOWEEN_PAYMENT_CONTACT.phone : null
   return <div className="event-shell event-stack">
     <header><div className="section-label">Your private family booking</div><h1 className="section-title">{booking.payment_verified ? 'Your family ticket is ready' : booking.transaction_reference ? 'Your payment is pending verification' : 'You’re booked. Next, pay by UPI.'}</h1>
       <p className="event-muted">{event.name} · Booking <strong>{booking.booking_reference}</strong></p><EventDetails event={event} /></header>
@@ -109,9 +110,10 @@ export default function HalloweenBooking() {
           <p className="event-muted">Please do not pay again. Your family ticket will appear here after approval. Keep this page saved and refresh the status later.</p>
         </> : <>
           <p className="event-muted">Pay <strong>₹{booking.amount_inr.toLocaleString('en-IN')}</strong> to the recipient below using your UPI app.</p>
-          <div className="event-price event-private"><p>Recipient: <strong>{event.payment_recipient_name || 'Not configured — contact the organiser'}</strong></p><p>UPI ID: <strong>{event.upi_id || 'Not configured'}</strong></p></div>
+          <div className="event-price event-private"><p>Recipient: <strong>{event.payment_recipient_name || 'Not configured — contact the organiser'}</strong></p><p>UPI ID: <strong>{event.upi_id || 'Not configured'}</strong></p>{upiPhone && <p>UPI phone number: <strong>{upiPhone}</strong></p>}</div>
           <div className="event-actions">
             <button type="button" className="btn-ghost" disabled={!event.upi_id} onClick={() => void copy(event.upi_id || '', 'UPI ID copied.')}>Copy UPI ID</button>
+            {upiPhone && <button type="button" className="btn-ghost" onClick={() => void copy(upiPhone, 'UPI phone number copied.')}>Copy UPI phone number</button>}
             <button type="button" className="btn-ghost" onClick={() => void copy(String(booking.amount_inr), 'Amount copied.')}>Copy amount</button>
           </div>
           {/* Organiser-supplied payment image. Do not send its URL through an optimisation proxy. */}

@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 export async function generateMetadata(): Promise<Metadata> {
   const { event } = await publicHalloweenEvent()
   return { title: `${event.name} | Returning NRIs`,
-    description: 'Halloween at The Quantium School, Mokila, Hyderabad on 31 October 2026, 5 PM–9 PM. Live DJ, trick or treat, exciting games for kids and food available for purchase.',
+    description: 'Halloween at The Quantium School, Mokila, Hyderabad on 31 October 2026, 5 PM–9 PM. Music to keep the evening lively, trick or treat, exciting games for kids and food available for purchase.',
     alternates: { canonical: HALLOWEEN_PATH } }
 }
 
@@ -31,7 +31,7 @@ export default async function HalloweenPage() {
       <HalloweenRegistration event={event} available={available} />
       <aside className="event-stack">
         <section className="event-card event-stack"><div className="section-label">An evening of family fun</div><h2>What’s happening</h2>
-          <p><strong>Live DJ</strong><br /><span className="event-muted">Music to keep the evening lively.</span></p>
+          <p><strong>Music to keep the evening lively</strong></p>
           <p><strong>Trick or treat</strong><br /><span className="event-muted">Halloween fun for the kids.</span></p>
           <p><strong>Exciting games for kids</strong><br /><span className="event-muted">Plenty of fun for our little guests.</span></p>
           <p><strong>Food available for purchase</strong><br /><span className="event-muted">Food is paid for separately from your registration.</span></p>

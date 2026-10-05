@@ -38,6 +38,7 @@
 .event-ticket h3 { font-size: 1.5rem; }
 .event-ticket img, .event-payment-qr { width: 280px; height: 280px; max-width: 100%; object-fit: contain; margin: .8rem auto; background: #fff; }
 .event-ticket small { display: block; color: var(--ink-muted); margin: .25rem 0; }
+.event-payment-qr { width: 420px; height: auto; border-radius: 12px; }
 .event-private { overflow-wrap: anywhere; }
 .event-honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 .event-camera { width: 100%; max-height: 360px; border-radius: 16px; background: #1a1208; }

@@ -1,0 +1,19 @@
+.halloweenCard {
+  max-width: 640px;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid #78519b;
+  border-radius: 22px;
+  background: radial-gradient(ellipse at top right, #51316c, transparent 70%), #21132e;
+  color: #fff7e9;
+  box-shadow: 0 16px 40px rgba(33, 19, 46, .14);
+}
+.artwork { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto 1rem; }
+.halloweenCard .label { color: #ffd878; }
+.halloweenCard h2 { color: #ffae45; font-size: 2rem; margin: .75rem 0; }
+.halloweenCard h2 a { color: inherit; }
+.date { font-weight: 600; margin-bottom: .65rem; }
+.description, .activities { color: #eadff3; line-height: 1.7; }
+.activities { margin-top: 1rem; }
+.cta { display: inline-flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 44px; margin-top: 1.5rem; padding: .75rem 1rem; border-radius: 10px; background: #ffae45; color: #21132e; font-weight: 700; text-decoration: none; }
+.cta:hover { background: #ffd878; }
+.cta:focus-visible, .halloweenCard h2 a:focus-visible { outline: 3px solid #ffd878; outline-offset: 4px; }
