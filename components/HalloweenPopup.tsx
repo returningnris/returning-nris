@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { HALLOWEEN_PATH, HALLOWEEN_TIMINGS, HALLOWEEN_VENUE } from '@/lib/halloween'
 import styles from './HalloweenPopup.module.css'
 import HalloweenArtwork from './HalloweenArtwork'
@@ -9,6 +10,7 @@ import HalloweenArtwork from './HalloweenArtwork'
 const collapsedKey = 'halloween-2026-popup-collapsed'
 
 export default function HalloweenPopup() {
+  const pathname = usePathname()
   const [visible, setVisible] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
 
@@ -26,7 +28,8 @@ export default function HalloweenPopup() {
     try { localStorage.setItem(collapsedKey, next ? 'yes' : 'no') } catch { /* The shared layout preserves state without storage. */ }
   }
 
-  if (!visible) return null
+  // Keep the component mounted so navigation preserves the user's preference.
+  if (!visible || pathname === '/events' || pathname?.startsWith('/events/')) return null
 
   return <aside className={`${styles.popup} ${collapsed ? styles.collapsed : ''}`} aria-label="Halloween party invitation"
     onKeyDown={event => { if (event.key === 'Escape') { toggleCollapsed(true); event.currentTarget.querySelector<HTMLButtonElement>('button')?.focus() } }}>
