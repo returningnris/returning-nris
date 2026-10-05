@@ -16,6 +16,15 @@
 .event-form input { width: 100%; border: 1px solid rgba(26,18,8,.2); border-radius: 12px; padding: .75rem .85rem; background: #fff; color: var(--ink); font: inherit; font-weight: 400; min-width: 0; }
 .event-form input:focus { outline: 2px solid var(--saffron); outline-offset: 2px; }
 .event-form input:disabled { background: #f7f5f1; }
+.halloween-terms-list { padding-left: 1.4rem; display: grid; gap: 1rem; }
+.halloween-terms-list li { padding-left: .25rem; }
+.halloween-terms-list p { margin-top: .35rem; line-height: 1.7; }
+.halloween-registration-terms { border: 1px solid var(--border); border-radius: 12px; padding: 1rem; }
+.halloween-registration-terms summary { cursor: pointer; font-weight: 600; }
+.halloween-registration-terms summary:focus-visible { outline: 2px solid var(--saffron); outline-offset: 4px; }
+.halloween-registration-terms .halloween-terms-list { margin: 1rem 0; }
+.event-form .halloween-terms-consent { display: flex; align-items: flex-start; gap: .7rem; line-height: 1.6; }
+.event-form .halloween-terms-consent input { flex: 0 0 auto; width: 20px; height: 20px; padding: 0; margin-top: .2rem; accent-color: var(--saffron); }
 .event-counts { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .event-price { background: var(--india-white); padding: 1.1rem; border-radius: 16px; }
 .event-price dl { display: grid; grid-template-columns: 1fr auto; gap: .55rem; font-size: .92rem; }

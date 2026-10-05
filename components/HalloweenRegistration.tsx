@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { HALLOWEEN_PATH, isPrivateToken, validateHalloweenRegistration, type HalloweenEvent } from '@/lib/halloween'
 import { halloweenRequest } from '@/lib/halloween-client'
 import { PriceBreakdown } from './HalloweenShared'
+import HalloweenTerms from './HalloweenTerms'
+import { HALLOWEEN_TERMS_PATH } from '@/lib/halloween-terms'
 
 type Draft = { contactName: string; email: string; whatsapp: string; adults: number; children: number; idempotencyKey: string }
 const draftKey = 'halloween-2026-attempt'
@@ -22,6 +24,7 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
   const [resume, setResume] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -49,6 +52,7 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (busy) return
+    if (!termsAccepted) { setError('Please read and accept the Halloween Party terms before continuing.'); return }
     setBusy(true); setError('')
     const draft = attempt || { contactName, email, whatsapp, adults, children, idempotencyKey: crypto.randomUUID() }
     try { validateHalloweenRegistration(draft) }
@@ -85,6 +89,13 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
       <PriceBreakdown adults={adults} childCount={children} />
       <div className="event-honeypot" aria-hidden="true"><label>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} /></label></div>
       {error && <p role="alert" className="event-notice event-error">{error}</p>}
+      <details className="halloween-registration-terms">
+        <summary>Read the Halloween Party Terms &amp; Conditions</summary>
+        <HalloweenTerms />
+        <Link href={HALLOWEEN_TERMS_PATH} className="event-link" target="_blank" rel="noopener noreferrer">Open terms in a new tab</Link>
+      </details>
+      <p className="event-muted">Participation involves risks. The terms include an injury and personal-property liability release for the organisers and The Quantium School, to the extent permitted by law. Parents and responsible adults must supervise children.</p>
+      <label className="halloween-terms-consent"><input required type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} /><span>I have read and agree to the <Link href={HALLOWEEN_TERMS_PATH} className="event-link" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</Link>, including the assumption of risk and liability release, and will share them with the adults in my booking.</span></label>
       <button className="btn-secondary" disabled={busy || !challenge} type="submit">{busy ? 'Saving your booking…' : attempt ? 'Retry this booking' : 'Continue to payment'}</button>
       <p className="event-muted">Your booking is confirmed after the organiser verifies the bank payment. We do not add you to marketing lists.</p>
     </form>
