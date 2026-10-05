@@ -13,7 +13,7 @@ const resumeKey = 'halloween-2026-booking'
 export default function HalloweenRegistration({ event, available }: { event: HalloweenEvent; available: boolean }) {
   const [contactName, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [whatsapp, setWhatsapp] = useState('')
+  const [whatsapp, setWhatsapp] = useState('+91 ')
   const [adults, setAdults] = useState(1)
   const [children, setChildren] = useState(1)
   const [challenge, setChallenge] = useState('')
@@ -78,7 +78,7 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
     <form className="event-form" onSubmit={submit}>
       <label>Primary contact name<input required minLength={2} maxLength={100} autoComplete="name" value={contactName} disabled={!!attempt} onChange={e => setName(e.target.value)} /></label>
       <label>Email<input required type="email" maxLength={254} autoComplete="email" value={email} disabled={!!attempt} onChange={e => setEmail(e.target.value)} /><span className="event-muted">For your payment-status emails and private ticket link after confirmation.</span></label>
-      <label>WhatsApp number<input required type="tel" maxLength={24} autoComplete="tel" placeholder="+91 98765 43210" value={whatsapp} disabled={!!attempt} onChange={e => setWhatsapp(e.target.value)} /><span className="event-muted">Include the country code.</span></label>
+      <label>WhatsApp number<input required type="tel" maxLength={24} autoComplete="tel" placeholder="+91 98765 43210" value={whatsapp} disabled={!!attempt} onChange={e => setWhatsapp(e.target.value)} /><span className="event-muted">Include the country code. For a US number, change +91 to +1.</span></label>
       <div className="event-counts"><label>Adults<input required type="number" min={1} max={50} step={1} value={adults} disabled={!!attempt} onChange={e => setAdults(Number(e.target.value))} /></label>
         <label>Children<input required type="number" min={1} max={50} step={1} value={children} disabled={!!attempt} onChange={e => setChildren(Number(e.target.value))} /></label></div>
       <p className="event-muted">At least one adult and one child per booking.</p>

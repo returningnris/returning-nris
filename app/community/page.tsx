@@ -7,14 +7,14 @@ import { INSTAGRAM_URL } from '../../lib/social-links'
 export const metadata: Metadata = {
   title: 'Returning NRI Community | WhatsApp, Online Meets & Hyderabad 2026 Meetups',
   description:
-    'Join the Returning NRI community for families moving back to India. Connect with 250+ active Hyderabad members, online sessions, short videos, and practical support on schools, housing, tax, finance, and settling in.',
+    'Join the Returning NRI community for families moving back to India. Connect with 600+ active Hyderabad members, online sessions, short videos, and practical support on schools, housing, tax, finance, and settling in.',
   alternates: {
     canonical: 'https://www.returningnris.com/community',
   },
   openGraph: {
     title: 'Returning NRI Community | WhatsApp, Online Meets & Hyderabad 2026 Meetups',
     description:
-      'Join the Returning NRI community for families moving back to India. Connect with 250+ active Hyderabad members, online sessions, short videos, and practical support on schools, housing, tax, finance, and settling in.',
+      'Join the Returning NRI community for families moving back to India. Connect with 600+ active Hyderabad members, online sessions, short videos, and practical support on schools, housing, tax, finance, and settling in.',
     url: 'https://www.returningnris.com/community',
     siteName: 'ReturningNRIs',
     type: 'website',
@@ -24,13 +24,13 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Returning NRI Community | WhatsApp, Online Meets & Hyderabad 2026 Meetups',
     description:
-      'Join the Returning NRI community for families moving back to India. Connect with 250+ active Hyderabad members, online sessions, short videos, and practical support on schools, housing, tax, finance, and settling in.',
+      'Join the Returning NRI community for families moving back to India. Connect with 600+ active Hyderabad members, online sessions, short videos, and practical support on schools, housing, tax, finance, and settling in.',
     images: ['https://www.returningnris.com/og-image.png'],
   },
 }
 
 const trustBadges = [
-  '250+ active members in our Hyderabad Returning NRI group',
+  '600+ active members in our Hyderabad Returning NRI group',
   'Successful first online group meeting completed',
   'Regular online sessions being planned',
   'In-person Hyderabad meetup planned for 2026 returnees',
