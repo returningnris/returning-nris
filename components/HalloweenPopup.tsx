@@ -41,11 +41,11 @@ export default function HalloweenPopup() {
     <div id="halloween-invitation" hidden={collapsed}>
     <Link href={HALLOWEEN_PATH} className={styles.invitation}>
       {!collapsed && <HalloweenArtwork animated className={styles.artwork} />}
-      <span className={styles.label}>A family community event</span>
+      <span className={styles.label}>Where Global Roots Meet Local Neighbors</span>
       <h2>Halloween Party</h2>
       <p className={styles.date}>31 October 2026 · {HALLOWEEN_TIMINGS} IST</p>
       <p>{HALLOWEEN_VENUE}</p>
-      <p className={styles.activities}>Music to keep the evening lively · Trick or treat · Exciting games for kids</p>
+      <p className={styles.activities}>Meet returned NRI families and West Hyderabad neighbors for new friendships, games, and trick or treat.</p>
       <p className={styles.food}>Food available for purchase</p>
       <span className={styles.cta}>View party details <span aria-hidden="true">→</span></span>
     </Link>

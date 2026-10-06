@@ -6,7 +6,7 @@ import { HALLOWEEN_TERMS_PATH } from '@/lib/halloween-terms'
 
 export const metadata: Metadata = {
   title: 'Halloween Party Terms & Conditions | Returning NRIs',
-  description: 'Read the Returning NRIs Halloween Party terms for family registration, child supervision, venue safety, participation risks and liability at The Quantium School.',
+  description: 'Read the Halloween Party terms for family registration, child supervision, venue safety, participation risks and liability at The Quantium School.',
   alternates: { canonical: HALLOWEEN_TERMS_PATH },
 }
 

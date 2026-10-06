@@ -24,7 +24,7 @@ export function halloweenFailure(error: unknown) {
 }
 
 const fallbackEvent: HalloweenEvent = {
-  id: HALLOWEEN_EVENT_ID, name: 'Returning NRIs Halloween Party', event_date: '2026-10-31',
+  id: HALLOWEEN_EVENT_ID, name: 'Halloween Party', event_date: '2026-10-31',
   timezone: 'Asia/Kolkata', venue: null, timings: null, upi_id: null,
   payment_recipient_name: null, payment_qr_image_url: null, registration_open: false,
 }
@@ -34,7 +34,7 @@ export async function getHalloweenEvent(): Promise<HalloweenEvent> {
     .select('id,name,event_date,timezone,venue,timings,upi_id,payment_recipient_name,payment_qr_image_url,registration_open')
     .eq('id', HALLOWEEN_EVENT_ID).single()
   if (error || !data) throw new HalloweenError('Event details are temporarily unavailable. Please try again later.', 503)
-  return { ...data, registration_open: Boolean(data.registration_open && data.venue && data.timings &&
+  return { ...data, name: 'Halloween Party', registration_open: Boolean(data.registration_open && data.venue && data.timings &&
     data.upi_id && data.payment_recipient_name && paymentImageUrl(data.payment_qr_image_url)) }
 }
 

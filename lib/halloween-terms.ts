@@ -4,7 +4,7 @@ export const HALLOWEEN_TERMS_PATH = '/events/halloween/terms'
 export const HALLOWEEN_TERMS = [
   {
     title: 'Acceptance and family participation',
-    text: 'By registering for or attending the Returning NRIs Halloween Party on 31 October 2026 at The Quantium School, Mokila, Hyderabad, you confirm that you have read and agree to these terms. The registering adult must share these terms with all adults in the booking. Each adult is responsible for their own participation and for the children in their care.',
+    text: 'By registering for or attending the Halloween Party on 31 October 2026 at The Quantium School, Mokila, Hyderabad, you confirm that you have read and agree to these terms. The registering adult must share these terms with all adults in the booking. Each adult is responsible for their own participation and for the children in their care.',
   },
   {
     title: 'Registration, payment and entry',
