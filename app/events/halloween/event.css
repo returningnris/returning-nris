@@ -49,6 +49,7 @@
 .event-tab[aria-pressed="true"] { background: var(--green-light); border-color: var(--green); }
 .halloween-themed-hero { background: radial-gradient(ellipse at 80% 20%, #51316c, transparent 65%), #21132e; color: #fff7e9; border-bottom: 4px solid #f57921; }
 .halloween-themed-hero h1 { color: #ffae45; text-shadow: 0 3px 0 #120b1c; }
+.halloween-themed-hero .event-muted { color: #eadff3; }
 .halloween-themed-hero .event-link { color: #ead7ff; }
 .halloween-themed-hero .event-lead { color: #eadff3; }
 .halloween-themed-hero .halloween-eyebrow { color: #ffd878; }
