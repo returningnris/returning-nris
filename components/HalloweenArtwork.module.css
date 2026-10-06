@@ -1,9 +1,8 @@
-/* A short, transform-only welcome: no timers, image downloads or continuous work.
-   All motion stops within 4.8 seconds; the ticket and QR remain completely still. */
-.animated :global(.halloween-moving-spider) { animation: halloween-spider-sway 1.6s ease-in-out 3; transform-origin: 492px 40px; }
-.animated :global(.halloween-floating-ghost) { animation: halloween-ghost-float 2.4s ease-in-out 2; }
+/* Decorative motion loops using transforms; reduced-motion preferences are respected. */
+.animated :global(.halloween-moving-spider) { animation: halloween-spider-sway 1.6s ease-in-out infinite; transform-origin: 492px 40px; }
+.animated :global(.halloween-floating-ghost) { animation: halloween-ghost-float 2.4s ease-in-out infinite; }
 .animated :global(.halloween-small-ghost) { animation-direction: reverse; }
-.animated :global(.halloween-bobbing-pumpkin) { animation: halloween-pumpkin-bob 1.6s ease-in-out 3; transform-origin: 226px 250px; }
+.animated :global(.halloween-bobbing-pumpkin) { animation: halloween-pumpkin-bob 1.6s ease-in-out infinite; transform-origin: 226px 250px; }
 @keyframes halloween-spider-sway { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(5deg); } }
 @keyframes halloween-ghost-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
 @keyframes halloween-pumpkin-bob { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-4px) rotate(-3deg); } }
