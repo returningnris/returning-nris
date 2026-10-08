@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import HalloweenRegistration from '@/components/HalloweenRegistration'
-import HalloweenArtwork from '@/components/HalloweenArtwork'
+import halloweenPoster from './opengraph-image.png'
 import { BookingSteps, EventDetails, EventLinks } from '@/components/HalloweenShared'
 import { publicHalloweenEvent } from '@/lib/halloween-server'
 import { HALLOWEEN_PATH } from '@/lib/halloween'
@@ -10,14 +11,29 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
   const { event } = await publicHalloweenEvent()
-  return { title: `${event.name} | Returning NRIs`,
-    description: 'Meet returned NRI families and West Hyderabad neighbors at our Halloween Party in Mokila on 31 October 2026, 5 PM–9 PM. Family fun and new friendships.',
+  const title = `${event.name} | Returning NRIs`
+  const description = 'Meet returned NRI families and West Hyderabad neighbors at our Halloween Party in Mokila on 31 October 2026, 5 PM–9 PM. Family fun and new friendships.'
+  return { title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: HALLOWEEN_PATH,
+      siteName: 'ReturningNRIs',
+      locale: 'en_IN',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
     alternates: { canonical: HALLOWEEN_PATH } }
 }
 
 export default async function HalloweenPage() {
   const { event, available } = await publicHalloweenEvent()
-  return <>
+  return <div className="halloween-party-page">
     <header className="event-hero halloween-themed-hero"><div className="event-shell">
       <Link href="/events" className="event-link event-muted">← All events</Link>
       <div className="halloween-hero-grid"><div>
@@ -27,11 +43,16 @@ export default async function HalloweenPage() {
       <p className="event-lead">Bring your little monsters out for a spooktacular evening of festive fun, games, and treats!</p>
       <p className="event-muted">It’s the perfect space for <strong>returned NRI families</strong> and <strong>West Hyderabad locals</strong> to chat, share stories, and build lasting neighborhood friendships while the kids dive into the spooky fun.</p>
       <EventDetails event={event} />
-      </div><HalloweenArtwork animated className="halloween-hero-art" /></div>
+      <div className="event-actions"><a href="#family-registration" className="btn-primary">Book your family’s spot</a><a href="#party-details" className="halloween-details-link">Explore the party ↓</a></div>
+      <p className="halloween-price-note">₹500 per child · One adult per child enters free</p>
+      </div><div className="halloween-poster">
+        <Image src={halloweenPoster} alt="Halloween Party with friendly ghosts, glowing pumpkins and children in costumes. Co-powered by The Quantum School." sizes="(max-width: 720px) 100vw, 50vw" preload />
+        <div className="halloween-poster-logo"><Image src="/returning-nris-wordmark.png" alt="Returning NRIs" width={902} height={193} sizes="(max-width: 720px) 30vw, 15vw" /></div>
+      </div></div>
     </div></header>
     <div className="event-shell"><BookingSteps step={1} /><div className="event-grid">
-      <HalloweenRegistration event={event} available={available} />
-      <aside className="event-stack">
+      <div id="family-registration" className="halloween-registration"><HalloweenRegistration event={event} available={available} /></div>
+      <aside id="party-details" className="event-stack">
         <section className="event-card event-stack"><div className="section-label">An evening of family fun</div><h2>What’s happening</h2>
           <p><strong>Music to keep the evening lively</strong></p>
           <p><strong>Trick or treat</strong><br /><span className="event-muted">Halloween fun for the kids.</span></p>
@@ -53,5 +74,5 @@ export default async function HalloweenPage() {
         </section>
       </aside>
     </div><EventLinks /></div>
-  </>
+  </div>
 }
