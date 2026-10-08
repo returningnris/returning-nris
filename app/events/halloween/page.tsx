@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import HalloweenRegistration from '@/components/HalloweenRegistration'
-import halloweenPoster from './opengraph-image.png'
 import { BookingSteps, EventDetails, EventLinks } from '@/components/HalloweenShared'
 import { publicHalloweenEvent } from '@/lib/halloween-server'
 import { HALLOWEEN_PATH } from '@/lib/halloween'
@@ -10,9 +9,8 @@ import { HALLOWEEN_PATH } from '@/lib/halloween'
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { event } = await publicHalloweenEvent()
-  const title = `${event.name} | Returning NRIs`
-  const description = 'Meet returned NRI families and West Hyderabad neighbors at our Halloween Party in Mokila on 31 October 2026, 5 PM–9 PM. Family fun and new friendships.'
+  const title = 'Halloween Party in Hyderabad | Returning NRIs'
+  const description = 'A family Halloween party with costumes, games and trick-or-treat fun at The Quantum School, Mokila, Hyderabad. 31 October 2026, 5 PM–9 PM. ₹500 per child includes one adult free.'
   return { title,
     description,
     openGraph: {
@@ -46,7 +44,7 @@ export default async function HalloweenPage() {
       <div className="event-actions"><a href="#family-registration" className="btn-primary">Book your family’s spot</a><a href="#party-details" className="halloween-details-link">Explore the party ↓</a></div>
       <p className="halloween-price-note">₹500 per child · One adult per child enters free</p>
       </div><div className="halloween-poster">
-        <Image src={halloweenPoster} alt="Halloween Party with friendly ghosts, glowing pumpkins and children in costumes. Co-powered by The Quantum School." sizes="(max-width: 720px) 100vw, 50vw" preload />
+        <Image src="/events/halloween/party-poster.png" width={1454} height={1082} alt="Halloween Party with friendly ghosts, glowing pumpkins and children in costumes. Co-powered by The Quantum School." sizes="(max-width: 720px) 100vw, 50vw" preload />
         <div className="halloween-poster-logo"><Image src="/returning-nris-wordmark.png" alt="Returning NRIs" width={902} height={193} sizes="(max-width: 720px) 30vw, 15vw" /></div>
       </div></div>
     </div></header>
