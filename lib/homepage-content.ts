@@ -1,5 +1,5 @@
 export const COMMUNITY_METRICS = [
-  { value: '21K+', label: 'Instagram community' },
+  { value: '22K+', label: 'Instagram community' },
   { value: '600+', label: 'WhatsApp community' },
   { value: 'Telugu', label: 'Focused community' },
   { value: 'Hyderabad', label: 'Home base' },
