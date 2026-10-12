@@ -17,16 +17,18 @@ export function BookingSteps({ step }: { step: number }) {
   </nav>
 }
 
-export function PriceBreakdown({ adults, childCount }: { adults: number; childCount: number }) {
+export function PriceBreakdown({ adults, childCount, discountApplied = false, totalInr }: { adults: number; childCount: number; discountApplied?: boolean; totalInr?: number }) {
   let price
-  try { price = halloweenPrice(adults, childCount) }
+  try { price = halloweenPrice(adults, childCount, discountApplied) }
   catch (error) { return <p role="alert" className="event-notice">{error instanceof Error ? error.message : 'Check your booking details.'}</p> }
+  const unitPrice = discountApplied ? 450 : 500
   return <div className="event-price" aria-live="polite">
-    <dl><dt>{childCount} child{childCount === 1 ? '' : 'ren'} × ₹500</dt><dd>₹{price.childCharges.toLocaleString('en-IN')}</dd>
+    <dl><dt>{childCount} child{childCount === 1 ? '' : 'ren'} × ₹{unitPrice}</dt><dd>₹{(childCount * unitPrice).toLocaleString('en-IN')}</dd>
       <dt>{price.includedAdults} included adult{price.includedAdults === 1 ? '' : 's'}</dt><dd>Free</dd>
-      <dt>{price.additionalAdults} additional adult{price.additionalAdults === 1 ? '' : 's'} × ₹500</dt><dd>₹{price.adultCharges.toLocaleString('en-IN')}</dd>
-</dl>
-    <div className="event-total"><span>Total</span><span>₹{price.total.toLocaleString('en-IN')}</span></div>
+      <dt>{price.additionalAdults} additional adult{price.additionalAdults === 1 ? '' : 's'} × ₹{unitPrice}</dt><dd>₹{(price.additionalAdults * unitPrice).toLocaleString('en-IN')}</dd>
+    </dl>
+    {price.discount > 0 && <p className="event-muted">You save ₹{price.discount.toLocaleString('en-IN')} with your family discount.</p>}
+    <div className="event-total"><span>Total</span><span>₹{(totalInr ?? price.total).toLocaleString('en-IN')}</span></div>
   </div>
 }
 

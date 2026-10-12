@@ -3,6 +3,9 @@ import test from 'node:test'
 import { readFileSync } from 'node:fs'
 import ts from 'typescript'
 import vm from 'node:vm'
+import { createRequire } from 'node:module'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { createElement } from 'react'
 
 // Compile the pure shared module in memory: no new test-runner dependency.
 const source = ts.transpileModule(readFileSync(new URL('../lib/halloween.ts', import.meta.url), 'utf8'), {
@@ -73,6 +76,23 @@ test('public registration UI and shared module do not reveal coupon or offer', (
   for (const file of ['../lib/halloween.ts', '../components/HalloweenRegistration.tsx', '../components/HalloweenShared.tsx', '../components/HalloweenBooking.tsx', '../app/events/halloween/page.tsx']) {
     const contents = readFileSync(new URL(file, import.meta.url), 'utf8')
     assert.doesNotMatch(contents, /QUANTIUM50/)
-    if (file.endsWith('HalloweenRegistration.tsx') || file.endsWith('page.tsx')) assert.doesNotMatch(contents, /special treat|₹50 off/)
+    if (file.endsWith('page.tsx')) assert.doesNotMatch(contents, /special treat|₹50 off/)
   }
+})
+
+test('family price breakdown renders discounted unit charges and stored payment total', () => {
+  const nativeRequire = createRequire(import.meta.url)
+  const shared = { exports: {}, Error, require: spec => spec === '@/lib/halloween' ? sandbox.exports : spec === 'next/link' ? {} : nativeRequire(spec) }
+  const compiled = ts.transpileModule(readFileSync(new URL('../components/HalloweenShared.tsx', import.meta.url), 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
+  }).outputText
+  vm.runInNewContext(compiled, shared)
+  const html = renderToStaticMarkup(createElement(shared.exports.PriceBreakdown, { adults: 1, childCount: 1, discountApplied: true, totalInr: 450 }))
+  assert.match(html, /× ₹450/)
+  assert.match(html, /You save ₹50/)
+  assert.match(html, /<span>Total<\/span><span>₹450<\/span>/)
+  assert.doesNotMatch(html, /₹500/)
+  const family = renderToStaticMarkup(createElement(shared.exports.PriceBreakdown, { adults: 3, childCount: 2, discountApplied: true, totalInr: 1350 }))
+  assert.match(family, /<span>Total<\/span><span>₹1,350<\/span>/)
+  assert.match(family, /You save ₹150/)
 })

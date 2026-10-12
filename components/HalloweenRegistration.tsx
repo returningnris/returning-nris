@@ -18,6 +18,9 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
   const [adults, setAdults] = useState(1)
   const [children, setChildren] = useState(1)
   const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState('')
+  const [couponBusy, setCouponBusy] = useState(false)
+  const [couponError, setCouponError] = useState('')
   const [challenge, setChallenge] = useState('')
   const [website, setWebsite] = useState('')
   const [attempt, setAttempt] = useState<Draft | null>(null)
@@ -48,9 +51,19 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
     return () => { active = false }
   }, [])
 
+  async function applyCoupon() {
+    if (couponBusy || busy) return
+    setCouponBusy(true); setCouponError(''); setAppliedCoupon('')
+    try {
+      const result = await halloweenRequest<{ applied: boolean }>({ action: 'coupon', couponCode })
+      if (result.applied) setAppliedCoupon(couponCode.trim().toUpperCase())
+    } catch (err) { setCouponError(err instanceof Error ? err.message : 'Could not validate your coupon. Please try again.') }
+    finally { setCouponBusy(false) }
+  }
+
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (busy) return
+    if (busy || couponBusy) return
     setBusy(true); setError('')
     const draft = attempt || { contactName, email, whatsapp, adults, children, couponCode, idempotencyKey: crypto.randomUUID() }
     try { validateHalloweenRegistration(draft) }
@@ -90,13 +103,16 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
       <div className="event-counts"><label>Adults<input required type="number" min={1} max={50} step={1} value={adults} disabled={!!attempt} onChange={e => setAdults(Number(e.target.value))} /></label>
         <label>Children<input required type="number" min={1} max={50} step={1} value={children} disabled={!!attempt} onChange={e => setChildren(Number(e.target.value))} /></label></div>
       <p className="event-muted">At least one adult and one child per booking.</p>
-      <label>Coupon code (optional)<input maxLength={40} autoComplete="off" autoCapitalize="characters" spellCheck={false} value={couponCode} disabled={!!attempt} onChange={e => setCouponCode(e.target.value)} /></label>
-      <p className="event-muted">Have a coupon? Enter it above. Any valid discount will be applied when you continue to payment.</p>
-      <PriceBreakdown adults={adults} childCount={children} />
+      <label>Coupon code (optional)<input maxLength={40} autoComplete="off" autoCapitalize="characters" spellCheck={false} value={couponCode} disabled={!!attempt || couponBusy || busy} onChange={e => { setCouponCode(e.target.value); setAppliedCoupon(''); setCouponError('') }} /></label>
+      <button type="button" className="btn-ghost" disabled={couponBusy || busy || !couponCode.trim()} onClick={() => void applyCoupon()}>{couponBusy ? 'Checking coupon…' : 'Apply coupon'}</button>
+      <p className="event-muted">Validate your coupon to see the updated price. No contact details needed.</p>
+      {couponError && <p role="alert" className="event-notice event-error">{couponError}</p>}
+      {appliedCoupon && <p role="status" className="event-notice event-success">A special treat for The Quantium School families! ₹50 off each paid ticket has been applied.</p>}
+      <PriceBreakdown adults={adults} childCount={children} discountApplied={!!appliedCoupon} />
       <div className="event-honeypot" aria-hidden="true"><label>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} /></label></div>
       {error && <p role="alert" className="event-notice event-error">{error}</p>}
       <p className="event-muted">By continuing to payment, you agree to the Halloween Party <Link href={HALLOWEEN_TERMS_PATH} className="event-link" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</Link>.</p>
-      <button className="btn-secondary" disabled={busy || !challenge} type="submit">{busy ? 'Saving your booking…' : attempt ? 'Retry this booking' : 'Continue to payment'}</button>
+      <button className="btn-secondary" disabled={busy || couponBusy || !challenge} type="submit">{busy ? 'Saving your booking…' : attempt ? 'Retry this booking' : 'Continue to payment'}</button>
       <p className="event-muted">Your booking is confirmed after the organiser verifies the bank payment. We do not add you to marketing lists.</p>
     </form>
   </div>

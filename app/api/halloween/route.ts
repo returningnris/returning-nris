@@ -8,6 +8,15 @@ export async function POST(request: Request) {
   try {
     const body = await readHalloweenBody(request)
     const db = getSupabaseAdmin()
+    if (body.action === 'coupon') {
+      await halloweenRateLimit(request, 'coupon', 15, 900)
+      try {
+        const price = halloweenCouponPrice(1, 1, body.couponCode)
+        return privateJson({ applied: price.discount > 0 })
+      } catch (error) {
+        return privateJson({ error: error instanceof Error ? error.message : 'Check your coupon code.', code: 'INVALID_COUPON' }, 400)
+      }
+    }
     if (body.action === 'register') {
       await halloweenRateLimit(request, 'register', 10, 900)
       verifyBotChallenge(request, body.challenge, body.website)

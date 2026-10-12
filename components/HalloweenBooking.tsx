@@ -109,7 +109,7 @@ export default function HalloweenBooking() {
           </form>
         </>}
       </section>
-      <aside className="event-card event-stack"><h2>Your family</h2><p className="event-muted">Primary contact: {booking.contact_name}</p><PriceBreakdown adults={booking.adult_count} childCount={booking.child_count} />
+      <aside className="event-card event-stack"><h2>Your family</h2><p className="event-muted">Primary contact: {booking.contact_name}</p><PriceBreakdown adults={booking.adult_count} childCount={booking.child_count} discountApplied={booking.coupon_applied} totalInr={booking.amount_inr} />
         <p className="event-muted">Your booking is confirmed only when payment is verified. If you need to correct a saved reference or change attendee counts, contact the organiser with your booking reference.</p></aside>
     </div>}
     <div className="event-card event-actions event-private-actions">

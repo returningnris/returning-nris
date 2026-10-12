@@ -167,6 +167,21 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   let bookingId
   let ticket
 
+  await t.test('coupon preview needs no contact details and creates no booking', async () => {
+    const before = await pg.query('select count(*) from public.halloween_bookings')
+    const valid = await api.POST(request({ action: 'coupon', couponCode: ' quantium50 ' }))
+    assert.equal(valid.status, 200)
+    assert.equal((await valid.json()).applied, true)
+    const invalid = await api.POST(request({ action: 'coupon', couponCode: 'INVALID' }))
+    assert.equal(invalid.status, 400)
+    assert.equal((await invalid.json()).code, 'INVALID_COUPON')
+    const empty = await api.POST(request({ action: 'coupon', couponCode: '' }))
+    assert.equal((await empty.json()).applied, false)
+    assert.equal((await api.POST(request({ action: 'coupon', couponCode: 'QUANTIUM50' }, false, 'https://evil.example'))).status, 403)
+    const after = await pg.query('select count(*) from public.halloween_bookings')
+    assert.equal(after.rows[0].count, before.rows[0].count)
+  })
+
   await t.test('coupon is applied only by the server after submission, and invalid codes remain correctable', async () => {
     await pg.exec('begin')
     try {
