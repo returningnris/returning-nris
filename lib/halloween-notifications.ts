@@ -3,12 +3,12 @@ import { Resend } from 'resend'
 import { getSupabaseAdmin } from './supabase-admin'
 import { canonicalHalloweenOrigin, getHalloweenEvent } from './halloween-server'
 import { HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText, paymentPendingText } from './halloween'
-import { halloweenEmailHtml } from './halloween-email'
+import { halloweenOrganiserEmail, halloweenEmailHtml } from './halloween-email'
 import { HALLOWEEN_TERMS_PATH } from './halloween-terms'
 
 type EmailPayload = { from: string; to: string; subject: string; text: string; html?: string }
 type Notification = { id: string; booking_id: string; lease_token: string; first_attempt_at: string;
-  attempts: number; kind: 'booking_confirmation' | 'payment_pending'; delivery_payload: EmailPayload | null }
+  attempts: number; kind: 'booking_confirmation' | 'payment_pending' | 'organiser_review'; delivery_payload: EmailPayload | null }
 
 export async function processHalloweenNotifications() {
   const db = getSupabaseAdmin()
@@ -37,10 +37,11 @@ export async function processHalloweenNotifications() {
         await finish('manual_required', null, 'provider_reconciliation_required'); counts.manual++; continue
       }
       const { data: booking, error: bookingError } = await db.from('halloween_bookings')
-        .select('booking_reference,contact_name,email,adult_count,child_count,amount_inr,payment_verified,private_access_token,transaction_reference')
+        .select('booking_reference,contact_name,email,adult_count,child_count,amount_inr,payment_verified,private_access_token,transaction_reference,whatsapp_number,payment_review_token')
         .eq('event_id', HALLOWEEN_EVENT_ID).eq('id', row.booking_id).maybeSingle()
       if (bookingError) throw new Error('booking_unavailable')
-      const pending = row.kind === 'payment_pending'
+      const review = row.kind === 'organiser_review'
+      const pending = row.kind !== 'booking_confirmation'
       if (!booking || (pending ? booking.payment_verified || !booking.transaction_reference : !booking.payment_verified)) { counts.skipped++; continue }
       let payload = row.delivery_payload
       if (!payload) {
@@ -52,6 +53,10 @@ export async function processHalloweenNotifications() {
           subject: `${pending ? 'Payment pending verification' : 'Payment confirmed'}: ${event.name} · ${booking.booking_reference}`,
           text: `${pending ? paymentPendingText(booking, event) : confirmationText(booking, event, `${origin}${HALLOWEEN_PATH}/booking#${booking.private_access_token}`)}\n\nTerms & Conditions: ${origin}${HALLOWEEN_TERMS_PATH}`,
           html: halloweenEmailHtml(booking, event, origin, pending ? undefined : `${origin}${HALLOWEEN_PATH}/booking#${booking.private_access_token}`) }
+        if (review) {
+          const reviewEmail = halloweenOrganiserEmail(booking, `${origin}${HALLOWEEN_PATH}/payment-review#${booking.payment_review_token}`)
+          payload = { from: payload.from, to: 'returningnris@gmail.com', ...reviewEmail }
+        }
         const { data: saved, error: saveError } = await db.from('halloween_notification_outbox')
           .update({ delivery_payload: payload }).eq('id', row.id).eq('lease_token', row.lease_token)
           .eq('status', 'processing').gt('locked_until', new Date().toISOString())

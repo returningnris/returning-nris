@@ -29,6 +29,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610050005_halloween_payment_pending_email.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/tests/halloween-event.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610120001_halloween_quantium_discount.sql'), 'utf8'))
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610120002_halloween_organiser_review.sql'), 'utf8'))
   await pg.exec(`update public.halloween_events set venue='Isolated Test Venue',timings='Test only',upi_id='test@example',
     payment_recipient_name='Test only',payment_qr_image_url='/test-qr.png',registration_open=true;
     insert into public.halloween_organisers(user_id) values('${organiserId}');`)
@@ -95,6 +96,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   const rpcParameters = {
     halloween_register: ['p_idempotency_key','p_contact_name','p_email','p_whatsapp_number','p_adult_count','p_child_count','p_coupon_code'],
     halloween_submit_payment: ['p_private_token','p_reference'],
+    halloween_approve_payment: ['p_review_token','p_reference','p_amount'],
     halloween_check_ticket: ['p_organiser_id','p_ticket','p_admit'],
     halloween_claim_notifications: ['p_limit'],
     halloween_finish_notification: ['p_id','p_lease_token','p_status','p_provider_message_id','p_error'],
@@ -235,14 +237,58 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   })
   await t.test('payment submission queues one pending email without a ticket link; repeat submission does not resend', async () => {
     assert.equal((await pg.query("select count(*)::integer as n from public.halloween_notification_outbox where kind='payment_pending'")).rows[0].n, 1)
-    assert.equal((await (await worker.GET(workerRequest())).json()).accepted, 1)
-    assert.match(provider.calls[0].payload, /Payment pending verification/)
-    assert.match(provider.calls[0].payload, /Once your payment is confirmed/)
+    assert.equal((await (await worker.GET(workerRequest())).json()).accepted, 2)
+    const familyEmail = provider.calls.find(call => call.payload.includes('Payment pending verification'))
+    const organiserEmail = provider.calls.find(call => call.payload.includes('returningnris@gmail.com'))
+    assert.ok(organiserEmail); assert.match(organiserEmail.payload, /payment-review#/); assert.match(organiserEmail.payload, /TEST123456789/)
+    assert.match(familyEmail.payload, /Payment pending verification/)
+    assert.match(familyEmail.payload, /Once your payment is confirmed/)
     assert.ok(!provider.calls[0].payload.includes(privateToken))
     await api.POST(request({action:'payment',token:privateToken,reference:'TEST123456789'}))
     await worker.GET(workerRequest())
-    assert.equal(provider.calls.length,1)
+    assert.equal(provider.calls.length,2)
     provider.calls=[]
+  })
+  await t.test('email review link previews only, approves once, and cannot use family tokens', async () => {
+    await pg.exec('begin')
+    try {
+      const token = (await pg.query('select payment_review_token from public.halloween_bookings where id=$1', [bookingId])).rows[0].payment_review_token
+      const preview = await api.POST(request({ action: 'payment-review', token }))
+      assert.equal(preview.status, 200)
+      assert.equal((await preview.json()).booking.payment_verified, false)
+      assert.equal((await api.POST(request({ action: 'payment-review', token: privateToken }))).status, 404)
+      assert.equal((await api.POST(request({ action: 'approve-payment', token, reference: 'TEST123456789', amount: 1500 }))).status, 400)
+      await pg.exec('savepoint wrong_reference')
+      assert.equal((await api.POST(request({ action: 'approve-payment', token, confirmReceived: true, reference: 'WRONG12345', amount: 1500 }))).status, 409)
+      await pg.exec('rollback to savepoint wrong_reference')
+      const body = { action: 'approve-payment', token, confirmReceived: true, reference: 'TEST123456789', amount: 1500 }
+      assert.equal((await api.POST(request(body))).status, 200)
+      assert.equal((await api.POST(request(body))).status, 200)
+      assert.equal((await pg.query('select count(*)::int as n from public.halloween_tickets where booking_id=$1', [bookingId])).rows[0].n, 1)
+      assert.equal((await pg.query("select count(*)::int as n from public.halloween_notification_outbox where booking_id=$1 and kind='booking_confirmation'", [bookingId])).rows[0].n, 1)
+      await pg.query('update public.halloween_bookings set payment_verified=false where id=$1', [bookingId])
+      assert.equal((await api.POST(request(body))).status, 410)
+    } finally { await pg.exec('rollback') }
+  })
+  await t.test('review approval rejects reused references and expired links', async () => {
+    await pg.exec('begin')
+    try {
+      const token = (await pg.query('select payment_review_token from public.halloween_bookings where id=$1', [bookingId])).rows[0].payment_review_token
+      const { data: duplicate } = await db.rpc('halloween_register', {
+        p_idempotency_key: '322b5421-a4ac-4a6c-9065-e46d3c9e32be', p_contact_name: 'Duplicate reference',
+        p_email: 'duplicate@example.invalid', p_whatsapp_number: '+919876543210', p_adult_count: 1, p_child_count: 1,
+      })
+      await db.rpc('halloween_submit_payment', { p_private_token: duplicate.private_access_token, p_reference: 'TEST123456789' })
+      const body = { action: 'approve-payment', token, confirmReceived: true, reference: 'TEST123456789', amount: 1500 }
+      const preview = await api.POST(request({ action: 'payment-review', token }))
+      assert.equal((await preview.json()).reference_reused, true)
+      await pg.exec('savepoint duplicate_reference')
+      assert.equal((await api.POST(request(body))).status, 409)
+      await pg.exec('rollback to savepoint duplicate_reference')
+      await pg.query("update public.halloween_bookings set payment_submitted_at=now()-interval '8 days' where id=$1", [bookingId])
+      assert.equal((await api.POST(request({ action: 'payment-review', token }))).status, 410)
+      assert.equal((await api.POST(request(body))).status, 410)
+    } finally { await pg.exec('rollback') }
   })
   await t.test('direct SQL Boolean edit creates ONE family ticket and queues only one notification', async () => {
     await pg.query('update public.halloween_bookings set payment_verified=true where id=$1', [bookingId])
@@ -330,7 +376,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     assert.ok(second)
     await db.rpc('halloween_submit_payment', {p_private_token: second.private_access_token, p_reference: 'TEST987654321'})
     provider.fail = true
-    assert.equal((await (await worker.GET(workerRequest())).json()).failed, 1)
+    assert.equal((await (await worker.GET(workerRequest())).json()).failed, 2)
     provider.fail = false
     await pg.query('update public.halloween_bookings set payment_verified=true where private_access_token=$1', [second.private_access_token])
     const notices = (await pg.query('select kind,status from public.halloween_notification_outbox where booking_id=(select id from public.halloween_bookings where private_access_token=$1)', [second.private_access_token])).rows

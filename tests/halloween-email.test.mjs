@@ -52,3 +52,15 @@ test('pending and confirmed emails link to terms without displaying the full ter
     assert.ok(!html.includes('release them from related claims and liability'))
   }
 })
+
+test('organiser email contains registration details and a private review link, with escaped content', () => {
+  const link = 'https://example.com/events/halloween/payment-review#' + 'b'.repeat(64)
+  const result = mod.exports.halloweenOrganiserEmail({ ...booking, contact_name: '<script>bad()</script>', email: 'family@example.com', whatsapp_number: '+919876543210', transaction_reference: 'TEST123456' }, link)
+  assert.match(result.text, /₹1,000/)
+  assert.match(result.text, /TEST123456/)
+  assert.match(result.text, /family@example.com/)
+  assert.match(result.text, /7 days/)
+  assert.ok(result.html.includes(`href="${link}"`))
+  assert.ok(!result.html.includes('<script>'))
+  assert.ok(!result.html.includes('/booking#'))
+})

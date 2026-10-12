@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
         { key: 'Referrer-Policy', value: 'no-referrer' },
         { key: 'X-Content-Type-Options', value: 'nosniff' },
       ] },
-      ...['booking', 'ticket', 'check-in'].map(path => ({ source: `/events/halloween/${path}`, headers: [
+      ...['booking', 'ticket', 'check-in', 'payment-review'].map(path => ({ source: `/events/halloween/${path}`, headers: [
         { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
       ] })),
     ]

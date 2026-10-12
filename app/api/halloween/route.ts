@@ -8,6 +8,38 @@ export async function POST(request: Request) {
   try {
     const body = await readHalloweenBody(request)
     const db = getSupabaseAdmin()
+    if (body.action === 'payment-review' || body.action === 'approve-payment') {
+      await halloweenRateLimit(request, 'payment-review', 30, 900)
+      if (!isPrivateToken(body.token)) throw new HalloweenError('Invalid review link.', 404)
+      if (body.action === 'approve-payment') {
+        if (body.confirmReceived !== true || typeof body.reference !== 'string' || !Number.isInteger(body.amount)) {
+          throw new HalloweenError('Confirm the bank receipt before approving payment.')
+        }
+        const { error } = await db.rpc('halloween_approve_payment', {
+          p_review_token: body.token, p_reference: body.reference, p_amount: body.amount,
+        })
+        if (error) {
+          if (error.message.includes('reused')) throw new HalloweenError('This reference is used on another booking. Review it in Supabase before approving.', 409)
+          if (error.message.includes('expired')) throw new HalloweenError('This review link has expired or was already used. Review the booking in Supabase.', 410)
+          if (error.message.includes('changed')) throw new HalloweenError('Payment details changed. Reload and review them again.', 409)
+          throw new HalloweenError('Could not approve payment. Check the link and try again.', 400)
+        }
+      }
+      const { data: booking, error } = await db.from('halloween_bookings')
+        .select('id,booking_reference,contact_name,email,whatsapp_number,adult_count,child_count,amount_inr,transaction_reference,payment_verified,payment_submitted_at,payment_review_used_at')
+        .eq('event_id', HALLOWEEN_EVENT_ID).eq('payment_review_token', body.token).maybeSingle()
+      if (error) throw new HalloweenError('Review is temporarily unavailable.', 503)
+      if (!booking?.transaction_reference) throw new HalloweenError('Invalid review link.', 404)
+      if (!booking.payment_verified && (booking.payment_review_used_at || Date.now() - new Date(booking.payment_submitted_at).getTime() > 7 * 86400000)) {
+        throw new HalloweenError('Review link expired. Review this booking in Supabase.', 410)
+      }
+      const { count, error: referenceError } = await db.from('halloween_bookings').select('id', { count: 'exact', head: true })
+        .eq('event_id', HALLOWEEN_EVENT_ID).eq('transaction_reference', booking.transaction_reference)
+      if (referenceError) throw new HalloweenError('Reference review is temporarily unavailable.', 503)
+      const { id, payment_review_used_at, ...details } = booking
+      void id; void payment_review_used_at
+      return privateJson({ booking: details, reference_reused: (count || 0) > 1 })
+    }
     if (body.action === 'coupon') {
       await halloweenRateLimit(request, 'coupon', 15, 900)
       try {

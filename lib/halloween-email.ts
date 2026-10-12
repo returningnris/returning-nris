@@ -34,3 +34,12 @@ ${confirmed ? `<table role="presentation" cellpadding="0" cellspacing="0" style=
 </td></tr><tr><td align="center" style="padding:20px 24px;border-top:1px solid #e8dfed;font-size:12px;line-height:1.7;color:#66536f">Returning NRIs<br>Questions? <a href="${escapeHtml(origin)}/contact" style="color:#744394">Contact the organiser</a> with your booking reference.</td></tr>
 </table></td></tr></table></body></html>`
 }
+
+export function halloweenOrganiserEmail(booking: { booking_reference: string; contact_name: string; email: string;
+  whatsapp_number: string; adult_count: number; child_count: number; amount_inr: number; transaction_reference: string }, reviewLink: string) {
+  const subject = `Verify Halloween payment · ${booking.booking_reference}`
+  const details = `Booking: ${booking.booking_reference}\nContact: ${booking.contact_name}\nEmail: ${booking.email}\nWhatsApp: ${booking.whatsapp_number}\nAdults: ${booking.adult_count} · Children: ${booking.child_count}\nAmount to verify: ₹${booking.amount_inr.toLocaleString('en-IN')}\nUPI reference: ${booking.transaction_reference}`
+  const instruction = 'Check the credited amount and transaction reference in your bank account before confirming. Opening this link does not approve payment. The link is private, valid for 7 days, and can approve only this booking.'
+  return { subject, text: `${details}\n\n${instruction}\nReview and confirm: ${reviewLink}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px"><h1>Halloween payment to verify</h1><p style="white-space:pre-line">${escapeHtml(details)}</p><p>${escapeHtml(instruction)}</p><p><a href="${escapeHtml(reviewLink)}" style="display:inline-block;background:#ffae45;color:#21132e;padding:16px;border-radius:10px;font-weight:bold;text-decoration:none">Review and confirm payment</a></p><p>After approval, the existing email flow sends the family their ticket link. Keep this organiser link private.</p></div>` }
+}
