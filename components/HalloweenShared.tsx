@@ -20,11 +20,12 @@ export function BookingSteps({ step }: { step: number }) {
 export function PriceBreakdown({ adults, childCount }: { adults: number; childCount: number }) {
   let price
   try { price = halloweenPrice(adults, childCount) }
-  catch { return <p className="event-notice">Choose at least one adult and one child (up to 50 each).</p> }
+  catch (error) { return <p role="alert" className="event-notice">{error instanceof Error ? error.message : 'Check your booking details.'}</p> }
   return <div className="event-price" aria-live="polite">
     <dl><dt>{childCount} child{childCount === 1 ? '' : 'ren'} × ₹500</dt><dd>₹{price.childCharges.toLocaleString('en-IN')}</dd>
       <dt>{price.includedAdults} included adult{price.includedAdults === 1 ? '' : 's'}</dt><dd>Free</dd>
-      <dt>{price.additionalAdults} additional adult{price.additionalAdults === 1 ? '' : 's'} × ₹500</dt><dd>₹{price.adultCharges.toLocaleString('en-IN')}</dd></dl>
+      <dt>{price.additionalAdults} additional adult{price.additionalAdults === 1 ? '' : 's'} × ₹500</dt><dd>₹{price.adultCharges.toLocaleString('en-IN')}</dd>
+</dl>
     <div className="event-total"><span>Total</span><span>₹{price.total.toLocaleString('en-IN')}</span></div>
   </div>
 }

@@ -1,3 +1,4 @@
+import { halloweenCouponPrice } from '@/lib/halloween-coupon-server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText, isPrivateToken, validateHalloweenRegistration } from '@/lib/halloween'
 import { canonicalHalloweenOrigin, getHalloweenEvent, getPrivateHalloweenBooking, HalloweenError,
@@ -13,11 +14,13 @@ export async function POST(request: Request) {
       let input
       try { input = validateHalloweenRegistration(body) }
       catch (error) { throw new HalloweenError(error instanceof Error ? error.message : 'Check your booking details.') }
+      try { input.price = halloweenCouponPrice(input.adults, input.children, input.couponCode) }
+      catch (error) { return privateJson({ error: error instanceof Error ? error.message : 'Check your coupon code.', code: 'INVALID_COUPON' }, 400) }
       const event = await getHalloweenEvent()
       if (!event.registration_open) throw new HalloweenError('Registration is not open yet.', 409)
       const { data, error } = await db.rpc('halloween_register', {
         p_idempotency_key: input.key, p_contact_name: input.contactName, p_email: input.email,
-        p_whatsapp_number: input.whatsapp, p_adult_count: input.adults, p_child_count: input.children,
+        p_whatsapp_number: input.whatsapp, p_adult_count: input.adults, p_child_count: input.children, p_coupon_code: input.couponCode,
       })
       if (error) {
         if (error.message.includes('Registration is not open')) throw new HalloweenError('Registration is not open yet.', 409)

@@ -1,5 +1,9 @@
 'use client'
 
+export class HalloweenRequestError extends Error {
+  constructor(message: string, public code?: string) { super(message) }
+}
+
 export async function halloweenRequest<T>(body: Record<string, unknown>, accessToken?: string): Promise<T> {
   const response = await fetch('/api/halloween', {
     method: 'POST', headers: { 'Content-Type': 'application/json',
@@ -7,7 +11,7 @@ export async function halloweenRequest<T>(body: Record<string, unknown>, accessT
     body: JSON.stringify(body), cache: 'no-store', referrerPolicy: 'no-referrer',
   })
   const data = await response.json()
-  if (!response.ok) throw new Error(data.error || 'Please try again.')
+  if (!response.ok) throw new HalloweenRequestError(data.error || 'Please try again.', data.code)
   return data as T
 }
 

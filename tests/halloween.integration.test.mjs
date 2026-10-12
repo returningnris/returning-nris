@@ -28,9 +28,30 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610050005_halloween_payment_pending_email.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610050005_halloween_payment_pending_email.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/tests/halloween-event.sql'), 'utf8'))
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610120001_halloween_quantium_discount.sql'), 'utf8'))
   await pg.exec(`update public.halloween_events set venue='Isolated Test Venue',timings='Test only',upi_id='test@example',
     payment_recipient_name='Test only',payment_qr_image_url='/test-qr.png',registration_open=true;
     insert into public.halloween_organisers(user_id) values('${organiserId}');`)
+
+  await t.test('Quantium SQL pricing, retries, invalid codes and existing totals', async () => {
+    await pg.exec('begin')
+    try {
+      const key = '9c03013a-b784-43d5-a43c-41982d65b4a1'
+      const args = `'${key}', 'Quantium family', 'quantium@example.com', '+919876543210', 3, 2`
+      const { rows } = await pg.query(`select * from public.halloween_register(${args}, ' quantium50 ')`)
+      assert.equal(rows[0].amount_inr, 1350)
+      assert.equal(rows[0].coupon_code, 'QUANTIUM50')
+      const retry = await pg.query(`select * from public.halloween_register(${args}, 'QUANTIUM50')`)
+      assert.equal(retry.rows[0].id, rows[0].id)
+      await pg.exec('savepoint invalid_coupon')
+      await assert.rejects(pg.query(`select * from public.halloween_register(${args}, 'INVALID')`), /Invalid coupon/)
+      await pg.exec('rollback to savepoint invalid_coupon')
+      await assert.rejects(pg.query(`select * from public.halloween_register(${args}, '')`), /Idempotency key/)
+      await pg.exec('rollback to savepoint invalid_coupon')
+      const fullPrice = await pg.query(`select * from public.halloween_register('a1ea805d-844f-4991-97e2-7a1b010f2d23', 'Regular family', 'regular@example.com', '+919876543210', 3, 2)`)
+      assert.equal(fullPrice.rows[0].amount_inr, 1500)
+    } finally { await pg.exec('rollback') }
+  })
 
   // Minimal Supabase query adapter, backed by real PostgreSQL constraints and functions.
   class Query {
@@ -72,7 +93,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   }
   const rpcLists = new Set(['halloween_register', 'halloween_claim_notifications'])
   const rpcParameters = {
-    halloween_register: ['p_idempotency_key','p_contact_name','p_email','p_whatsapp_number','p_adult_count','p_child_count'],
+    halloween_register: ['p_idempotency_key','p_contact_name','p_email','p_whatsapp_number','p_adult_count','p_child_count','p_coupon_code'],
     halloween_submit_payment: ['p_private_token','p_reference'],
     halloween_check_ticket: ['p_organiser_id','p_ticket','p_admit'],
     halloween_claim_notifications: ['p_limit'],
@@ -145,6 +166,25 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   let privateToken
   let bookingId
   let ticket
+
+  await t.test('coupon is applied only by the server after submission, and invalid codes remain correctable', async () => {
+    await pg.exec('begin')
+    try {
+      const draft = { ...registration, idempotencyKey: 'b32f2390-9362-46b4-8edb-a69ef220c590', challenge: challenge(), couponCode: 'INVALID' }
+      const invalid = await api.POST(request(draft))
+      assert.equal(invalid.status, 400)
+      assert.equal((await invalid.json()).code, 'INVALID_COUPON')
+      const valid = await api.POST(request({ ...draft, couponCode: ' quantium50 ' }))
+      assert.equal(valid.status, 201)
+      const { token } = await valid.json()
+      const result = await api.POST(request({ action: 'booking', token }))
+      const data = await result.json()
+      assert.equal(data.booking.amount_inr, 1350)
+      assert.equal(data.booking.coupon_applied, true)
+      assert.equal(data.booking.coupon_code, undefined)
+      assert.doesNotMatch(JSON.stringify(data), /QUANTIUM50/)
+    } finally { await pg.exec('rollback') }
+  })
 
   await t.test('registration rejects cross-origin, forged and honeypot requests', async () => {
     assert.equal((await api.POST(request({ ...registration, challenge: challenge() }, false, 'https://evil.example'))).status, 403)

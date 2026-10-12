@@ -118,7 +118,7 @@ export async function getPrivateHalloweenBooking(token: unknown) {
   if (!isPrivateToken(token)) throw new HalloweenError('Invalid private booking link.', 404)
   const db = getSupabaseAdmin()
   const { data: booking, error } = await db.from('halloween_bookings')
-    .select('id,booking_reference,contact_name,adult_count,child_count,amount_inr,payment_verified,transaction_reference,payment_submitted_at,confirmed_at')
+    .select('id,booking_reference,contact_name,adult_count,child_count,coupon_code,amount_inr,payment_verified,transaction_reference,payment_submitted_at,confirmed_at')
     .eq('event_id', HALLOWEEN_EVENT_ID).eq('private_access_token', token).maybeSingle()
   if (error) throw new HalloweenError('Booking is temporarily unavailable.', 503)
   if (!booking) throw new HalloweenError('Invalid private booking link.', 404)
@@ -130,7 +130,8 @@ export async function getPrivateHalloweenBooking(token: unknown) {
   if (ticketError) throw new HalloweenError('Tickets are temporarily unavailable.', 503)
   const { id: _id, ...publicBooking } = booking
   void _id
-  return { booking: publicBooking, event, tickets: tickets || [] }
+  const { coupon_code, ...bookingDetails } = publicBooking
+  return { booking: { ...bookingDetails, coupon_applied: Boolean(coupon_code) }, event, tickets: tickets || [] }
 }
 
 export function canonicalHalloweenOrigin(request?: Request) {

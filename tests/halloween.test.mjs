@@ -54,3 +54,25 @@ test('only trusted payment image protocols and complete confirmation details', (
   assert.match(text, /A configurable party name/)
   assert.match(text, /booking#private/)
 })
+
+const couponSandbox = { exports: {}, Error, require: spec => spec === 'server-only' ? {} : sandbox.exports }
+vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../lib/halloween-coupon-server.ts', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, couponSandbox)
+const { halloweenCouponPrice } = couponSandbox.exports
+
+test('Quantium coupon discounts paid tickets only and rejects invalid codes', () => {
+  for (const [adults, children, total] of [[1,1,450], [2,1,900], [2,2,900], [3,2,1350], [1,3,1350], [50,50,22500]]) {
+    assert.equal(halloweenCouponPrice(adults, children, ' quantium50 ').total, total)
+  }
+  assert.equal(halloweenCouponPrice(1, 1, 'QUANTIUM50').discount, 50)
+  assert.equal(halloweenCouponPrice(registration.adults, registration.children, 'quantium50').total, 1350)
+  assert.equal(validateHalloweenRegistration({ ...registration, couponCode: 'quantium50' }).couponCode, 'QUANTIUM50')
+  for (const code of ['INVALID', 50, {}, ['QUANTIUM50']]) assert.throws(() => halloweenCouponPrice(registration.adults, registration.children, code))
+})
+
+test('public registration UI and shared module do not reveal coupon or offer', () => {
+  for (const file of ['../lib/halloween.ts', '../components/HalloweenRegistration.tsx', '../components/HalloweenShared.tsx', '../components/HalloweenBooking.tsx', '../app/events/halloween/page.tsx']) {
+    const contents = readFileSync(new URL(file, import.meta.url), 'utf8')
+    assert.doesNotMatch(contents, /QUANTIUM50/)
+    if (file.endsWith('HalloweenRegistration.tsx') || file.endsWith('page.tsx')) assert.doesNotMatch(contents, /special treat|₹50 off/)
+  }
+})

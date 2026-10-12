@@ -1,3 +1,11 @@
+export function halloweenCoupon(value: unknown) {
+  if (value === undefined || value === null) return ''
+  if (typeof value !== 'string') throw new Error('Enter a valid coupon code.')
+  const code = value.trim().toUpperCase()
+  if (code.length > 40) throw new Error('Coupon code must be 40 characters or fewer.')
+  return code
+}
+
 export const HALLOWEEN_EVENT_ID = 'halloween-2026'
 export const HALLOWEEN_PATH = '/events/halloween'
 export const HALLOWEEN_VENUE = 'The Quantium School, Mokila, Hyderabad'
@@ -30,6 +38,7 @@ export type HalloweenBooking = {
   contact_name: string
   adult_count: number
   child_count: number
+  coupon_applied?: boolean
   amount_inr: number
   payment_verified: boolean
   transaction_reference: string | null
@@ -43,15 +52,16 @@ export type PrivateBooking = {
   tickets: HalloweenTicket[]
 }
 
-export function halloweenPrice(adults: number, children: number) {
+export function halloweenPrice(adults: number, children: number, discountApplied = false) {
   if (!Number.isInteger(adults) || !Number.isInteger(children) ||
       adults < 1 || children < 1 || adults > 50 || children > 50) {
     throw new Error('Choose between 1 and 50 adults and children.')
   }
   const includedAdults = Math.min(adults, children)
   const additionalAdults = Math.max(adults - children, 0)
-  return { childCharges: children * 500, includedAdults, additionalAdults,
-    adultCharges: additionalAdults * 500, total: (children + additionalAdults) * 500 }
+  const discount = discountApplied ? (children + additionalAdults) * 50 : 0
+  return { discount, childCharges: children * 500, includedAdults, additionalAdults,
+    adultCharges: additionalAdults * 500, total: (children + additionalAdults) * 500 - discount }
 }
 
 export function validateHalloweenRegistration(body: Record<string, unknown>) {
@@ -68,8 +78,9 @@ export function validateHalloweenRegistration(body: Record<string, unknown>) {
     throw new Error('Please reload the form and try again.')
   }
   if (typeof adults !== 'number' || typeof children !== 'number') throw new Error('Select adult and child counts.')
+  const couponCode = halloweenCoupon(body.couponCode)
   const price = halloweenPrice(adults, children)
-  return { contactName, email, whatsapp, adults, children, key, price }
+  return { contactName, email, whatsapp, adults, children, key, couponCode, price }
 }
 
 export function isPrivateToken(value: unknown): value is string {
