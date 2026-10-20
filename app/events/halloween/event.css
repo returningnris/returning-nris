@@ -71,7 +71,11 @@
 .halloween-poster-organisers { display: flex; align-items: center; justify-content: center; gap: .85rem; }
 .halloween-poster-organisers > img { display: block; width: 48%; height: auto; }
 .halloween-poster-organisers > .halloween-poster-pink-trips { width: 22%; }
-.halloween-poster-partners > p { margin: .65rem 0 0; font-size: clamp(.7rem, 1.1vw, .85rem); }
+.halloween-poster-school { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-top: .85rem; }
+.halloween-poster-school > span { color: #66566e; font-size: .7rem; }
+/* Show the supplied school logo from the original poster without its other credits. */
+.halloween-poster-school-logo { position: relative; overflow: hidden; width: 40%; max-width: 200px; aspect-ratio: 260 / 84; }
+.halloween-poster-school-logo > img { position: absolute; width: 559.231%; max-width: none; height: auto; left: -355.769%; top: -90.476%; }
 /* Crop only the embedded credits; keep the original party illustration intact. */
 .halloween-poster-artwork { overflow: hidden; }
 .halloween-poster-artwork > img { display: block; width: 100%; height: auto; margin-top: -11.7%; }

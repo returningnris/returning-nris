@@ -49,7 +49,12 @@ export default async function HalloweenPage() {
             <Image src="/returning-nris-wordmark.png" alt="Returning NRIs" width={902} height={193} sizes="(max-width: 720px) 42vw, 23vw" />
             <Image className="halloween-poster-pink-trips" src="/events/halloween/pink-trips.png" alt="Pink Trips" width={1447} height={1425} sizes="(max-width: 720px) 20vw, 10vw" />
           </div>
-          <p>Co-powered by <strong>The Quantium School</strong></p>
+          <div className="halloween-poster-school">
+            <span>Co-powered by</span>
+            <div className="halloween-poster-school-logo">
+              <Image src="/events/halloween/party-poster.png" alt="The Quantium School" width={1454} height={1082} sizes="(max-width: 720px) 100vw, 50vw" />
+            </div>
+          </div>
         </div>
         <div className="halloween-poster-artwork">
           <Image src="/events/halloween/party-poster.png" width={1454} height={1082} alt="Halloween Party — a family community event with friendly ghosts, glowing pumpkins and children in costumes." sizes="(max-width: 720px) 100vw, 50vw" preload />
