@@ -46,12 +46,16 @@ export default async function HalloweenPage() {
       </div><div className="halloween-poster">
         <div className="halloween-poster-artwork">
           <Image src="/events/halloween/partner-poster.png" width={1453} height={1082} alt="Halloween Party — a family community event by Returning NRIs and Pink Trips, co-powered by The Quantium School, with friendly ghosts, glowing pumpkins and children in costumes." sizes="(max-width: 720px) 100vw, 50vw" preload />
+          <div className="halloween-poster-brand">
+            <Image className="halloween-poster-brand-icon" src="/logo-returning-nris.png" alt="" width={1312} height={936} sizes="(max-width: 720px) 7vw, 4vw" />
+            <Image className="halloween-poster-brand-wordmark" src="/returning-nris-wordmark.png" alt="Returning NRIs" width={902} height={193} sizes="(max-width: 720px) 22vw, 11vw" />
+          </div>
         </div>
         <div className="halloween-poster-sponsors">
           <p>Our sponsors</p>
           <div>
-            <Image src="/events/halloween/aira-dental.jpeg" alt="Aira Dental Clinic" width={1024} height={1024} sizes="(max-width: 720px) 22vw, 10vw" />
-            <Image src="/events/halloween/the-drip-bar.png" alt="The Drip Bar, Kokapet, Hyderabad" width={228} height={211} sizes="(max-width: 720px) 22vw, 10vw" />
+            <Image src="/events/halloween/aira-dental.jpeg" alt="Aira Dental Clinic" width={1024} height={1024} sizes="48px" />
+            <Image src="/events/halloween/the-drip-bar.png" alt="The Drip Bar, Kokapet, Hyderabad" width={228} height={211} sizes="48px" />
           </div>
         </div>
       </div></div>
