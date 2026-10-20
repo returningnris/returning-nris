@@ -47,7 +47,6 @@ export default async function HalloweenPage() {
         <div className="halloween-poster-partners">
           <div className="halloween-poster-organisers">
             <Image src="/returning-nris-wordmark.png" alt="Returning NRIs" width={902} height={193} sizes="(max-width: 720px) 42vw, 23vw" />
-            <span>in partnership with</span>
             <Image className="halloween-poster-pink-trips" src="/events/halloween/pink-trips.png" alt="Pink Trips" width={1447} height={1425} sizes="(max-width: 720px) 20vw, 10vw" />
           </div>
           <p>Co-powered by <strong>The Quantium School</strong></p>

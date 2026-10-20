@@ -70,7 +70,6 @@
 .halloween-poster-partners { padding: 1rem 1.25rem .85rem; background: #fff; color: #281538; text-align: center; }
 .halloween-poster-organisers { display: flex; align-items: center; justify-content: center; gap: .85rem; }
 .halloween-poster-organisers > img { display: block; width: 48%; height: auto; }
-.halloween-poster-organisers > span { max-width: 5rem; font-size: .65rem; line-height: 1.4; color: #66566e; }
 .halloween-poster-organisers > .halloween-poster-pink-trips { width: 22%; }
 .halloween-poster-partners > p { margin: .65rem 0 0; font-size: clamp(.7rem, 1.1vw, .85rem); }
 /* Crop only the embedded credits; keep the original party illustration intact. */
