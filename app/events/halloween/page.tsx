@@ -44,20 +44,8 @@ export default async function HalloweenPage() {
       <div className="event-actions"><a href="#family-registration" className="btn-primary">Book your family’s spot</a><a href="#party-details" className="halloween-details-link">Explore the party ↓</a></div>
       <p className="halloween-price-note">₹500 per child · One adult per child enters free</p>
       </div><div className="halloween-poster">
-        <div className="halloween-poster-partners">
-          <div className="halloween-poster-organisers">
-            <Image src="/returning-nris-wordmark.png" alt="Returning NRIs" width={902} height={193} sizes="(max-width: 720px) 42vw, 23vw" />
-            <Image className="halloween-poster-pink-trips" src="/events/halloween/pink-trips.png" alt="Pink Trips" width={1447} height={1425} sizes="(max-width: 720px) 20vw, 10vw" />
-          </div>
-          <div className="halloween-poster-school">
-            <span>Co-powered by</span>
-            <div className="halloween-poster-school-logo">
-              <Image src="/events/halloween/party-poster.png" alt="The Quantium School" width={1454} height={1082} sizes="(max-width: 720px) 100vw, 50vw" />
-            </div>
-          </div>
-        </div>
         <div className="halloween-poster-artwork">
-          <Image src="/events/halloween/party-poster.png" width={1454} height={1082} alt="Halloween Party — a family community event with friendly ghosts, glowing pumpkins and children in costumes." sizes="(max-width: 720px) 100vw, 50vw" preload />
+          <Image src="/events/halloween/partner-poster.png" width={1453} height={1082} alt="Halloween Party — a family community event by Returning NRIs and Pink Trips, co-powered by The Quantium School, with friendly ghosts, glowing pumpkins and children in costumes." sizes="(max-width: 720px) 100vw, 50vw" preload />
         </div>
         <div className="halloween-poster-sponsors">
           <p>Our sponsors</p>
