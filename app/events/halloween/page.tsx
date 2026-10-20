@@ -44,8 +44,24 @@ export default async function HalloweenPage() {
       <div className="event-actions"><a href="#family-registration" className="btn-primary">Book your family’s spot</a><a href="#party-details" className="halloween-details-link">Explore the party ↓</a></div>
       <p className="halloween-price-note">₹500 per child · One adult per child enters free</p>
       </div><div className="halloween-poster">
-        <Image src="/events/halloween/party-poster.png" width={1454} height={1082} alt="Halloween Party with friendly ghosts, glowing pumpkins and children in costumes. Co-powered by The Quantium School." sizes="(max-width: 720px) 100vw, 50vw" preload />
-        <div className="halloween-poster-logo"><Image src="/returning-nris-wordmark.png" alt="Returning NRIs" width={902} height={193} sizes="(max-width: 720px) 30vw, 15vw" /></div>
+        <div className="halloween-poster-partners">
+          <div className="halloween-poster-organisers">
+            <Image src="/returning-nris-wordmark.png" alt="Returning NRIs" width={902} height={193} sizes="(max-width: 720px) 42vw, 23vw" />
+            <span>in partnership with</span>
+            <Image className="halloween-poster-pink-trips" src="/events/halloween/pink-trips.png" alt="Pink Trips" width={1447} height={1425} sizes="(max-width: 720px) 20vw, 10vw" />
+          </div>
+          <p>Co-powered by <strong>The Quantium School</strong></p>
+        </div>
+        <div className="halloween-poster-artwork">
+          <Image src="/events/halloween/party-poster.png" width={1454} height={1082} alt="Halloween Party — a family community event with friendly ghosts, glowing pumpkins and children in costumes." sizes="(max-width: 720px) 100vw, 50vw" preload />
+        </div>
+        <div className="halloween-poster-sponsors">
+          <p>Our sponsors</p>
+          <div>
+            <Image src="/events/halloween/aira-dental.jpeg" alt="Aira Dental Clinic" width={1024} height={1024} sizes="(max-width: 720px) 22vw, 10vw" />
+            <Image src="/events/halloween/the-drip-bar.png" alt="The Drip Bar, Kokapet, Hyderabad" width={228} height={211} sizes="(max-width: 720px) 22vw, 10vw" />
+          </div>
+        </div>
       </div></div>
     </div></header>
     <div className="event-shell"><BookingSteps step={1} /><div className="event-grid">

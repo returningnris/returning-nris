@@ -67,10 +67,19 @@
 .halloween-party-page .halloween-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 2.5rem; }
 .halloween-party-page h1 { color: #ffcf53; font-size: clamp(3rem, 5.5vw, 5rem); line-height: 1.04; text-shadow: 0 4px 0 #7f280d, 0 10px 28px #0e0527; }
 .halloween-poster { position: relative; border: 1px solid #9c58d7; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px #0d032b80, 0 0 40px #a445da30; }
-.halloween-poster > img { display: block; width: 100%; height: auto; }
-/* Cover the illustration’s generated wordmark with the official site asset. */
-.halloween-poster-logo { position: absolute; left: 19.7%; top: 7.2%; width: 29.6%; height: 7.6%; background: #fff; border-radius: 10px; display: flex; align-items: center; padding: 1%; }
-.halloween-poster-logo img { display: block; width: 100%; height: auto; }
+.halloween-poster-partners { padding: 1rem 1.25rem .85rem; background: #fff; color: #281538; text-align: center; }
+.halloween-poster-organisers { display: flex; align-items: center; justify-content: center; gap: .85rem; }
+.halloween-poster-organisers > img { display: block; width: 48%; height: auto; }
+.halloween-poster-organisers > span { max-width: 5rem; font-size: .65rem; line-height: 1.4; color: #66566e; }
+.halloween-poster-organisers > .halloween-poster-pink-trips { width: 22%; }
+.halloween-poster-partners > p { margin: .65rem 0 0; font-size: clamp(.7rem, 1.1vw, .85rem); }
+/* Crop only the embedded credits; keep the original party illustration intact. */
+.halloween-poster-artwork { overflow: hidden; }
+.halloween-poster-artwork > img { display: block; width: 100%; height: auto; margin-top: -11.7%; }
+.halloween-poster-sponsors { padding: .85rem 1rem 1rem; background: #fff; text-align: center; }
+.halloween-poster-sponsors > p { margin: 0 0 .65rem; color: #66566e; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; }
+.halloween-poster-sponsors > div { display: flex; justify-content: center; align-items: center; gap: 1.75rem; }
+.halloween-poster-sponsors img { display: block; width: 22%; max-width: 104px; height: auto; border-radius: 4px; }
 .halloween-party-page .event-card { background: #fffaf2; color: #281538; border-color: #e5c8f6; box-shadow: 0 12px 36px #0c042b40; }
 .halloween-party-page .event-card h2, .halloween-party-page .event-card h3 { color: #3d155c; }
 .halloween-party-page .event-card .section-label { color: #894214; }
@@ -90,7 +99,7 @@
 @media(max-width: 720px) {
   .halloween-party-page .halloween-hero-grid { grid-template-columns: 1fr; gap: 2rem; }
   .halloween-poster { max-width: 560px; width: 100%; margin: 0 auto; border-radius: 18px; }
-  .halloween-poster-logo { border-radius: 6px; }
+  .halloween-poster-organisers { gap: .5rem; }
   .halloween-party-page h1 { font-size: clamp(3rem, 12vw, 4.5rem); }
 }
 @media(max-width: 720px) {
