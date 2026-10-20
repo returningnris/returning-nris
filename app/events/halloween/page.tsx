@@ -54,8 +54,8 @@ export default async function HalloweenPage() {
         <div className="halloween-poster-sponsors">
           <p>Our sponsors</p>
           <div>
-            <Image src="/events/halloween/aira-dental.jpeg" alt="Aira Dental Clinic" width={1024} height={1024} sizes="48px" />
-            <Image src="/events/halloween/the-drip-bar.png" alt="The Drip Bar, Kokapet, Hyderabad" width={228} height={211} sizes="48px" />
+            <Image src="/events/halloween/aira-dental.jpeg" alt="Aira Dental Clinic" width={1024} height={1024} sizes="60px" />
+            <Image src="/events/halloween/the-drip-bar.png" alt="The Drip Bar, Kokapet, Hyderabad" width={228} height={211} sizes="60px" />
           </div>
         </div>
       </div></div>
