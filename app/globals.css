@@ -154,3 +154,25 @@ img {
   transform: translateY(-3px);
   border-color: rgba(26,18,8,0.2);
 }
+.planning-section { max-width: 1240px; margin: 0 auto; padding: 3rem 1.25rem; }
+.planning-card { display: flex; align-items: center; overflow: hidden; border: 1px solid #e8e2d9; border-radius: 24px; background: #fffaf3; }
+.planning-artwork { width: 50%; height: auto; object-fit: contain; }
+.planning-copy { flex: 1; min-width: 0; padding: clamp(1.5rem, 3vw, 3rem); }
+.planning-copy h2, .planning-testimonials h2 { color: #062c59; }
+.planning-copy > p, .planning-testimonials > p { color: #526476; line-height: 1.7; margin-bottom: 1rem; }
+.planning-copy .planning-rating { color: #062c59; font-weight: 700; font-size: .9rem; }
+.planning-rating span { color: #a95509; }
+.planning-copy .btn-primary { text-align: center; justify-content: center; }
+.planning-copy .planning-note { font-size: .8rem; margin: .8rem 0; }
+.planning-text-link { display: inline-block; color: #062c59; font-size: .9rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.planning-testimonials { margin-top: 2.5rem; }
+.planning-quotes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.planning-quotes figure { margin: 0; padding: 1.5rem; background: #f4f7fb; border-radius: 20px; }
+.planning-quotes blockquote { color: #062c59; font-size: 1.15rem; line-height: 1.6; margin: 0 0 1rem; }
+.planning-quotes figcaption { color: #526476; font-size: .8rem; }
+@media (max-width: 760px) {
+  .planning-card { flex-direction: column; align-items: stretch; }
+  .planning-artwork { width: 100%; }
+  .planning-quotes { grid-template-columns: 1fr; }
+  .planning-section { padding: 2rem 1rem; }
+}

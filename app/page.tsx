@@ -1,3 +1,5 @@
+import PlanningCall from '../components/PlanningCall'
+import { PLANNING_CALL_URL, PLANNING_SOCIAL_PROOF } from '../lib/planning-call'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -8,7 +10,7 @@ import { COMMUNITY_METRICS, JOURNEY_STEPS, WHY_RETURNING_NRIS } from '../lib/hom
 export const metadata: Metadata = {
   title: 'ReturningNRIs | Telugu Returning NRI Community',
   description:
-    'ReturningNRIs is a Telugu NRI community built by returned NRIs, helping Telugu families plan, move and settle back in India with practical guidance and real community support.',
+    'ReturningNRIs is a Telugu NRI community built by returned NRIs, helping families plan, move and settle back in India with practical guides, community support and 1:1 Return to India Planning calls.',
   keywords: ['Telugu Returning NRIs', 'Telugu NRI community', 'Telugu NRI returning to India', 'Returning NRI Hyderabad', 'Telugu families moving back to India'],
   alternates: { canonical: 'https://www.returningnris.com' },
   openGraph: {
@@ -91,9 +93,11 @@ export default function Home() {
               </p>
               <p style={{ color: '#062c59', fontSize: '.92rem', fontWeight: 700, marginBottom: '1.65rem' }}>Based in Hyderabad. Here for Telugu NRIs everywhere.</p>
               <div className="home-actions">
+                <a href={PLANNING_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary">Book a 1:1 Return to India Planning call ↗</a>
                 <Link href="/community#join-community" className="btn-secondary"><WhatsAppIcon size={18} />Join our WhatsApp community</Link>
                 <Link href="/planner" className="btn-ghost" style={{ borderColor: 'rgba(6, 44, 89, .25)', color: '#062c59' }}>Plan my return</Link>
               </div>
+              <p style={{ color: '#062c59', fontSize: '.85rem', fontWeight: 700, marginTop: '1rem' }}><span aria-hidden="true">★★★★★ </span>{PLANNING_SOCIAL_PROOF}</p>
               <div className="home-social-links">
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', color: '#062c59', fontSize: '.88rem', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: '4px' }}><InstagramIcon size={18} />Follow Instagram for Practical Tips</a>
                 <a href="https://www.youtube.com/@ReturningNRIs" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', color: '#062c59', fontSize: '.88rem', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: '4px' }}><YouTubeIcon size={18} />Returned NRIs Stories</a>
@@ -123,6 +127,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <PlanningCall testimonials />
 
       <section className="home-section">
         <div className="home-shell">
@@ -200,6 +206,7 @@ export default function Home() {
             <h2 style={{ color: '#fff', fontSize: 'clamp(2rem, 4vw, 3.25rem)', marginBottom: '.85rem' }}>Coming home is easier with your people.</h2>
             <p style={{ color: 'rgba(255,255,255,.75)', lineHeight: 1.7, maxWidth: '620px', margin: '0 auto 1.6rem' }}>Join Telugu families who are planning, moving, and settling back in India.</p>
             <div className="home-actions" style={{ justifyContent: 'center' }}>
+              <a href={PLANNING_CALL_URL} target="_blank" rel="noopener noreferrer" className="btn-primary">Book my 1:1 planning call ↗</a>
               <Link href="/community#join-community" className="btn-secondary"><WhatsAppIcon size={18} />Join the WhatsApp community</Link>
               <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,.35)' }}><InstagramIcon size={18} />Follow on Instagram</a>
             </div>

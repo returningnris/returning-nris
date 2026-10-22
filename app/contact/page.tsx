@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { PLANNING_CALL_URL } from '../../lib/planning-call'
 
 export const metadata: Metadata = {
   title: 'Contact Us | ReturningNRIs',
@@ -15,7 +16,6 @@ export const metadata: Metadata = {
 
 const emailAddress = 'returningnris@gmail.com'
 const emailHref = `mailto:${emailAddress}?subject=Question%20for%20ReturningNRIs`
-const topmateUrl = 'https://topmate.io/returningnris'
 
 export default function ContactPage() {
   return (
@@ -69,7 +69,7 @@ export default function ContactPage() {
             </p>
           </div>
           <a
-            href={topmateUrl}
+            href={PLANNING_CALL_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary"

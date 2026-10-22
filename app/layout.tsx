@@ -1,3 +1,5 @@
+import ContextualPlanningCall from '../components/ContextualPlanningCall'
+import { PLANNING_CALL_URL } from '../lib/planning-call'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -126,6 +128,7 @@ function Footer() {
             <Link href="/planner" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>
               Planner
             </Link>
+            <a href={PLANNING_CALL_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.9rem', color: 'var(--ink)' }}>1:1 Return to India Planning ↗</a>
             <Link href="/community" style={{ fontSize: '0.9rem', color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
               <WhatsAppIcon size={16} />
               Join Community
@@ -195,7 +198,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable}`}>
       <body suppressHydrationWarning style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <NavBar />
-        <main style={{ flex: 1 }}>{children}</main>
+        <main style={{ flex: 1 }}>{children}<ContextualPlanningCall /></main>
         <Footer />
         <HalloweenPopup />
       </body>

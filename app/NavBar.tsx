@@ -6,8 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import AuthButton from '../components/AuthButton'
 import { WhatsAppIcon } from '../lib/social-icons'
-
-const TOPMATE_URL = 'https://topmate.io/returningnris'
+import { PLANNING_CALL_URL } from '../lib/planning-call'
 
 const NAV_LINKS = [
   { href: '/', label: 'Start Here' },
@@ -142,7 +141,7 @@ export default function NavBar() {
               Join Community
             </Link>
             <a
-              href={TOPMATE_URL}
+              href={PLANNING_CALL_URL}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -240,7 +239,7 @@ export default function NavBar() {
                   Start Planner
                 </Link>
                 <a
-                  href={TOPMATE_URL}
+                  href={PLANNING_CALL_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setMobileOpen(false)}
