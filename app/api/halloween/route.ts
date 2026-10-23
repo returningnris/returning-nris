@@ -1,4 +1,4 @@
-import { halloweenCouponPrice } from '@/lib/halloween-coupon-server'
+import { halloweenCouponPrice, halloweenCouponOffer, halloweenCouponLimitMessage } from '@/lib/halloween-coupon-server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText, isPrivateToken, validateHalloweenRegistration } from '@/lib/halloween'
 import { canonicalHalloweenOrigin, getHalloweenEvent, getPrivateHalloweenBooking, HalloweenError,
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
         }
       }
       const { data: booking, error } = await db.from('halloween_bookings')
-        .select('id,booking_reference,contact_name,email,whatsapp_number,adult_count,child_count,amount_inr,transaction_reference,payment_verified,payment_submitted_at,payment_review_used_at')
+        .select('id,booking_reference,contact_name,email,whatsapp_number,adult_count,child_count,amount_inr,coupon_code,transaction_reference,payment_verified,payment_submitted_at,payment_review_used_at')
         .eq('event_id', HALLOWEEN_EVENT_ID).eq('payment_review_token', body.token).maybeSingle()
       if (error) throw new HalloweenError('Review is temporarily unavailable.', 503)
       if (!booking?.transaction_reference) throw new HalloweenError('Invalid review link.', 404)
@@ -43,9 +43,19 @@ export async function POST(request: Request) {
     if (body.action === 'coupon') {
       await halloweenRateLimit(request, 'coupon', 15, 900)
       try {
-        const price = halloweenCouponPrice(1, 1, body.couponCode)
-        return privateJson({ applied: price.discount > 0 })
+        const price = halloweenCouponPrice(body.adults === undefined ? 1 : body.adults as number, body.children === undefined ? 1 : body.children as number, body.couponCode)
+        const offer = halloweenCouponOffer(body.couponCode)
+        if (offer) {
+          const { count, error } = await db.from('halloween_bookings')
+            .select('id', { count: 'exact', head: true }).eq('event_id', HALLOWEEN_EVENT_ID).in('coupon_code', offer.code === 'AIRADENTAL250' ? ['AIRADENTAL250', 'AIRADENTAL200'] : offer.code === 'DRIPBAR250' ? ['DRIPBAR250', 'DRIPBAR200'] : [offer.code])
+          if (error) throw new HalloweenError('Coupon validation is temporarily unavailable. Please try again.', 503)
+          if ((count ?? 0) >= offer.bookingLimit) {
+            return privateJson({ error: halloweenCouponLimitMessage(body.couponCode), code: 'COUPON_LIMIT_EXCEEDED' }, 409)
+          }
+        }
+        return privateJson({ applied: price.discount > 0, offer })
       } catch (error) {
+        if (error instanceof HalloweenError) throw error
         return privateJson({ error: error instanceof Error ? error.message : 'Check your coupon code.', code: 'INVALID_COUPON' }, 400)
       }
     }
@@ -64,6 +74,7 @@ export async function POST(request: Request) {
         p_whatsapp_number: input.whatsapp, p_adult_count: input.adults, p_child_count: input.children, p_coupon_code: input.couponCode,
       })
       if (error) {
+        if (error.message.includes('Coupon limit exceeded')) return privateJson({ error: halloweenCouponLimitMessage(input.couponCode), code: 'COUPON_LIMIT_EXCEEDED' }, 409)
         if (error.message.includes('Registration is not open')) throw new HalloweenError('Registration is not open yet.', 409)
         if (error.message.includes('Idempotency key')) throw new HalloweenError('This booking attempt already exists with different details. Resume it or start a new booking.', 409)
         throw new HalloweenError('We could not save your booking. Please retry using the same form.', 503)
@@ -109,7 +120,7 @@ export async function POST(request: Request) {
       const reference = typeof body.reference === 'string' ? body.reference.trim().toUpperCase() : ''
       if (!/^HW26-\d{8}$/.test(reference)) throw new HalloweenError('Enter a booking reference such as HW26-00000001.')
       const { data: booking, error } = await db.from('halloween_bookings')
-        .select('id,booking_reference,contact_name,adult_count,child_count,amount_inr,payment_verified,transaction_reference,private_access_token,whatsapp_number')
+        .select('id,booking_reference,contact_name,adult_count,child_count,amount_inr,coupon_code,payment_verified,transaction_reference,private_access_token,whatsapp_number')
         .eq('event_id', HALLOWEEN_EVENT_ID).eq('booking_reference', reference).maybeSingle()
       if (error) throw new HalloweenError('Booking lookup is temporarily unavailable.', 503)
       if (!booking) throw new HalloweenError('Booking not found.', 404)
@@ -132,7 +143,7 @@ export async function POST(request: Request) {
       }
       return privateJson({ booking: { booking_reference: booking.booking_reference, contact_name: booking.contact_name,
         adult_count: booking.adult_count, child_count: booking.child_count, amount_inr: booking.amount_inr,
-        payment_verified: booking.payment_verified }, notification, reference_reused: reused, whatsapp_url: whatsappUrl })
+        payment_verified: booking.payment_verified, coupon_code: booking.coupon_code }, notification, reference_reused: reused, whatsapp_url: whatsappUrl })
     }
     throw new HalloweenError('Unknown request.')
   } catch (error) { return halloweenFailure(error) }

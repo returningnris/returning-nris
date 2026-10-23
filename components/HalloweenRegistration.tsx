@@ -19,6 +19,7 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
   const [children, setChildren] = useState(1)
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState('')
+  const [offer, setOffer] = useState<{ discountPerTicket: number; bookingLimit: number; label: string } | null>(null)
   const [couponBusy, setCouponBusy] = useState(false)
   const [couponError, setCouponError] = useState('')
   const [challenge, setChallenge] = useState('')
@@ -55,7 +56,8 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
     if (couponBusy || busy) return
     setCouponBusy(true); setCouponError(''); setAppliedCoupon('')
     try {
-      const result = await halloweenRequest<{ applied: boolean }>({ action: 'coupon', couponCode })
+      const result = await halloweenRequest<{ applied: boolean; offer: typeof offer }>({ action: 'coupon', couponCode, adults, children })
+      setOffer(result.offer)
       if (result.applied) setAppliedCoupon(couponCode.trim().toUpperCase())
     } catch (err) { setCouponError(err instanceof Error ? err.message : 'Could not validate your coupon. Please try again.') }
     finally { setCouponBusy(false) }
@@ -76,7 +78,8 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
       try { localStorage.setItem(resumeKey, token); sessionStorage.removeItem(draftKey) } catch { /* The private URL is the durable fallback. */ }
       window.location.assign(`${HALLOWEEN_PATH}/booking#${token}`)
     } catch (err) {
-      if (err instanceof HalloweenRequestError && err.code === 'INVALID_COUPON') {
+      if (err instanceof HalloweenRequestError && (err.code === 'INVALID_COUPON' || err.code === 'COUPON_LIMIT_EXCEEDED')) {
+        setAppliedCoupon('')
         setAttempt(null)
         try { sessionStorage.removeItem(draftKey) } catch { /* In-memory attempt is cleared too. */ }
       }
@@ -107,8 +110,8 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
       <button type="button" className="btn-ghost" disabled={couponBusy || busy || !couponCode.trim()} onClick={() => void applyCoupon()}>{couponBusy ? 'Checking coupon…' : 'Apply coupon'}</button>
       <p className="event-muted">Validate your coupon to see the updated price. No contact details needed.</p>
       {couponError && <p role="alert" className="event-notice event-error">{couponError}</p>}
-      {appliedCoupon && <p role="status" className="event-notice event-success">A special treat for The Quantium School families! ₹50 off each paid ticket has been applied.</p>}
-      <PriceBreakdown adults={adults} childCount={children} discountApplied={!!appliedCoupon} />
+      {appliedCoupon && <p role="status" className="event-notice event-success">{offer?.label}: ₹{offer?.discountPerTicket} off each paid ticket has been applied. Limited to {offer?.bookingLimit} bookings with this code; availability is checked again when you book.</p>}
+      <PriceBreakdown adults={adults} childCount={children} discountApplied={!!appliedCoupon} discountPerTicket={offer?.discountPerTicket} />
       <div className="event-honeypot" aria-hidden="true"><label>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} /></label></div>
       {error && <p role="alert" className="event-notice event-error">{error}</p>}
       <p className="event-muted">By continuing to payment, you agree to the Halloween Party <Link href={HALLOWEEN_TERMS_PATH} className="event-link" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</Link>.</p>

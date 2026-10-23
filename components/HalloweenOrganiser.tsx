@@ -9,7 +9,7 @@ import { parseHalloweenTicket, type HalloweenBooking } from '@/lib/halloween'
 import { EventLinks } from './HalloweenShared'
 
 type Checkin = { status: string; category?: string; label?: string; booking_reference?: string; adult_count?: number; child_count?: number; checked_in_at?: string; ticket_identifier?: string }
-type Confirmation = { booking: Pick<HalloweenBooking, 'booking_reference' | 'contact_name' | 'adult_count' | 'child_count' | 'amount_inr' | 'payment_verified'>;
+type Confirmation = { booking: { coupon_code: string } & Pick<HalloweenBooking, 'booking_reference' | 'contact_name' | 'adult_count' | 'child_count' | 'amount_inr' | 'payment_verified'>;
   notification: { status: string; attempts: number; last_error: string | null } | null; reference_reused: boolean; whatsapp_url: string | null }
 async function organiserRequest<T>(body: Record<string, unknown>) {
   const { data: { session } } = await supabase.auth.getSession()
@@ -229,7 +229,7 @@ export default function HalloweenOrganiser({ ticketPage = false }: { ticketPage?
       <form className="event-form" onSubmit={findConfirmation}><label>Booking reference<input required maxLength={13} placeholder="HW26-00000001" value={reference} onChange={e => { setReference(e.target.value); setConfirmation(null) }} /></label>
         <button className="btn-ghost" disabled={busy}>{busy ? 'Finding booking…' : 'Find booking'}</button></form>
       {confirmation && <div className="event-stack">
-        <p><strong>{confirmation.booking.contact_name}</strong> · {confirmation.booking.booking_reference}<br />{confirmation.booking.adult_count} adults · {confirmation.booking.child_count} children · ₹{confirmation.booking.amount_inr.toLocaleString('en-IN')}</p>
+        <p><strong>{confirmation.booking.contact_name} · Coupon: {confirmation.booking.coupon_code || 'None'}</strong> · {confirmation.booking.booking_reference}<br />{confirmation.booking.adult_count} adults · {confirmation.booking.child_count} children · ₹{confirmation.booking.amount_inr.toLocaleString('en-IN')}</p>
         <p className={confirmation.booking.payment_verified ? 'event-notice event-success' : 'event-notice'}>{confirmation.booking.payment_verified ? 'Payment verified' : 'Payment not verified — approve only after bank reconciliation'}</p>
         {confirmation.reference_reused && <p className="event-notice event-error">This payment reference is used on another booking. Review it in Supabase.</p>}
         <p className="event-muted">Email: {confirmation.notification?.status === 'sent' ? 'Accepted by the email provider' : confirmation.notification?.status?.replaceAll('_', ' ') || 'Not queued'}{confirmation.notification ? ` · ${confirmation.notification.attempts} attempt(s)` : ''}</p>

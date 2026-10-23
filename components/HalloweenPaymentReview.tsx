@@ -6,7 +6,7 @@ import { halloweenRequest } from '@/lib/halloween-client'
 import { isPrivateToken } from '@/lib/halloween'
 
 type Review = { booking: { booking_reference: string; contact_name: string; email: string; whatsapp_number: string;
-  adult_count: number; child_count: number; amount_inr: number; transaction_reference: string; payment_verified: boolean }; reference_reused: boolean }
+  coupon_code: string; adult_count: number; child_count: number; amount_inr: number; transaction_reference: string; payment_verified: boolean }; reference_reused: boolean }
 
 export default function HalloweenPaymentReview() {
   const [review, setReview] = useState<Review | null>(null)
@@ -40,6 +40,7 @@ export default function HalloweenPaymentReview() {
     {!review && !error && <p>Loading payment details…</p>}
     {booking && <section className="event-card event-stack"><h2>{booking.booking_reference}</h2>
       <p><strong>{booking.contact_name}</strong><br />{booking.email}<br />WhatsApp: {booking.whatsapp_number}</p>
+      <p>Coupon: <strong>{booking.coupon_code || 'None'}</strong></p>
       <p>{booking.adult_count} adults · {booking.child_count} children</p>
       <p>Amount to verify: <strong>₹{booking.amount_inr.toLocaleString('en-IN')}</strong><br />UPI reference: <strong>{booking.transaction_reference}</strong></p>
       {booking.payment_verified ? <p role="status" className="event-notice event-success">Payment verified. The family confirmation email is handled by the existing scheduled email flow. Repeated approval does not create another ticket or email.</p> : <>

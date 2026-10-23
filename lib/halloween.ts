@@ -52,14 +52,15 @@ export type PrivateBooking = {
   tickets: HalloweenTicket[]
 }
 
-export function halloweenPrice(adults: number, children: number, discountApplied = false) {
+export function halloweenPrice(adults: number, children: number, discountApplied: boolean | number = false) {
   if (!Number.isInteger(adults) || !Number.isInteger(children) ||
       adults < 1 || children < 1 || adults > 50 || children > 50) {
     throw new Error('Choose between 1 and 50 adults and children.')
   }
   const includedAdults = Math.min(adults, children)
   const additionalAdults = Math.max(adults - children, 0)
-  const discount = discountApplied ? (children + additionalAdults) * 50 : 0
+  const discountPerTicket = typeof discountApplied === 'number' ? discountApplied : discountApplied ? 250 : 0
+  const discount = (children + additionalAdults) * discountPerTicket
   return { discount, childCharges: children * 500, includedAdults, additionalAdults,
     adultCharges: additionalAdults * 500, total: (children + additionalAdults) * 500 - discount }
 }

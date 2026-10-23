@@ -63,19 +63,19 @@ vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../lib/halloween-cou
 const { halloweenCouponPrice } = couponSandbox.exports
 
 test('Quantium coupon discounts paid tickets only and rejects invalid codes', () => {
-  for (const [adults, children, total] of [[1,1,450], [2,1,900], [2,2,900], [3,2,1350], [1,3,1350], [50,50,22500]]) {
-    assert.equal(halloweenCouponPrice(adults, children, ' quantium50 ').total, total)
+  for (const [adults, children, total] of [[1,1,250], [2,1,500], [2,2,500], [3,2,750], [1,3,750], [50,50,12500]]) {
+    assert.equal(halloweenCouponPrice(adults, children, ' quantium250 ').total, total)
   }
-  assert.equal(halloweenCouponPrice(1, 1, 'QUANTIUM50').discount, 50)
-  assert.equal(halloweenCouponPrice(registration.adults, registration.children, 'quantium50').total, 1350)
-  assert.equal(validateHalloweenRegistration({ ...registration, couponCode: 'quantium50' }).couponCode, 'QUANTIUM50')
-  for (const code of ['INVALID', 50, {}, ['QUANTIUM50']]) assert.throws(() => halloweenCouponPrice(registration.adults, registration.children, code))
+  assert.equal(halloweenCouponPrice(1, 1, 'QUANTIUM250').discount, 250)
+  assert.equal(halloweenCouponPrice(registration.adults, registration.children, 'quantium250').total, 750)
+  assert.equal(validateHalloweenRegistration({ ...registration, couponCode: 'quantium250' }).couponCode, 'QUANTIUM250')
+  for (const code of ['QUANTIUM50', 'AIRADENTAL200', 'DRIPBAR200', 'INVALID', 50, {}, ['QUANTIUM250']]) assert.throws(() => halloweenCouponPrice(registration.adults, registration.children, code))
 })
 
 test('public registration UI and shared module do not reveal coupon or offer', () => {
   for (const file of ['../lib/halloween.ts', '../components/HalloweenRegistration.tsx', '../components/HalloweenShared.tsx', '../components/HalloweenBooking.tsx', '../app/events/halloween/page.tsx']) {
     const contents = readFileSync(new URL(file, import.meta.url), 'utf8')
-    assert.doesNotMatch(contents, /QUANTIUM50/)
+    assert.doesNotMatch(contents, /QUANTIUM250/)
     if (file.endsWith('page.tsx')) assert.doesNotMatch(contents, /special treat|₹50 off/)
   }
 })
@@ -95,4 +95,27 @@ test('family price breakdown renders discounted unit charges and stored payment 
   const family = renderToStaticMarkup(createElement(shared.exports.PriceBreakdown, { adults: 3, childCount: 2, discountApplied: true, totalInr: 1350 }))
   assert.match(family, /<span>Total<\/span><span>₹1,350<\/span>/)
   assert.match(family, /You save ₹150/)
+})
+
+
+test('new coupon breakdown displays 250 rupees per paid ticket', () => {
+  const nativeRequire = createRequire(import.meta.url)
+  const shared = { exports: {}, Error, require: spec => spec === '@/lib/halloween' ? sandbox.exports : spec === 'next/link' ? {} : nativeRequire(spec) }
+  vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../components/HalloweenShared.tsx', import.meta.url), 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
+  }).outputText, shared)
+  const html = renderToStaticMarkup(createElement(shared.exports.PriceBreakdown, { adults: 3, childCount: 2, discountApplied: true }))
+  assert.match(html, /× ₹250/)
+  assert.match(html, /You save ₹750/)
+  assert.match(html, /<span>Total<\/span><span>₹750<\/span>/)
+})
+
+
+test('sponsor coupons apply 250 rupees to every paid ticket', () => {
+  for (const code of [' airadental250 ', ' dripbar250 ']) {
+    assert.equal(halloweenCouponPrice(1, 1, code).total, 250)
+    assert.equal(halloweenCouponPrice(3, 2, code).total, 750)
+    assert.equal(halloweenCouponPrice(1, 3, code).discount, 750)
+    assert.equal(halloweenCouponPrice(50, 50, code).total, 12500)
+  }
 })

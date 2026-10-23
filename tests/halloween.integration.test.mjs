@@ -30,6 +30,27 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   await pg.exec(readFileSync(join(root, 'supabase/tests/halloween-event.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610120001_halloween_quantium_discount.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610120002_halloween_organiser_review.sql'), 'utf8'))
+  await pg.exec(`insert into public.halloween_bookings(event_id, idempotency_key, contact_name, email, whatsapp_number, adult_count, child_count, coupon_code)
+    values ('halloween-2026', '20000000-0000-4000-8000-000000000001', 'Legacy family', 'legacy@example.com', '+919876543210', 3, 2, 'QUANTIUM50')`)
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610230001_halloween_quantium250_limit.sql'), 'utf8'))
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610230002_halloween_sponsor_booking_limits.sql'), 'utf8'))
+  for (const oldCode of ['AIRADENTAL200', 'DRIPBAR200']) {
+    await pg.query(`insert into public.halloween_bookings(event_id,idempotency_key,contact_name,email,whatsapp_number,adult_count,child_count,coupon_code)
+      select 'halloween-2026',gen_random_uuid(),'Legacy sponsor','legacy@example.com','+919876543210',1,1,$1 from generate_series(1,10)`, [oldCode])
+  }
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610230003_halloween_sponsor250.sql'), 'utf8'))
+  for (const [oldCode, newCode] of [['AIRADENTAL200', 'AIRADENTAL250'], ['DRIPBAR200', 'DRIPBAR250']]) {
+    assert.equal((await pg.query('select amount_inr from public.halloween_bookings where coupon_code=$1', [oldCode])).rows[0].amount_inr, 300)
+    await assert.rejects(pg.query(`insert into public.halloween_bookings(event_id,idempotency_key,contact_name,email,whatsapp_number,adult_count,child_count,coupon_code)
+      values ('halloween-2026',gen_random_uuid(),'New sponsor','new@example.com','+919876543210',1,1,$1)`, [newCode]), /Coupon limit exceeded/)
+  }
+  for (const code of ['QUANTIUM50', 'AIRADENTAL200', 'DRIPBAR200']) {
+    await assert.rejects(pg.query(`insert into public.halloween_bookings(event_id,idempotency_key,contact_name,email,whatsapp_number,adult_count,child_count,coupon_code)
+      values ('halloween-2026',gen_random_uuid(),'Retired code','old@example.com','+919876543210',1,1,$1)`, [code]), /Invalid coupon code/)
+  }
+  await pg.exec("delete from public.halloween_bookings where coupon_code in ('AIRADENTAL200','DRIPBAR200')")
+  assert.equal((await pg.query("select amount_inr from public.halloween_bookings where coupon_code='QUANTIUM50'")).rows[0].amount_inr, 1350)
+  await pg.exec("delete from public.halloween_bookings where coupon_code='QUANTIUM50'")
   await pg.exec(`update public.halloween_events set venue='Isolated Test Venue',timings='Test only',upi_id='test@example',
     payment_recipient_name='Test only',payment_qr_image_url='/test-qr.png',registration_open=true;
     insert into public.halloween_organisers(user_id) values('${organiserId}');`)
@@ -39,10 +60,10 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     try {
       const key = '9c03013a-b784-43d5-a43c-41982d65b4a1'
       const args = `'${key}', 'Quantium family', 'quantium@example.com', '+919876543210', 3, 2`
-      const { rows } = await pg.query(`select * from public.halloween_register(${args}, ' quantium50 ')`)
-      assert.equal(rows[0].amount_inr, 1350)
-      assert.equal(rows[0].coupon_code, 'QUANTIUM50')
-      const retry = await pg.query(`select * from public.halloween_register(${args}, 'QUANTIUM50')`)
+      const { rows } = await pg.query(`select * from public.halloween_register(${args}, ' quantium250 ')`)
+      assert.equal(rows[0].amount_inr, 750)
+      assert.equal(rows[0].coupon_code, 'QUANTIUM250')
+      const retry = await pg.query(`select * from public.halloween_register(${args}, 'QUANTIUM250')`)
       assert.equal(retry.rows[0].id, rows[0].id)
       await pg.exec('savepoint invalid_coupon')
       await assert.rejects(pg.query(`select * from public.halloween_register(${args}, 'INVALID')`), /Invalid coupon/)
@@ -61,6 +82,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     update(values) { this.operation = 'update'; this.patch = values; return this }
     delete() { this.operation = 'delete'; return this }
     filter(column, operator, value) { this.values.push(value); this.filters.push(`${column} ${operator} $${this.values.length}`); return this }
+    in(c,values) { this.filters.push(`${c} in (${values.map(value => { this.values.push(value); return '$' + this.values.length }).join(',')})`); return this }
     eq(c,v) { return this.filter(c,'=',v) }
     gt(c,v) { return this.filter(c,'>',v) }
     gte(c,v) { return this.filter(c,'>=',v) }
@@ -171,7 +193,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
 
   await t.test('coupon preview needs no contact details and creates no booking', async () => {
     const before = await pg.query('select count(*) from public.halloween_bookings')
-    const valid = await api.POST(request({ action: 'coupon', couponCode: ' quantium50 ' }))
+    const valid = await api.POST(request({ action: 'coupon', couponCode: ' quantium250 ' }))
     assert.equal(valid.status, 200)
     assert.equal((await valid.json()).applied, true)
     const invalid = await api.POST(request({ action: 'coupon', couponCode: 'INVALID' }))
@@ -179,7 +201,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     assert.equal((await invalid.json()).code, 'INVALID_COUPON')
     const empty = await api.POST(request({ action: 'coupon', couponCode: '' }))
     assert.equal((await empty.json()).applied, false)
-    assert.equal((await api.POST(request({ action: 'coupon', couponCode: 'QUANTIUM50' }, false, 'https://evil.example'))).status, 403)
+    assert.equal((await api.POST(request({ action: 'coupon', couponCode: 'QUANTIUM250' }, false, 'https://evil.example'))).status, 403)
     const after = await pg.query('select count(*) from public.halloween_bookings')
     assert.equal(after.rows[0].count, before.rows[0].count)
   })
@@ -191,17 +213,64 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
       const invalid = await api.POST(request(draft))
       assert.equal(invalid.status, 400)
       assert.equal((await invalid.json()).code, 'INVALID_COUPON')
-      const valid = await api.POST(request({ ...draft, couponCode: ' quantium50 ' }))
+      const valid = await api.POST(request({ ...draft, couponCode: ' quantium250 ' }))
       assert.equal(valid.status, 201)
       const { token } = await valid.json()
       const result = await api.POST(request({ action: 'booking', token }))
       const data = await result.json()
-      assert.equal(data.booking.amount_inr, 1350)
+      assert.equal(data.booking.amount_inr, 750)
       assert.equal(data.booking.coupon_applied, true)
       assert.equal(data.booking.coupon_code, undefined)
-      assert.doesNotMatch(JSON.stringify(data), /QUANTIUM50/)
+      assert.doesNotMatch(JSON.stringify(data), /QUANTIUM250/)
     } finally { await pg.exec('rollback') }
   })
+
+  for (const [code, limit, unitPrice] of [['QUANTIUM250', 30, 250], ['AIRADENTAL250', 10, 250], ['DRIPBAR250', 10, 250]]) {
+    await t.test(`${code} counts bookings, preserves attribution and rejects stale coupon use at ${limit}`, async () => {
+      await pg.exec('begin')
+      try {
+        // Every family has 50 paid tickets, but each consumes only one booking.
+        await pg.query(`select public.halloween_register(gen_random_uuid(), 'Limit family', 'limit@example.com', '+919876543210', 50, 50, $1) from generate_series(1, $2::integer)`, [code, limit - 1])
+        const preview = await api.POST(request({ action: 'coupon', couponCode: code, adults: 50, children: 50 }))
+        assert.equal(preview.status, 200)
+        const offer = (await preview.json()).offer
+        assert.equal(offer.discountPerTicket, 500 - unitPrice)
+        assert.equal(offer.bookingLimit, limit)
+        const draft = { ...registration, adults: 50, children: 50, couponCode: code, challenge: challenge() }
+        const last = await api.POST(request(draft))
+        assert.equal(last.status, 201)
+        const { token } = await last.json()
+        const stored = (await pg.query('select * from public.halloween_bookings where private_access_token=$1', [token])).rows[0]
+        assert.equal(stored.coupon_code, code)
+        assert.equal(stored.amount_inr, 50 * unitPrice)
+        const lookup = await api.POST(request({ action: 'confirmation', reference: stored.booking_reference }, true))
+        assert.equal(lookup.status, 200)
+        assert.equal((await lookup.json()).booking.coupon_code, code)
+        const denied = await api.POST(request({ action: 'confirmation', reference: stored.booking_reference }))
+        assert.notEqual(denied.status, 200)
+        const retry = await api.POST(request(draft))
+        assert.equal(retry.status, 201)
+        assert.equal((await retry.json()).token, token)
+        const exhausted = await api.POST(request({ action: 'coupon', couponCode: code }))
+        assert.equal(exhausted.status, 409)
+        assert.equal((await exhausted.json()).code, 'COUPON_LIMIT_EXCEEDED')
+        await pg.exec('savepoint full_capacity')
+        const stale = await api.POST(request({ ...draft, idempotencyKey: '10000000-0000-4000-8000-000000000002' }))
+        assert.equal(stale.status, 409)
+        assert.equal((await stale.json()).code, 'COUPON_LIMIT_EXCEEDED')
+        await pg.exec('rollback to savepoint full_capacity')
+        const regular = await api.POST(request({ ...draft, couponCode: '', idempotencyKey: '10000000-0000-4000-8000-000000000003' }))
+        assert.equal(regular.status, 201)
+        const otherCode = code === 'DRIPBAR250' ? 'AIRADENTAL250' : 'DRIPBAR250'
+        const other = await api.POST(request({ ...draft, couponCode: otherCode, idempotencyKey: '10000000-0000-4000-8000-000000000004' }))
+        assert.equal(other.status, 201)
+        await pg.exec(readFileSync(join(root, 'supabase/halloween-coupon-analytics.sql'), 'utf8'))
+        await pg.exec('savepoint direct_insert')
+        await assert.rejects(pg.query(`insert into public.halloween_bookings(event_id, idempotency_key, contact_name, email, whatsapp_number, adult_count, child_count, coupon_code) values ('halloween-2026', gen_random_uuid(), 'Direct booking', 'limit@example.com', '+919876543210', 1, 1, $1)`, [code]), /Coupon limit exceeded/)
+        await pg.exec('rollback to savepoint direct_insert')
+      } finally { await pg.exec('rollback') }
+    })
+  }
 
   await t.test('registration rejects cross-origin, forged and honeypot requests', async () => {
     assert.equal((await api.POST(request({ ...registration, challenge: challenge() }, false, 'https://evil.example'))).status, 403)

@@ -106,9 +106,21 @@ These run real PostgreSQL triggers/functions plus actual server endpoint/worker 
 
 `tests/halloween-browser-fixture.mjs` is an optional local-only visual QA backend with test event values, an in-memory database and fake Auth. It generates a temporary `public/halloween-ui-test-only-qr.png` test asset and removes it on normal exit. Do not commit that asset. Point a separate local dev process at `http://127.0.0.1:54399` with fake Supabase keys, `SITE_URL=http://localhost:3001`, and `RESEND_API_KEY` empty. Never point deployed code at this fixture.
 
-## Quantium school family coupon
+## Family and sponsor coupons
 
-Apply `supabase/migrations/202610120001_halloween_quantium_discount.sql` in Supabase before deploying the updated site. Share **QUANTIUM50** with The Quantium School families: ₹50 off each paid child or additional-adult ticket (₹450 instead of ₹500). Included adults remain free. The code is case-insensitive, validated only on the server, saved with the booking, and included in retry validation. The public page shows only a generic optional coupon field; the Quantium discount message appears after successful coupon validation on registration and on the private payment page. The Apply coupon button validates without contact details; changing the code clears the preview. Pricing updates with attendee counts, and the payment breakdown uses the stored booking total. Share the code privately with families. Existing bookings keep their original totals. This is a shareable code, without school-affiliation verification.
+Apply `supabase/migrations/202610230001_halloween_quantium250_limit.sql`, then `supabase/migrations/202610230002_halloween_sponsor_booking_limits.sql` before deploying this update, after the earlier migrations. Then apply `supabase/migrations/202610230003_halloween_sponsor250.sql` for the active ₹250 sponsor codes.
+
+| Code | Discount per paid ticket | Booking limit |
+| --- | --- | --- |
+| QUANTIUM250 | ₹250 | 30 |
+| AIRADENTAL250 | ₹250 | 10 |
+| DRIPBAR250 | ₹250 | 10 |
+
+Each family booking counts once, regardless of its ticket count. Each code has its own allocation, including bookings awaiting payment. Included adults remain free. Existing QUANTIUM250 bookings count toward its 30-booking allocation. QUANTIUM50, AIRADENTAL200 and DRIPBAR200 are retired and rejected for new use. Historical bookings retain their original totals and code attribution. Earlier sponsor bookings count toward the corresponding sponsor’s 10-booking limit; QUANTIUM50 bookings do not consume these allocations. The analytics summary groups old and new sponsor codes together, while the per-booking report shows the actual code. Coupon validation previews availability; database locking and a trigger enforce capacity when booking, including stale previews and direct inserts. Retries do not consume another booking. An exhausted code displays “Coupon limit exceeded”; full-price bookings remain available. Share the case-insensitive codes privately; no affiliation verification is performed.
+
+### Coupon analytics
+
+The stored `halloween_bookings.coupon_code` identifies the code for every booking (blank means no coupon). Organisers can see it in the **Send confirmation** booking lookup and the private payment-review page. Run `supabase/halloween-coupon-analytics.sql` in the Supabase SQL Editor for a per-booking report and totals per code: bookings used/remaining, paid tickets, savings, verified bookings and verified revenue. Export query results as CSV for further analysis. Guest responses do not reveal stored coupon codes.
 
 ## Organiser payment review emails
 

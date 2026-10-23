@@ -83,7 +83,7 @@ export default function HalloweenBooking() {
     <BookingSteps step={booking.payment_verified ? 3 : 2} />
     {error && <p role="alert" className="event-notice event-error">{error}</p>}
     {notice && <p role="status" className="event-notice">{notice}</p>}
-    {booking.coupon_applied && <p className="event-notice event-success">A special treat for The Quantium School families! Your family discount is applied: ₹50 off each paid ticket. Your total includes savings of ₹{(Math.max(booking.adult_count, booking.child_count) * 50).toLocaleString('en-IN')}.</p>}
+    {booking.coupon_applied && <p className="event-notice event-success">Your coupon discount is applied: ₹{500 - booking.amount_inr / Math.max(booking.adult_count, booking.child_count)} off each paid ticket. Your total includes savings of ₹{(Math.max(booking.adult_count, booking.child_count) * 500 - booking.amount_inr).toLocaleString('en-IN')}.</p>}
     {booking.payment_verified ? <>
       <div className="event-notice event-success"><strong>Payment verified · ₹{booking.amount_inr.toLocaleString('en-IN')}</strong><p>One QR code covers all {booking.adult_count} adults and {booking.child_count} children in this registration.</p></div>
       {tickets.length !== 1 && <p className="event-notice">Your family ticket is temporarily unavailable. Please wait for the next automatic update or contact the organiser with your booking reference.</p>}
