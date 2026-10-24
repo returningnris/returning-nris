@@ -64,3 +64,11 @@ test('organiser email contains registration details and a private review link, w
   assert.ok(!result.html.includes('<script>'))
   assert.ok(!result.html.includes('/booking#'))
 })
+
+test('complimentary confirmation welcomes invitees without claiming a payment', () => {
+  const html = halloweenEmailHtml({ ...booking, amount_inr: 0 }, event, 'https://example.com', 'https://example.com/private')
+  assert.match(html, /invited guests/)
+  assert.match(html, /no payment needed/)
+  assert.match(html, /View your family ticket/)
+  assert.doesNotMatch(html, /Your payment has been verified|Payment confirmed|Payment verified/)
+})

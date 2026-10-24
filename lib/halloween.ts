@@ -106,7 +106,7 @@ export function parseHalloweenTicket(value: string, origin: string) {
 }
 
 export function confirmationText(booking: Pick<HalloweenBooking, 'booking_reference' | 'adult_count' | 'child_count' | 'amount_inr'>, event: HalloweenEvent, privateLink: string) {
-  return `${event.name}\nBooking: ${booking.booking_reference}\nPayment verified: ₹${booking.amount_inr.toLocaleString('en-IN')}\n${booking.adult_count} adult(s) · ${booking.child_count} child(ren)\n31 October 2026 · ${event.timings || 'Timings to be announced'} (Asia/Kolkata)\nVenue: ${event.venue || 'To be announced'}\nYour family ticket: ${privateLink}\nKeep this link private. One QR code covers your entire registered group. Please arrive together for check-in.`
+  return `${event.name}\nBooking: ${booking.booking_reference}\n${booking.amount_inr === 0 ? 'Special guest registration confirmed · Complimentary. No payment needed.' : `Payment verified: ₹${booking.amount_inr.toLocaleString('en-IN')}`}\n${booking.adult_count} adult(s) · ${booking.child_count} child(ren)\n31 October 2026 · ${event.timings || 'Timings to be announced'} (Asia/Kolkata)\nVenue: ${event.venue || 'To be announced'}\nYour family ticket: ${privateLink}\nKeep this link private. One QR code covers your entire registered group. Please arrive together for check-in.`
 }
 
 export function paymentPendingText(booking: Pick<HalloweenBooking, 'booking_reference' | 'amount_inr'>, event: HalloweenEvent) {

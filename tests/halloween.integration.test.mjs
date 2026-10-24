@@ -39,6 +39,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
       select 'halloween-2026',gen_random_uuid(),'Legacy sponsor','legacy@example.com','+919876543210',1,1,$1 from generate_series(1,10)`, [oldCode])
   }
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610230003_halloween_sponsor250.sql'), 'utf8'))
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610240001_halloween_special_invite.sql'), 'utf8'))
   for (const [oldCode, newCode] of [['AIRADENTAL200', 'AIRADENTAL250'], ['DRIPBAR200', 'DRIPBAR250']]) {
     assert.equal((await pg.query('select amount_inr from public.halloween_bookings where coupon_code=$1', [oldCode])).rows[0].amount_inr, 300)
     await assert.rejects(pg.query(`insert into public.halloween_bookings(event_id,idempotency_key,contact_name,email,whatsapp_number,adult_count,child_count,coupon_code)
@@ -54,6 +55,22 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   await pg.exec(`update public.halloween_events set venue='Isolated Test Venue',timings='Test only',upi_id='test@example',
     payment_recipient_name='Test only',payment_qr_image_url='/test-qr.png',registration_open=true;
     insert into public.halloween_organisers(user_id) values('${organiserId}');`)
+
+  await t.test('special invitation confirms a free family ticket without payment and retries safely', async () => {
+    await pg.exec('begin')
+    try {
+      const args = "'84663ac2-a250-41e0-bf7c-27bd6cd329f1','Invited family','vip@example.com','+919876543210',4,2,' spookyvip2026 '"
+      const { rows: [booking] } = await pg.query(`select * from public.halloween_register(${args})`)
+      assert.equal(booking.amount_inr, 0)
+      assert.equal(booking.payment_verified, true)
+      assert.equal(booking.transaction_reference, null)
+      assert.equal((await pg.query('select * from public.halloween_tickets where booking_id=$1', [booking.id])).rows.length, 1)
+      assert.equal((await pg.query('select * from public.halloween_notification_outbox where booking_id=$1', [booking.id])).rows.length, 1)
+      assert.equal((await pg.query(`select * from public.halloween_register(${args})`)).rows[0].id, booking.id)
+      await pg.query('update public.halloween_bookings set payment_verified=false where id=$1', [booking.id])
+      assert.equal((await pg.query(`select * from public.halloween_register(${args})`)).rows[0].payment_verified, false)
+    } finally { await pg.exec('rollback') }
+  })
 
   await t.test('Quantium SQL pricing, retries, invalid codes and existing totals', async () => {
     await pg.exec('begin')

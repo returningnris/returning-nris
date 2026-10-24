@@ -19,7 +19,7 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
   const [children, setChildren] = useState(1)
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState('')
-  const [offer, setOffer] = useState<{ discountPerTicket: number; bookingLimit: number; label: string } | null>(null)
+  const [offer, setOffer] = useState<{ discountPerTicket: number; bookingLimit: number | null; label: string } | null>(null)
   const [couponBusy, setCouponBusy] = useState(false)
   const [couponError, setCouponError] = useState('')
   const [challenge, setChallenge] = useState('')
@@ -51,6 +51,8 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
     void initialise()
     return () => { active = false }
   }, [])
+
+  const complimentary = !!appliedCoupon && offer?.discountPerTicket === 500
 
   async function applyCoupon() {
     if (couponBusy || busy) return
@@ -110,13 +112,13 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
       <button type="button" className="btn-ghost" disabled={couponBusy || busy || !couponCode.trim()} onClick={() => void applyCoupon()}>{couponBusy ? 'Checking coupon…' : 'Apply coupon'}</button>
       <p className="event-muted">Validate your coupon to see the updated price. No contact details needed.</p>
       {couponError && <p role="alert" className="event-notice event-error">{couponError}</p>}
-      {appliedCoupon && <p role="status" className="event-notice event-success">{offer?.label}: ₹{offer?.discountPerTicket} off each paid ticket has been applied. Limited to {offer?.bookingLimit} bookings with this code; availability is checked again when you book.</p>}
+      {appliedCoupon && <p role="status" className="event-notice event-success">{complimentary ? <>You’re on our special guest list! We’re delighted to welcome your family. Your entire family’s registration is on us — ₹0, with no payment needed. Complete your registration below to receive your family QR ticket. Food is available for purchase separately.</> : <>{offer?.label}: ₹{offer?.discountPerTicket} off each paid ticket has been applied. Limited to {offer?.bookingLimit} bookings with this code; availability is checked again when you book.</>}</p>}
       <PriceBreakdown adults={adults} childCount={children} discountApplied={!!appliedCoupon} discountPerTicket={offer?.discountPerTicket} />
       <div className="event-honeypot" aria-hidden="true"><label>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} /></label></div>
       {error && <p role="alert" className="event-notice event-error">{error}</p>}
-      <p className="event-muted">By continuing to payment, you agree to the Halloween Party <Link href={HALLOWEEN_TERMS_PATH} className="event-link" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</Link>.</p>
-      <button className="btn-secondary" disabled={busy || couponBusy || !challenge} type="submit">{busy ? 'Saving your booking…' : attempt ? 'Retry this booking' : 'Continue to payment'}</button>
-      <p className="event-muted">Your booking is confirmed after the organiser verifies the bank payment. We do not add you to marketing lists.</p>
+      <p className="event-muted">By completing your registration, you agree to the Halloween Party <Link href={HALLOWEEN_TERMS_PATH} className="event-link" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</Link>.</p>
+      <button className="btn-secondary" disabled={busy || couponBusy || !challenge} type="submit">{busy ? 'Saving your booking…' : attempt ? 'Retry this booking' : complimentary ? 'Confirm my complimentary registration' : 'Continue to payment'}</button>
+      <p className="event-muted">{complimentary ? 'Your family ticket will be ready as soon as you register.' : 'Your booking is confirmed after the organiser verifies the bank payment.'} We do not add you to marketing lists.</p>
     </form>
   </div>
 }

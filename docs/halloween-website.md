@@ -129,3 +129,9 @@ Apply `supabase/migrations/202610120002_halloween_organiser_review.sql` before d
 The organiser email includes contact name, email, WhatsApp, adults, children, the saved amount and UPI reference. Its private link opens `/events/halloween/payment-review#TOKEN`. No sign-in is required: possession of this separate booking-specific link authorises approval, so do not forward it. It expires 7 days after payment-reference submission. Opening the email link or review page never changes payment status; tick the bank-receipt checkbox and press **Confirm payment received** after reconciliation. Approval locks the booking, rejects changed amounts/references and duplicate references, updates `payment_verified`, and uses the existing trigger to create one family ticket and queue its confirmation email. Repeat approval is safe; a consumed link cannot reapprove a subsequently revoked payment. Expired or flagged bookings can still be reviewed in Supabase Table Editor.
 
 Keep existing Resend and worker scheduling configuration. No new environment variables are required. Receipt emails and family confirmations are sent on the scheduler's next run.
+
+## Complimentary special invitations
+
+Apply `supabase/migrations/202610240001_halloween_special_invite.sql` after `202610230003`, then deploy the website changes. Share `SPOOKYVIP2026` privately with special invitees. It covers every registered adult and child, including additional adults, with a ₹0 total and no payment or manual approval required. Food remains available for purchase separately. No booking cap was requested; this invitation has no coupon-specific cap. Anyone with the code can redeem it.
+
+Registration automatically confirms the booking using the existing family ticket and confirmation email outbox. Retrying a registration does not create another ticket or override an organiser’s revocation. Existing sponsor codes and historical booking totals are preserved.

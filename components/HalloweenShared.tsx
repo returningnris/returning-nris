@@ -8,9 +8,9 @@ export function EventDetails({ event }: { event: HalloweenEvent }) {
   </div>
 }
 
-export function BookingSteps({ step }: { step: number }) {
+export function BookingSteps({ step, complimentary = false }: { step: number; complimentary?: boolean }) {
   return <nav aria-label="Booking steps" className="event-steps">
-    {[['Register', 'Your family details'], ['Pay by UPI', 'Submit your reference'], ['Get your QR', 'One for the whole booking']].map(([title, description], i) =>
+    {[['Register', 'Your family details'], [complimentary ? 'Our treat' : 'Pay by UPI', complimentary ? 'No payment needed' : 'Submit your reference'], ['Get your QR', 'One for the whole booking']].map(([title, description], i) =>
       <div key={title} className="event-step" aria-current={step === i + 1 ? 'step' : undefined}>
         <strong>{i + 1}. {title}</strong><span>{description}</span>
       </div>)}

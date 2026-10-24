@@ -80,12 +80,13 @@ export default function HalloweenBooking() {
     <header className={booking.payment_verified ? 'halloween-confirmation-hero halloween-themed-hero' : undefined}><div><div className="section-label">Your private family booking</div><h1 className="section-title">{booking.payment_verified ? 'Your family ticket is ready' : booking.transaction_reference ? 'Your payment is pending verification' : 'Pay here'}</h1>
       <p className="event-muted">{event.name} · Booking <strong>{booking.booking_reference}</strong></p><EventDetails event={event} /></div>
       {booking.payment_verified && <HalloweenArtwork animated className="halloween-confirmation-art" />}</header>
-    <BookingSteps step={booking.payment_verified ? 3 : 2} />
+    <BookingSteps step={booking.payment_verified ? 3 : 2} complimentary={booking.amount_inr === 0} />
     {error && <p role="alert" className="event-notice event-error">{error}</p>}
     {notice && <p role="status" className="event-notice">{notice}</p>}
-    {booking.coupon_applied && <p className="event-notice event-success">Your coupon discount is applied: ₹{500 - booking.amount_inr / Math.max(booking.adult_count, booking.child_count)} off each paid ticket. Your total includes savings of ₹{(Math.max(booking.adult_count, booking.child_count) * 500 - booking.amount_inr).toLocaleString('en-IN')}.</p>}
+    {booking.amount_inr === 0 && <p className="event-notice event-success"><strong>A special welcome to your family!</strong> You’re joining us as our invited guests. Your entire registration is complimentary — ₹0, with no payment needed. We can’t wait to celebrate with you! Food is available for purchase separately.</p>}
+    {booking.coupon_applied && booking.amount_inr > 0 && <p className="event-notice event-success">Your coupon discount is applied: ₹{500 - booking.amount_inr / Math.max(booking.adult_count, booking.child_count)} off each paid ticket. Your total includes savings of ₹{(Math.max(booking.adult_count, booking.child_count) * 500 - booking.amount_inr).toLocaleString('en-IN')}.</p>}
     {booking.payment_verified ? <>
-      <div className="event-notice event-success"><strong>Payment verified · ₹{booking.amount_inr.toLocaleString('en-IN')}</strong><p>One QR code covers all {booking.adult_count} adults and {booking.child_count} children in this registration.</p></div>
+      <div className="event-notice event-success"><strong>{booking.amount_inr === 0 ? 'Special guest registration confirmed · Complimentary' : `Payment verified · ₹${booking.amount_inr.toLocaleString('en-IN')}`}</strong><p>One QR code covers all {booking.adult_count} adults and {booking.child_count} children in this registration.</p></div>
       {tickets.length !== 1 && <p className="event-notice">Your family ticket is temporarily unavailable. Please wait for the next automatic update or contact the organiser with your booking reference.</p>}
       <div style={{ maxWidth: 440, width: '100%', margin: '0 auto' }}>{tickets.map(ticket => <FamilyTicket key={ticket.ticket_identifier} ticket={ticket} bookingReference={booking.booking_reference} event={event} adults={booking.adult_count} childCount={booking.child_count} />)}</div>
       <p className="event-muted">Please arrive together. The organiser checks in the whole booking once. Download this QR before travelling; the entrance also accepts the ticket identifier.</p>

@@ -119,3 +119,8 @@ test('sponsor coupons apply 250 rupees to every paid ticket', () => {
     assert.equal(halloweenCouponPrice(50, 50, code).total, 12500)
   }
 })
+
+ test('special invitation covers all children and additional adults', () => {
+  assert.equal(halloweenCouponPrice(4, 2, ' spookyvip2026 ').total, 0)
+  assert.equal(halloweenCouponPrice(1, 5, 'SPOOKYVIP2026').total, 0)
+})

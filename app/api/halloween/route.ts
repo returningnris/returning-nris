@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       try {
         const price = halloweenCouponPrice(body.adults === undefined ? 1 : body.adults as number, body.children === undefined ? 1 : body.children as number, body.couponCode)
         const offer = halloweenCouponOffer(body.couponCode)
-        if (offer) {
+        if (offer && offer.bookingLimit !== null) {
           const { count, error } = await db.from('halloween_bookings')
             .select('id', { count: 'exact', head: true }).eq('event_id', HALLOWEEN_EVENT_ID).in('coupon_code', offer.code === 'AIRADENTAL250' ? ['AIRADENTAL250', 'AIRADENTAL200'] : offer.code === 'DRIPBAR250' ? ['DRIPBAR250', 'DRIPBAR200'] : [offer.code])
           if (error) throw new HalloweenError('Coupon validation is temporarily unavailable. Please try again.', 503)
