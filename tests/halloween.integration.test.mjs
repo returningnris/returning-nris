@@ -40,6 +40,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   }
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610230003_halloween_sponsor250.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610240001_halloween_special_invite.sql'), 'utf8'))
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610240002_halloween_vip_limit.sql'), 'utf8'))
   for (const [oldCode, newCode] of [['AIRADENTAL200', 'AIRADENTAL250'], ['DRIPBAR200', 'DRIPBAR250']]) {
     assert.equal((await pg.query('select amount_inr from public.halloween_bookings where coupon_code=$1', [oldCode])).rows[0].amount_inr, 300)
     await assert.rejects(pg.query(`insert into public.halloween_bookings(event_id,idempotency_key,contact_name,email,whatsapp_number,adult_count,child_count,coupon_code)
@@ -242,7 +243,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     } finally { await pg.exec('rollback') }
   })
 
-  for (const [code, limit, unitPrice] of [['QUANTIUM250', 30, 250], ['AIRADENTAL250', 10, 250], ['DRIPBAR250', 10, 250]]) {
+  for (const [code, limit, unitPrice] of [['QUANTIUM250', 30, 250], ['AIRADENTAL250', 10, 250], ['DRIPBAR250', 10, 250], ['SPOOKYVIP2026', 20, 0]]) {
     await t.test(`${code} counts bookings, preserves attribution and rejects stale coupon use at ${limit}`, async () => {
       await pg.exec('begin')
       try {

@@ -11,7 +11,7 @@ order by created_at desc;
 
 -- Summary per code. Export either query result as CSV from Supabase.
 with offers(code, booking_limit) as (
-  values ('QUANTIUM250', 30), ('AIRADENTAL250', 10), ('DRIPBAR250', 10), ('SPOOKYVIP2026', null::integer)
+  values ('QUANTIUM250', 30), ('AIRADENTAL250', 10), ('DRIPBAR250', 10), ('SPOOKYVIP2026', 20)
 ), totals as (
   select case coupon_code when 'AIRADENTAL200' then 'AIRADENTAL250' when 'DRIPBAR200' then 'DRIPBAR250' else coupon_code end as coupon_code, count(*) as bookings,
     count(*) filter (where payment_verified) as verified_bookings,

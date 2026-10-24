@@ -132,6 +132,6 @@ Keep existing Resend and worker scheduling configuration. No new environment var
 
 ## Complimentary special invitations
 
-Apply `supabase/migrations/202610240001_halloween_special_invite.sql` after `202610230003`, then deploy the website changes. Share `SPOOKYVIP2026` privately with special invitees. It covers every registered adult and child, including additional adults, with a ₹0 total and no payment or manual approval required. Food remains available for purchase separately. No booking cap was requested; this invitation has no coupon-specific cap. Anyone with the code can redeem it.
+Apply `supabase/migrations/202610240001_halloween_special_invite.sql` after `202610230003`, then deploy the website changes. Share `SPOOKYVIP2026` privately with special invitees. It covers every registered adult and child, including additional adults, with a ₹0 total and no payment or manual approval required. Food remains available for purchase separately. Apply `supabase/migrations/202610240002_halloween_vip_limit.sql` after the invitation migration to limit this code to 20 family registrations (one booking per family, regardless of party size). The API preview and database enforce the cap, including existing bookings. Anyone with the code can redeem it.
 
 Registration automatically confirms the booking using the existing family ticket and confirmation email outbox. Retrying a registration does not create another ticket or override an organiser’s revocation. Existing sponsor codes and historical booking totals are preserved.
