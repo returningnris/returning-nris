@@ -83,8 +83,10 @@ function AuthPageContent() {
     e.preventDefault()
     setSignInError('')
 
-    if (!signInData.email || !signInData.email.includes('@')) {
-      setSignInError('Please enter a valid email address.')
+    const identifier = signInData.email.trim()
+    const email = identifier.toLowerCase() === 'halloween' ? 'halloween@returningnris.com' : identifier
+    if (!email || !email.includes('@')) {
+      setSignInError('Please enter your email address or check-in username.')
       return
     }
 
@@ -97,7 +99,7 @@ function AuthPageContent() {
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email: signInData.email.trim(),
+        email,
         password: signInData.password,
       })
 
@@ -386,13 +388,14 @@ function AuthPageContent() {
 
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700, color: T.soft, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-                  Email
+                  Email or username
                 </label>
                 <input
-                  type="email"
+                  type="text"
+                  autoComplete="username"
                   value={signInData.email}
                   onChange={(e) => setSignInData((prev) => ({ ...prev, email: e.target.value }))}
-                  placeholder="you@example.com"
+                  placeholder="you@example.com or halloween"
                   style={fieldStyle()}
                 />
               </div>
