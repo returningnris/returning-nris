@@ -80,7 +80,10 @@ export async function POST(request: Request) {
         throw new HalloweenError('We could not save your booking. Please retry using the same form.', 503)
       }
       const booking = Array.isArray(data) ? data[0] : data
-      if (!booking || booking.amount_inr !== input.price.total || !isPrivateToken(booking.private_access_token)) {
+      // Retries of an existing standard booking must retain its original child rate.
+      const expectedTotal = booking?.child_price_inr === 500 && !input.couponCode
+        ? input.price.total - Math.max(input.adults, input.children) * 250 : input.price.total
+      if (!booking || booking.amount_inr !== expectedTotal || !isPrivateToken(booking.private_access_token)) {
         throw new HalloweenError('We could not verify your booking. Please contact the organiser.', 503)
       }
       return privateJson({ token: booking.private_access_token }, 201)

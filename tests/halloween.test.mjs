@@ -16,10 +16,12 @@ vm.runInNewContext(source, sandbox)
 const { halloweenPrice, validateHalloweenRegistration, isPrivateToken, parseHalloweenTicket, paymentImageUrl, confirmationText } = sandbox.exports
 
 test('all required family pricing examples and extra children', () => {
-  for (const [a, c, expected] of [[1,1,500], [2,1,1000], [2,2,1000], [3,2,1500], [1,3,1500]]) {
+  for (const [a, c, expected] of [[1,1,750], [2,1,1500], [2,2,1500], [3,2,2250], [1,3,2250]]) {
     assert.equal(halloweenPrice(a,c).total, expected)
   }
   assert.equal(halloweenPrice(2,3).includedAdults, 2)
+  assert.equal(halloweenPrice(3,2).childCharges, 1500)
+  assert.equal(halloweenPrice(3,2).adultCharges, 750)
   for (const [a,c] of [[0,1],[1,0],[-1,1],[1.5,2],[51,1],[NaN,1]]) assert.throws(() => halloweenPrice(a,c))
 })
 
@@ -30,7 +32,7 @@ test('normalises contact fields and ignores an attacker-supplied amount', () => 
   assert.equal(result.contactName, 'Family Contact')
   assert.equal(result.email, 'family@example.com')
   assert.equal(result.whatsapp, '+919876543210')
-  assert.equal(result.price.total, 1500)
+  assert.equal(result.price.total, 2250)
   for (const change of [{ email: 'bad' }, { whatsapp: '9876543210' }, { contactName: 'a' },
     { idempotencyKey: 'guessable' }, { adults: '2' }]) assert.throws(() => validateHalloweenRegistration({ ...registration, ...change }))
 })
@@ -62,14 +64,11 @@ const couponSandbox = { exports: {}, Error, require: spec => spec === 'server-on
 vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../lib/halloween-coupon-server.ts', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, couponSandbox)
 const { halloweenCouponPrice } = couponSandbox.exports
 
-test('Quantium coupon discounts paid tickets only and rejects invalid codes', () => {
-  for (const [adults, children, total] of [[1,1,250], [2,1,500], [2,2,500], [3,2,750], [1,3,750], [50,50,12500]]) {
-    assert.equal(halloweenCouponPrice(adults, children, ' quantium250 ').total, total)
+test('retired coupons are rejected and standard pricing remains available', () => {
+  for (const code of ['QUANTIUM50', 'QUANTIUM250', 'AIRADENTAL200', 'DRIPBAR200', 'AIRADENTAL250', 'DRIPBAR250', 'INVALID', 50, {}, ['QUANTIUM250']]) {
+    assert.throws(() => halloweenCouponPrice(3, 2, code))
   }
-  assert.equal(halloweenCouponPrice(1, 1, 'QUANTIUM250').discount, 250)
-  assert.equal(halloweenCouponPrice(registration.adults, registration.children, 'quantium250').total, 750)
-  assert.equal(validateHalloweenRegistration({ ...registration, couponCode: 'quantium250' }).couponCode, 'QUANTIUM250')
-  for (const code of ['QUANTIUM50', 'AIRADENTAL200', 'DRIPBAR200', 'INVALID', 50, {}, ['QUANTIUM250']]) assert.throws(() => halloweenCouponPrice(registration.adults, registration.children, code))
+  assert.equal(halloweenCouponPrice(3, 2, '').total, 2250)
 })
 
 test('public registration UI and shared module do not reveal coupon or offer', () => {
@@ -95,6 +94,14 @@ test('family price breakdown renders discounted unit charges and stored payment 
   const family = renderToStaticMarkup(createElement(shared.exports.PriceBreakdown, { adults: 3, childCount: 2, discountApplied: true, totalInr: 1350 }))
   assert.match(family, /<span>Total<\/span><span>₹1,350<\/span>/)
   assert.match(family, /You save ₹150/)
+  const revised = renderToStaticMarkup(createElement(shared.exports.PriceBreakdown, { adults: 3, childCount: 2, totalInr: 2250 }))
+  assert.match(revised, /2 children × ₹750/)
+  assert.match(revised, /1 additional adult × ₹750/)
+  assert.match(revised, /<span>Total<\/span><span>₹2,250<\/span>/)
+  assert.doesNotMatch(revised, /You save/)
+  const legacy = renderToStaticMarkup(createElement(shared.exports.PriceBreakdown, { adults: 3, childCount: 2, totalInr: 1500 }))
+  assert.match(legacy, /2 children × ₹500/)
+  assert.match(legacy, /<span>Total<\/span><span>₹1,500<\/span>/)
 })
 
 
@@ -110,15 +117,6 @@ test('new coupon breakdown displays 250 rupees per paid ticket', () => {
   assert.match(html, /<span>Total<\/span><span>₹750<\/span>/)
 })
 
-
-test('sponsor coupons apply 250 rupees to every paid ticket', () => {
-  for (const code of [' airadental250 ', ' dripbar250 ']) {
-    assert.equal(halloweenCouponPrice(1, 1, code).total, 250)
-    assert.equal(halloweenCouponPrice(3, 2, code).total, 750)
-    assert.equal(halloweenCouponPrice(1, 3, code).discount, 750)
-    assert.equal(halloweenCouponPrice(50, 50, code).total, 12500)
-  }
-})
 
  test('special invitation covers all children and additional adults', () => {
   assert.equal(halloweenCouponPrice(4, 2, ' spookyvip2026 ').total, 0)

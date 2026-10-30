@@ -3,7 +3,7 @@
 select booking_reference, created_at, contact_name, email,
   nullif(coupon_code, '') as coupon_code,
   adult_count, child_count, greatest(adult_count, child_count) as paid_tickets,
-  amount_inr, greatest(adult_count, child_count) * 500 - amount_inr as discount_inr,
+  amount_inr, child_count * child_price_inr + greatest(adult_count - child_count, 0) * child_price_inr - amount_inr as discount_inr,
   payment_verified, payment_submitted_at
 from public.halloween_bookings
 where event_id = 'halloween-2026'
@@ -16,7 +16,7 @@ with offers(code, booking_limit) as (
   select case coupon_code when 'AIRADENTAL200' then 'AIRADENTAL250' when 'DRIPBAR200' then 'DRIPBAR250' else coupon_code end as coupon_code, count(*) as bookings,
     count(*) filter (where payment_verified) as verified_bookings,
     sum(greatest(adult_count, child_count)) as paid_tickets,
-    sum(greatest(adult_count, child_count) * 500 - amount_inr) as discount_inr,
+    sum(child_count * child_price_inr + greatest(adult_count - child_count, 0) * child_price_inr - amount_inr) as discount_inr,
     sum(amount_inr) filter (where payment_verified) as verified_revenue_inr
   from public.halloween_bookings where event_id = 'halloween-2026'
   group by 1

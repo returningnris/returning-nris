@@ -41,6 +41,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610230003_halloween_sponsor250.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610240001_halloween_special_invite.sql'), 'utf8'))
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610240002_halloween_vip_limit.sql'), 'utf8'))
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610300001_halloween_child_price.sql'), 'utf8'))
   for (const [oldCode, newCode] of [['AIRADENTAL200', 'AIRADENTAL250'], ['DRIPBAR200', 'DRIPBAR250']]) {
     assert.equal((await pg.query('select amount_inr from public.halloween_bookings where coupon_code=$1', [oldCode])).rows[0].amount_inr, 300)
     await assert.rejects(pg.query(`insert into public.halloween_bookings(event_id,idempotency_key,contact_name,email,whatsapp_number,adult_count,child_count,coupon_code)
@@ -89,9 +90,13 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
       await assert.rejects(pg.query(`select * from public.halloween_register(${args}, '')`), /Idempotency key/)
       await pg.exec('rollback to savepoint invalid_coupon')
       const fullPrice = await pg.query(`select * from public.halloween_register('a1ea805d-844f-4991-97e2-7a1b010f2d23', 'Regular family', 'regular@example.com', '+919876543210', 3, 2)`)
-      assert.equal(fullPrice.rows[0].amount_inr, 1500)
+      assert.equal(fullPrice.rows[0].amount_inr, 2250)
     } finally { await pg.exec('rollback') }
   })
+
+  const priorCouponBookings = await pg.query("select id, coupon_code, amount_inr from public.halloween_bookings where coupon_code <> '' order by id")
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610300002_halloween_disable_coupons.sql'), 'utf8'))
+  assert.deepEqual((await pg.query("select id, coupon_code, amount_inr from public.halloween_bookings where coupon_code <> '' order by id")).rows, priorCouponBookings.rows)
 
   // Minimal Supabase query adapter, backed by real PostgreSQL constraints and functions.
   class Query {
@@ -209,9 +214,18 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   let bookingId
   let ticket
 
+  await t.test('disabled coupons cannot be used through preview, registration RPC or direct inserts', async () => {
+    for (const code of ['QUANTIUM50', 'QUANTIUM250', 'AIRADENTAL200', 'AIRADENTAL250', 'DRIPBAR200', 'DRIPBAR250']) {
+      assert.equal((await api.POST(request({ action: 'coupon', couponCode: code }))).status, 400)
+      assert.equal((await api.POST(request({ ...registration, couponCode: code, challenge: challenge() }))).status, 400)
+      await assert.rejects(pg.query(`select public.halloween_register(gen_random_uuid(), 'Disabled coupon', 'disabled@example.com', '+919876543210', 1, 1, $1)`, [code]), /Invalid coupon code/)
+      await assert.rejects(pg.query(`insert into public.halloween_bookings(event_id,idempotency_key,contact_name,email,whatsapp_number,adult_count,child_count,coupon_code)
+        values ('halloween-2026',gen_random_uuid(),'Disabled coupon','disabled@example.com','+919876543210',1,1,$1)`, [code]), /Invalid coupon code/)
+    }
+  })
   await t.test('coupon preview needs no contact details and creates no booking', async () => {
     const before = await pg.query('select count(*) from public.halloween_bookings')
-    const valid = await api.POST(request({ action: 'coupon', couponCode: ' quantium250 ' }))
+    const valid = await api.POST(request({ action: 'coupon', couponCode: ' spookyvip2026 ' }))
     assert.equal(valid.status, 200)
     assert.equal((await valid.json()).applied, true)
     const invalid = await api.POST(request({ action: 'coupon', couponCode: 'INVALID' }))
@@ -231,19 +245,19 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
       const invalid = await api.POST(request(draft))
       assert.equal(invalid.status, 400)
       assert.equal((await invalid.json()).code, 'INVALID_COUPON')
-      const valid = await api.POST(request({ ...draft, couponCode: ' quantium250 ' }))
+      const valid = await api.POST(request({ ...draft, couponCode: ' spookyvip2026 ' }))
       assert.equal(valid.status, 201)
       const { token } = await valid.json()
       const result = await api.POST(request({ action: 'booking', token }))
       const data = await result.json()
-      assert.equal(data.booking.amount_inr, 750)
+      assert.equal(data.booking.amount_inr, 0)
       assert.equal(data.booking.coupon_applied, true)
       assert.equal(data.booking.coupon_code, undefined)
       assert.doesNotMatch(JSON.stringify(data), /QUANTIUM250/)
     } finally { await pg.exec('rollback') }
   })
 
-  for (const [code, limit, unitPrice] of [['QUANTIUM250', 30, 250], ['AIRADENTAL250', 10, 250], ['DRIPBAR250', 10, 250], ['SPOOKYVIP2026', 20, 0]]) {
+  for (const [code, limit, unitPrice] of [['SPOOKYVIP2026', 20, 0]]) {
     await t.test(`${code} counts bookings, preserves attribution and rejects stale coupon use at ${limit}`, async () => {
       await pg.exec('begin')
       try {
@@ -281,7 +295,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
         assert.equal(regular.status, 201)
         const otherCode = code === 'DRIPBAR250' ? 'AIRADENTAL250' : 'DRIPBAR250'
         const other = await api.POST(request({ ...draft, couponCode: otherCode, idempotencyKey: '10000000-0000-4000-8000-000000000004' }))
-        assert.equal(other.status, 201)
+        assert.equal(other.status, 400)
         await pg.exec(readFileSync(join(root, 'supabase/halloween-coupon-analytics.sql'), 'utf8'))
         await pg.exec('savepoint direct_insert')
         await assert.rejects(pg.query(`insert into public.halloween_bookings(event_id, idempotency_key, contact_name, email, whatsapp_number, adult_count, child_count, coupon_code) values ('halloween-2026', gen_random_uuid(), 'Direct booking', 'limit@example.com', '+919876543210', 1, 1, $1)`, [code]), /Coupon limit exceeded/)
@@ -295,6 +309,19 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     assert.equal((await api.POST(request({ ...registration, challenge: 'forged' }))).status, 400)
     assert.equal((await api.POST(request({ ...registration, challenge: challenge(), website: 'spam' }))).status, 400)
   })
+  await t.test('a retry of a legacy standard booking preserves its original price', async () => {
+    await pg.exec('begin')
+    try {
+      const key = '10000000-0000-4000-8000-000000000088'
+      await pg.query(`insert into public.halloween_bookings(event_id,idempotency_key,contact_name,email,whatsapp_number,adult_count,child_count,child_price_inr)
+        values ('halloween-2026',$1,$2,$3,$4,$5,$6,500)`,
+      [key, registration.contactName.trim(), registration.email.trim().toLowerCase(), registration.whatsapp.replace(/[\s()-]/g, ''), registration.adults, registration.children])
+      const response = await api.POST(request({ ...registration, idempotencyKey: key, challenge: challenge() }))
+      assert.equal(response.status, 201)
+      const { rows } = await pg.query('select amount_inr from public.halloween_bookings where idempotency_key=$1', [key])
+      assert.equal(rows[0].amount_inr, 1500)
+    } finally { await pg.exec('rollback') }
+  })
   await t.test('registration is server priced and repeated clicks reuse one booking', async () => {
     const response = await api.POST(request({ ...registration, challenge: challenge() }))
     assert.equal(response.status, 201)
@@ -302,7 +329,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     const repeated = await api.POST(request({ ...registration, challenge: challenge() }))
     assert.equal((await repeated.json()).token, privateToken)
     const rows = (await pg.query('select * from public.halloween_bookings')).rows
-    assert.equal(rows.length, 1); assert.equal(rows[0].amount_inr, 1500)
+    assert.equal(rows.length, 1); assert.equal(rows[0].amount_inr, 2250)
     assert.equal(rows[0].payment_verified, false); bookingId = rows[0].id
   })
   await t.test('private access rejects references and other tokens; responses are not cached', async () => {
@@ -312,7 +339,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     const response = await api.POST(request({ action: 'booking', token: privateToken }))
     assert.equal(response.headers.get('cache-control'), 'private, no-store')
     const data = await response.json()
-    assert.equal(data.booking.amount_inr, 1500); assert.equal(data.tickets.length, 0)
+    assert.equal(data.booking.amount_inr, 2250); assert.equal(data.tickets.length, 0)
     assert.equal(data.booking.email, undefined); assert.equal(data.booking.private_access_token, undefined)
   })
   await t.test('payment reference submission is pending and repeat-safe', async () => {
@@ -344,11 +371,11 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
       assert.equal(preview.status, 200)
       assert.equal((await preview.json()).booking.payment_verified, false)
       assert.equal((await api.POST(request({ action: 'payment-review', token: privateToken }))).status, 404)
-      assert.equal((await api.POST(request({ action: 'approve-payment', token, reference: 'TEST123456789', amount: 1500 }))).status, 400)
+      assert.equal((await api.POST(request({ action: 'approve-payment', token, reference: 'TEST123456789', amount: 2250 }))).status, 400)
       await pg.exec('savepoint wrong_reference')
-      assert.equal((await api.POST(request({ action: 'approve-payment', token, confirmReceived: true, reference: 'WRONG12345', amount: 1500 }))).status, 409)
+      assert.equal((await api.POST(request({ action: 'approve-payment', token, confirmReceived: true, reference: 'WRONG12345', amount: 2250 }))).status, 409)
       await pg.exec('rollback to savepoint wrong_reference')
-      const body = { action: 'approve-payment', token, confirmReceived: true, reference: 'TEST123456789', amount: 1500 }
+      const body = { action: 'approve-payment', token, confirmReceived: true, reference: 'TEST123456789', amount: 2250 }
       assert.equal((await api.POST(request(body))).status, 200)
       assert.equal((await api.POST(request(body))).status, 200)
       assert.equal((await pg.query('select count(*)::int as n from public.halloween_tickets where booking_id=$1', [bookingId])).rows[0].n, 1)
@@ -366,7 +393,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
         p_email: 'duplicate@example.invalid', p_whatsapp_number: '+919876543210', p_adult_count: 1, p_child_count: 1,
       })
       await db.rpc('halloween_submit_payment', { p_private_token: duplicate.private_access_token, p_reference: 'TEST123456789' })
-      const body = { action: 'approve-payment', token, confirmReceived: true, reference: 'TEST123456789', amount: 1500 }
+      const body = { action: 'approve-payment', token, confirmReceived: true, reference: 'TEST123456789', amount: 2250 }
       const preview = await api.POST(request({ action: 'payment-review', token }))
       assert.equal((await preview.json()).reference_reused, true)
       await pg.exec('savepoint duplicate_reference')
@@ -406,7 +433,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
     assert.equal((await (await worker.GET(workerRequest())).json()).failed, 1)
     let row = (await pg.query('select * from public.halloween_notification_outbox where kind=$$booking_confirmation$$')).rows[0]
     assert.equal(row.status, 'failed'); assert.equal(row.sent_at, null)
-    assert.match(row.delivery_payload.text, /₹1,500/)
+    assert.match(row.delivery_payload.text, /₹2,250/)
     await pg.exec("update public.halloween_events set name='Changed after first attempt'")
     await pg.exec('update public.halloween_notification_outbox set next_attempt_at=now() where kind=$$booking_confirmation$$')
     provider.fail = false

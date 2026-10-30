@@ -61,8 +61,10 @@ export function halloweenPrice(adults: number, children: number, discountApplied
   const additionalAdults = Math.max(adults - children, 0)
   const discountPerTicket = typeof discountApplied === 'number' ? discountApplied : discountApplied ? 250 : 0
   const discount = (children + additionalAdults) * discountPerTicket
-  return { discount, childCharges: children * 500, includedAdults, additionalAdults,
-    adultCharges: additionalAdults * 500, total: (children + additionalAdults) * 500 - discount }
+  // Coupon ticket prices stay unchanged; the revised fee applies to standard bookings.
+  const childRate = discountPerTicket > 0 ? 500 : 750
+  return { discount, childCharges: children * childRate, includedAdults, additionalAdults,
+    adultCharges: additionalAdults * childRate, total: (children + additionalAdults) * childRate - discount }
 }
 
 export function validateHalloweenRegistration(body: Record<string, unknown>) {

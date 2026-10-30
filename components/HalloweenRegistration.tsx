@@ -93,7 +93,7 @@ export default function HalloweenRegistration({ event, available }: { event: Hal
     <h2>Registration opens soon</h2>
     <p className="event-muted">{available ? 'We are finalising the venue, timings and payment details. Please check back here.' : 'Event details are temporarily unavailable. Please check back shortly.'}</p>
     <PriceBreakdown adults={1} childCount={1} />
-    <p className="event-muted">₹500 per child. One adult per child enters free; each additional adult is ₹500.</p>
+    <p className="event-muted">₹750 per child. One adult per child enters free; each additional adult is ₹750.</p>
     {resume && <Link href={`${HALLOWEEN_PATH}/booking#${resume}`} className="btn-secondary" prefetch={false}>Resume my booking</Link>}
   </div>
 

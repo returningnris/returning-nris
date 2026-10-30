@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = 'Halloween Party in Hyderabad | Returning NRIs'
-  const description = 'A family Halloween party with costumes, games and trick-or-treat fun at The Quantium School, Mokila, Hyderabad. 31 October 2026, 5 PM–9 PM. ₹500 per child includes one adult free.'
+  const description = 'A family Halloween party with costumes, games and trick-or-treat fun at The Quantium School, Mokila, Hyderabad. 31 October 2026, 5 PM–9 PM. ₹750 per child includes one adult free.'
   return { title,
     description,
     openGraph: {
@@ -42,7 +42,7 @@ export default async function HalloweenPage() {
       <p className="event-muted">It’s the perfect space for <strong>returned NRI families</strong> and <strong>West Hyderabad locals</strong> to chat, share stories, and build lasting neighborhood friendships while the kids dive into the spooky fun.</p>
       <EventDetails event={event} />
       <div className="event-actions"><a href="#family-registration" className="btn-primary">Book your family’s spot</a><a href="#party-details" className="halloween-details-link">Explore the party ↓</a></div>
-      <p className="halloween-price-note">₹500 per child · One adult per child enters free</p>
+      <p className="halloween-price-note">₹750 per child · One adult per child enters free</p>
       </div><div className="halloween-poster">
         <div className="halloween-poster-artwork">
           <Image src="/events/halloween/partner-poster.png" width={1453} height={1082} alt="Halloween Party — a family community event by Returning NRIs and Pink Trips, co-powered by The Quantium School, with friendly ghosts, glowing pumpkins and children in costumes." sizes="(max-width: 720px) 100vw, 50vw" preload />
@@ -71,10 +71,10 @@ export default async function HalloweenPage() {
           <p><strong>Food available for purchase</strong><br /><span className="event-muted">Food is paid for separately from your registration.</span></p>
         </section>
         <section className="event-card"><div className="section-label">Simple family pricing</div><h2>Bring the family</h2>
-          <p className="event-muted">₹500 per child includes one adult free. Additional adults are ₹500 each.</p>
+          <p className="event-muted">₹750 per child includes one adult free. Additional adults are ₹750 each.</p>
           <div className="event-price" style={{ marginTop: '1rem' }}><dl>
-            <dt>1 child + 1 adult</dt><dd>₹500</dd><dt>1 child + 2 adults</dt><dd>₹1,000</dd>
-            <dt>2 children + 2 adults</dt><dd>₹1,000</dd><dt>2 children + 3 adults</dt><dd>₹1,500</dd>
+            <dt>1 child + 1 adult</dt><dd>₹750</dd><dt>1 child + 2 adults</dt><dd>₹1,500</dd>
+            <dt>2 children + 2 adults</dt><dd>₹1,500</dd><dt>2 children + 3 adults</dt><dd>₹2,250</dd>
           </dl></div>
         </section>
         <section className="event-card event-stack"><h2>How it works</h2>
