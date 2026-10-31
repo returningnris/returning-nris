@@ -135,3 +135,9 @@ Keep existing Resend and worker scheduling configuration. No new environment var
 Apply `supabase/migrations/202610240001_halloween_special_invite.sql` after `202610230003`, then deploy the website changes. Share `SPOOKYVIP2026` privately with special invitees. It covers every registered adult and child, including additional adults, with a ₹0 total and no payment or manual approval required. Food remains available for purchase separately. Apply `supabase/migrations/202610240002_halloween_vip_limit.sql` after the invitation migration to limit this code to 20 family registrations (one booking per family, regardless of party size). The API preview and database enforce the cap, including existing bookings. Anyone with the code can redeem it.
 
 Registration automatically confirms the booking using the existing family ticket and confirmation email outbox. Retrying a registration does not create another ticket or override an organiser’s revocation. Existing sponsor codes and historical booking totals are preserved.
+
+## Re-enable Quantium coupon
+
+Apply `supabase/migrations/202610310001_halloween_reenable_quantium250.sql` after the coupon-disable migration, before deploying. `QUANTIUM250` again charges ₹250 per paid ticket, with the original 30-family limit including existing bookings. Standard pricing remains ₹750 per paid ticket. The special invitation remains active; other sponsor codes remain disabled.
+
+Apply `supabase/migrations/202610310002_halloween_quantium_ten_new.sql` after the re-enable migration and before deploying to allow **10 new QUANTIUM250 family registrations**. It snapshots existing Quantium booking IDs once; they do not consume the new allocation. Pending bookings count, retries do not consume extra places, and rerunning the migration does not reset the allocation.

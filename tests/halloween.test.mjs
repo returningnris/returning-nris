@@ -65,7 +65,7 @@ vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../lib/halloween-cou
 const { halloweenCouponPrice } = couponSandbox.exports
 
 test('retired coupons are rejected and standard pricing remains available', () => {
-  for (const code of ['QUANTIUM50', 'QUANTIUM250', 'AIRADENTAL200', 'DRIPBAR200', 'AIRADENTAL250', 'DRIPBAR250', 'INVALID', 50, {}, ['QUANTIUM250']]) {
+  for (const code of ['QUANTIUM50', 'AIRADENTAL200', 'DRIPBAR200', 'AIRADENTAL250', 'DRIPBAR250', 'INVALID', 50, {}, ['QUANTIUM250']]) {
     assert.throws(() => halloweenCouponPrice(3, 2, code))
   }
   assert.equal(halloweenCouponPrice(3, 2, '').total, 2250)
@@ -121,4 +121,9 @@ test('new coupon breakdown displays 250 rupees per paid ticket', () => {
  test('special invitation covers all children and additional adults', () => {
   assert.equal(halloweenCouponPrice(4, 2, ' spookyvip2026 ').total, 0)
   assert.equal(halloweenCouponPrice(1, 5, 'SPOOKYVIP2026').total, 0)
+})
+
+test('Quantium coupon accepts normalised codes with its original price and allocation', () => {
+  assert.equal(halloweenCouponPrice(3, 2, ' quantium250 ').total, 750)
+  assert.equal(couponSandbox.exports.halloweenCouponOffer('QUANTIUM250').bookingLimit, 10)
 })

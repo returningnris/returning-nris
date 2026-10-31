@@ -98,6 +98,21 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   await pg.exec(readFileSync(join(root, 'supabase/migrations/202610300002_halloween_disable_coupons.sql'), 'utf8'))
   assert.deepEqual((await pg.query("select id, coupon_code, amount_inr from public.halloween_bookings where coupon_code <> '' order by id")).rows, priorCouponBookings.rows)
 
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610310001_halloween_reenable_quantium250.sql'), 'utf8'))
+
+  await pg.exec(readFileSync(join(root, 'supabase/migrations/202610310002_halloween_quantium_ten_new.sql'), 'utf8'))
+  await t.test('Quantium permits ten new bookings beyond the saved baseline', async () => {
+    await pg.exec('begin')
+    try {
+      for (let i = 0; i < 10; i++) {
+        assert.equal((await pg.query('select public.halloween_quantium_available() as available')).rows[0].available, true)
+        await pg.query(`select public.halloween_register(gen_random_uuid(), 'New family', 'new@example.com', '+919876543210', 1, 1, 'QUANTIUM250')`)
+      }
+      assert.equal((await pg.query('select public.halloween_quantium_available() as available')).rows[0].available, false)
+      await assert.rejects(pg.query(`select public.halloween_register(gen_random_uuid(), 'Eleventh family', 'new@example.com', '+919876543210', 1, 1, 'QUANTIUM250')`), /Coupon limit exceeded/)
+    } finally { await pg.exec('rollback') }
+  })
+
   // Minimal Supabase query adapter, backed by real PostgreSQL constraints and functions.
   class Query {
     constructor(table) { this.table = table; this.columns = '*'; this.filters = []; this.values = []; this.orders = []; this.operation = 'select' }
@@ -215,7 +230,7 @@ test('real SQL + website endpoints + outbox worker in an isolated PostgreSQL dat
   let ticket
 
   await t.test('disabled coupons cannot be used through preview, registration RPC or direct inserts', async () => {
-    for (const code of ['QUANTIUM50', 'QUANTIUM250', 'AIRADENTAL200', 'AIRADENTAL250', 'DRIPBAR200', 'DRIPBAR250']) {
+    for (const code of ['QUANTIUM50', 'AIRADENTAL200', 'AIRADENTAL250', 'DRIPBAR200', 'DRIPBAR250']) {
       assert.equal((await api.POST(request({ action: 'coupon', couponCode: code }))).status, 400)
       assert.equal((await api.POST(request({ ...registration, couponCode: code, challenge: challenge() }))).status, 400)
       await assert.rejects(pg.query(`select public.halloween_register(gen_random_uuid(), 'Disabled coupon', 'disabled@example.com', '+919876543210', 1, 1, $1)`, [code]), /Invalid coupon code/)

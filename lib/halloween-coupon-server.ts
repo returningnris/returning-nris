@@ -2,6 +2,7 @@ import 'server-only'
 import { halloweenCoupon, halloweenPrice } from './halloween'
 
 const offers: Record<string, { discountPerTicket: number; bookingLimit: number | null; label: string }> = {
+  QUANTIUM250: { discountPerTicket: 250, bookingLimit: 10, label: 'Quantium School family offer' },
   SPOOKYVIP2026: { discountPerTicket: 500, bookingLimit: 20, label: 'Special guest invitation' },
 }
 
