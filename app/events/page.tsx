@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import HalloweenArtwork from '@/components/HalloweenArtwork'
+import Image from 'next/image'
+import halloweenThumbnail from '@/public/events/halloween/completed-thumbnail.png'
 import styles from './events.module.css'
 import { HALLOWEEN_TIMINGS, HALLOWEEN_VENUE } from '@/lib/halloween'
 
@@ -17,7 +18,7 @@ export default function EventsPage() {
       <h1 style={{ color: '#062c59', fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', margin: '.75rem 0' }}>Events</h1>
       <p style={{ color: '#526476', lineHeight: 1.7, marginBottom: '2rem' }}>Meet returned NRI families and families from the neighborhood, share stories, and build new friendships.</p>
       <article className={styles.halloweenCard}>
-        <HalloweenArtwork className={styles.artwork} />
+        <Image src={halloweenThumbnail} className={styles.artwork} alt="Returning NRIs Halloween celebration with families, pumpkins and glowing lanterns" sizes="(max-width: 640px) 100vw, 576px" />
         <p className={`section-label ${styles.label}`}>Completed event</p>
         <h2>Halloween Party</h2>
         <p className={styles.date}>31 October 2026 · {HALLOWEEN_TIMINGS} IST</p>

@@ -7,7 +7,7 @@
   color: #fff7e9;
   box-shadow: 0 16px 40px rgba(33, 19, 46, .14);
 }
-.artwork { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto 1rem; }
+.artwork { display: block; width: 100%; height: auto; border-radius: 14px; margin: 0 auto 1rem; }
 .halloweenCard .label { color: #ffd878; }
 .halloweenCard h2 { color: #ffae45; font-size: 2rem; margin: .75rem 0; }
 .halloweenCard h2 a { color: inherit; }
