@@ -1,88 +1,26 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
-import HalloweenRegistration from '@/components/HalloweenRegistration'
-import { BookingSteps, EventDetails, EventLinks } from '@/components/HalloweenShared'
-import { publicHalloweenEvent } from '@/lib/halloween-server'
-import { HALLOWEEN_PATH } from '@/lib/halloween'
+import HalloweenArtwork from '@/components/HalloweenArtwork'
+import { HALLOWEEN_PATH, HALLOWEEN_TIMINGS, HALLOWEEN_VENUE } from '@/lib/halloween'
 
-export const dynamic = 'force-dynamic'
-
-export async function generateMetadata(): Promise<Metadata> {
-  const title = 'Halloween Party in Hyderabad | Returning NRIs'
-  const description = 'A family Halloween party with costumes, games and trick-or-treat fun at The Quantium School, Mokila, Hyderabad. 31 October 2026, 5 PM–9 PM. ₹750 per child includes one adult free.'
-  return { title,
-    description,
-    openGraph: {
-      title,
-      description,
-      url: HALLOWEEN_PATH,
-      siteName: 'ReturningNRIs',
-      locale: 'en_IN',
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-    },
-    alternates: { canonical: HALLOWEEN_PATH } }
+export const metadata: Metadata = {
+  title: 'Halloween Party — Event Complete | Returning NRIs',
+  description: 'Our Halloween Party on 31 October 2026 in Mokila, Hyderabad is complete. Thank you for joining us. Registration is closed.',
+  alternates: { canonical: HALLOWEEN_PATH },
 }
 
-export default async function HalloweenPage() {
-  const { event, available } = await publicHalloweenEvent()
-  return <div className="halloween-party-page">
-    <header className="event-hero halloween-themed-hero"><div className="event-shell">
-      <Link href="/events" className="event-link event-muted">← All events</Link>
-      <div className="halloween-hero-grid"><div>
-      <div className="section-label halloween-eyebrow" style={{ marginTop: '1.4rem' }}>A family community event</div>
-      <h1>{event.name}</h1>
-      <p className="event-lead"><strong>Where Global Roots Meet Local Neighbors.</strong></p>
-      <p className="event-lead">Bring your little monsters out for a spooktacular evening of festive fun, games, and treats!</p>
-      <p className="event-muted">It’s the perfect space for <strong>returned NRI families</strong> and <strong>West Hyderabad locals</strong> to chat, share stories, and build lasting neighborhood friendships while the kids dive into the spooky fun.</p>
-      <EventDetails event={event} />
-      <div className="event-actions"><a href="#family-registration" className="btn-primary">Book your family’s spot</a><a href="#party-details" className="halloween-details-link">Explore the party ↓</a></div>
-      <p className="halloween-price-note">₹750 per child · One adult per child enters free</p>
-      </div><div className="halloween-poster">
-        <div className="halloween-poster-artwork">
-          <Image src="/events/halloween/partner-poster.png" width={1453} height={1082} alt="Halloween Party — a family community event by Returning NRIs and Pink Trips, co-powered by The Quantium School, with friendly ghosts, glowing pumpkins and children in costumes." sizes="(max-width: 720px) 100vw, 50vw" preload />
-          <div className="halloween-poster-brand">
-            <Image className="halloween-poster-brand-icon" src="/logo-returning-nris.png" alt="" width={1312} height={936} sizes="(max-width: 720px) 7vw, 4vw" />
-            <Image className="halloween-poster-brand-wordmark" src="/returning-nris-wordmark.png" alt="Returning NRIs" width={902} height={193} sizes="(max-width: 720px) 22vw, 11vw" />
-          </div>
-        </div>
-        <div className="halloween-poster-sponsors">
-          <p>Our sponsors</p>
-          <div>
-            <Image src="/events/halloween/aira-dental.jpeg" alt="Aira Dental Clinic" width={1024} height={1024} sizes="60px" />
-            <Image src="/events/halloween/the-drip-bar.png" alt="The Drip Bar, Kokapet, Hyderabad" width={228} height={211} sizes="60px" />
-          </div>
-        </div>
-      </div></div>
-    </div></header>
-    <div className="event-shell"><BookingSteps step={1} /><div className="event-grid">
-      <div id="family-registration" className="halloween-registration"><HalloweenRegistration event={event} available={available} /></div>
-      <aside id="party-details" className="event-stack">
-        <section className="event-card event-stack"><div className="section-label">An evening of family fun</div><h2>What’s happening</h2>
-          <p><strong>Music to keep the evening lively</strong></p>
-          <p><strong>Trick or treat</strong><br /><span className="event-muted">Halloween fun for the kids.</span></p>
-          <p><strong>Exciting games for kids</strong><br /><span className="event-muted">Plenty of fun for our little guests.</span></p>
-          <p><strong>New neighborhood friendships</strong><br /><span className="event-muted">Meet returned NRI families and local families, share stories, and get to know your neighbors.</span></p>
-          <p><strong>Food available for purchase</strong><br /><span className="event-muted">Food is paid for separately from your registration.</span></p>
-        </section>
-        <section className="event-card"><div className="section-label">Simple family pricing</div><h2>Bring the family</h2>
-          <p className="event-muted">₹750 per child includes one adult free. Additional adults are ₹750 each.</p>
-          <div className="event-price" style={{ marginTop: '1rem' }}><dl>
-            <dt>1 child + 1 adult</dt><dd>₹750</dd><dt>1 child + 2 adults</dt><dd>₹1,500</dd>
-            <dt>2 children + 2 adults</dt><dd>₹1,500</dd><dt>2 children + 3 adults</dt><dd>₹2,250</dd>
-          </dl></div>
-        </section>
-        <section className="event-card event-stack"><h2>How it works</h2>
-          <p><strong>1. Register your family.</strong><br /><span className="event-muted">Share your contact details and adult/child counts.</span></p>
-          <p><strong>2. Pay the exact amount by UPI.</strong><br /><span className="event-muted">Submit your transaction reference. We’ll email you that payment is pending verification. No screenshot needed.</span></p>
-          <p><strong>3. Get one QR for your whole family.</strong><br /><span className="event-muted">After bank verification, we’ll email a private link to access one ticket covering every adult and child in your booking.</span></p>
-        </section>
-      </aside>
-    </div><EventLinks /></div>
-  </div>
+export default function HalloweenPage() {
+  return <main className="event-shell event-stack" style={{ paddingBlock: '3rem' }}>
+    <Link href="/events" className="event-link">← All events</Link>
+    <section className="event-card event-stack">
+      <HalloweenArtwork />
+      <p className="section-label">Completed event</p>
+      <h1 className="section-title">Halloween Party</h1>
+      <p>31 October 2026 · {HALLOWEEN_TIMINGS} IST</p>
+      <p>{HALLOWEEN_VENUE}</p>
+      <p>Thank you to all the families who joined us for an evening of Halloween fun and new friendships.</p>
+      <p><strong>This event is complete. Registration is closed.</strong></p>
+      <Link href="/community" className="event-link">Explore our community →</Link>
+    </section>
+  </main>
 }

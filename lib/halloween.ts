@@ -6,6 +6,8 @@ export function halloweenCoupon(value: unknown) {
   return code
 }
 
+export const HALLOWEEN_EVENT_COMPLETED = true
+
 export const HALLOWEEN_EVENT_ID = 'halloween-2026'
 export const HALLOWEEN_PATH = '/events/halloween'
 export const HALLOWEEN_VENUE = 'The Quantium School, Mokila, Hyderabad'

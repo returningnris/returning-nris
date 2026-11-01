@@ -2,11 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import HalloweenArtwork from '@/components/HalloweenArtwork'
 import styles from './events.module.css'
-import { HALLOWEEN_PATH, HALLOWEEN_TIMINGS, HALLOWEEN_VENUE } from '@/lib/halloween'
+import { HALLOWEEN_TIMINGS, HALLOWEEN_VENUE } from '@/lib/halloween'
 
 export const metadata: Metadata = {
   title: 'Community Events | Returning NRIs',
-  description: 'Meet returned NRI families and West Hyderabad locals at our Halloween Party in Mokila on 31 October 2026. Family fun and new neighborhood friendships.',
+  description: 'Explore Returning NRIs community events and past gatherings for returned NRI families and local neighbors.',
   alternates: { canonical: '/events' },
 }
 
@@ -18,12 +18,12 @@ export default function EventsPage() {
       <p style={{ color: '#526476', lineHeight: 1.7, marginBottom: '2rem' }}>Meet returned NRI families and families from the neighborhood, share stories, and build new friendships.</p>
       <article className={styles.halloweenCard}>
         <HalloweenArtwork className={styles.artwork} />
-        <p className={`section-label ${styles.label}`}>A family community event</p>
-        <h2><Link href={HALLOWEEN_PATH}>Halloween Party</Link></h2>
+        <p className={`section-label ${styles.label}`}>Completed event</p>
+        <h2>Halloween Party</h2>
         <p className={styles.date}>31 October 2026 · {HALLOWEEN_TIMINGS} IST</p>
         <p className={styles.description}>{HALLOWEEN_VENUE}</p>
-        <p className={styles.activities}><strong>Where Global Roots Meet Local Neighbors.</strong> Meet returned NRI families and West Hyderabad locals while the kids enjoy music, trick or treat, and exciting games. Food available for purchase.</p>
-        <Link href={HALLOWEEN_PATH} className={styles.cta}>View party details <span aria-hidden="true">→</span></Link>
+        <p className={styles.activities}><strong>Where Global Roots Meet Local Neighbors.</strong> Thank you to the returned NRI families and local neighbors who joined us for music, trick or treat, games, and new friendships.</p>
+        <p className={styles.date} style={{ marginTop: "1.5rem" }}>Event complete &middot; Registration closed</p>
       </article>
       <p style={{ marginTop: '2rem' }}><Link href="/community">Explore our community →</Link></p>
     </div>

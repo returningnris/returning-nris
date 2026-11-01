@@ -1,12 +1,15 @@
 import { halloweenCouponPrice, halloweenCouponOffer, halloweenCouponLimitMessage } from '@/lib/halloween-coupon-server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText, isPrivateToken, validateHalloweenRegistration } from '@/lib/halloween'
+import { HALLOWEEN_EVENT_COMPLETED, HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText, isPrivateToken, validateHalloweenRegistration } from '@/lib/halloween'
 import { canonicalHalloweenOrigin, getHalloweenEvent, getPrivateHalloweenBooking, HalloweenError,
   halloweenFailure, halloweenRateLimit, privateJson, readHalloweenBody, requireHalloweenOrganiser, verifyBotChallenge } from '@/lib/halloween-server'
 
 export async function POST(request: Request) {
   try {
     const body = await readHalloweenBody(request)
+    if (HALLOWEEN_EVENT_COMPLETED && ['register', 'coupon', 'payment'].includes(String(body.action))) {
+      throw new HalloweenError('This event is complete. Registration and payment submissions are closed.', 410)
+    }
     const db = getSupabaseAdmin()
     if (body.action === 'payment-review' || body.action === 'approve-payment') {
       await halloweenRateLimit(request, 'payment-review', 30, 900)

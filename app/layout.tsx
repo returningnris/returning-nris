@@ -6,7 +6,6 @@ import Link from 'next/link'
 import localFont from 'next/font/local'
 import './globals.css'
 import NavBar from './NavBar'
-import HalloweenPopup from '@/components/HalloweenPopup'
 import { InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../lib/social-icons'
 import { INSTAGRAM_URL } from '../lib/social-links'
 
@@ -200,7 +199,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NavBar />
         <main style={{ flex: 1 }}>{children}<ContextualPlanningCall /></main>
         <Footer />
-        <HalloweenPopup />
       </body>
     </html>
   )

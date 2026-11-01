@@ -141,3 +141,10 @@ Registration automatically confirms the booking using the existing family ticket
 Apply `supabase/migrations/202610310001_halloween_reenable_quantium250.sql` after the coupon-disable migration, before deploying. `QUANTIUM250` again charges ₹250 per paid ticket, with the original 30-family limit including existing bookings. Standard pricing remains ₹750 per paid ticket. The special invitation remains active; other sponsor codes remain disabled.
 
 Apply `supabase/migrations/202610310002_halloween_quantium_ten_new.sql` after the re-enable migration and before deploying to allow **10 new QUANTIUM250 family registrations**. It snapshots existing Quantium booking IDs once; they do not consume the new allocation. Pending bookings count, retries do not consume extra places, and rerunning the migration does not reset the allocation.
+
+
+## Event completed (1 November 2026)
+
+The events card is static and has no registration link. The invitation popup is removed, the event page is an archive, and the API rejects new registrations, coupon checks and payment submissions. The notification worker returns without claiming or sending emails, including confirmations caused by Supabase payment verification edits.
+
+Apply `supabase/migrations/202611010001_halloween_complete.sql` in Supabase SQL Editor to close database registration, cancel unsent notifications and suppress new notification queue entries for this event. Bookings, payment verification and family tickets remain intact. Deploy the website changes to activate the application guards.

@@ -2,7 +2,7 @@ import 'server-only'
 import { Resend } from 'resend'
 import { getSupabaseAdmin } from './supabase-admin'
 import { canonicalHalloweenOrigin, getHalloweenEvent } from './halloween-server'
-import { HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText, paymentPendingText } from './halloween'
+import { HALLOWEEN_EVENT_COMPLETED, HALLOWEEN_EVENT_ID, HALLOWEEN_PATH, confirmationText, paymentPendingText } from './halloween'
 import { halloweenOrganiserEmail, halloweenEmailHtml } from './halloween-email'
 import { HALLOWEEN_TERMS_PATH } from './halloween-terms'
 
@@ -11,6 +11,8 @@ type Notification = { id: string; booking_id: string; lease_token: string; first
   attempts: number; kind: 'booking_confirmation' | 'payment_pending' | 'organiser_review'; delivery_payload: EmailPayload | null }
 
 export async function processHalloweenNotifications() {
+  // The completed event must never send queued or newly triggered emails.
+  if (HALLOWEEN_EVENT_COMPLETED) return { accepted: 0, failed: 0, manual: 0, skipped: 0, disabled: true }
   const db = getSupabaseAdmin()
   // Promote exhausted/expired work to an actionable manual state, not a stuck lease.
   const { error: exhaustedError } = await db.from('halloween_notification_outbox')
